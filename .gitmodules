@@ -1,0 +1,3 @@
+[submodule "deps/godot"]
+	path = deps/godot
+	url = git@github.com:m4gr3d/godot.git
