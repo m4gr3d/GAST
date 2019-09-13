@@ -1,0 +1,5 @@
+include ':app'
+include ':godot-lib'
+project(':godot-lib').projectDir = new File("/Users/fhuya/Projects/godotengine/GAST/deps/godot/platform/android/java")
+
+rootProject.name='GAST'
