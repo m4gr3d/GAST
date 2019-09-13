@@ -1,12 +1,11 @@
 package fhuya.godot.gast
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import org.godotengine.godot.Godot
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Godot() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-    }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+  }
 }
