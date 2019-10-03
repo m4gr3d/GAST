@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion(28)
-    buildToolsVersion = "29.0.1"
+    compileSdkVersion(Versions.compileSdk)
+    buildToolsVersion = Versions.buildTools
     defaultConfig {
-        applicationId = "fhuya.godot.gast"
-        minSdkVersion(24)
-        targetSdkVersion(28)
+        applicationId = "com.google.vr.youtube.gast.app"
+        minSdkVersion(Versions.minSdk)
+        targetSdkVersion(Versions.targetSdk)
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -27,7 +27,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":godot:lib"))
+    implementation(project(":gast-lib"))
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}")
     implementation("androidx.appcompat:appcompat:1.1.0")

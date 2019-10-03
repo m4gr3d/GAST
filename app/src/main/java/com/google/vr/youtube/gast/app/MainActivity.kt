@@ -1,9 +1,9 @@
-package fhuya.godot.gast
+package com.google.vr.youtube.gast.app
 
 import android.os.Bundle
-import org.godotengine.godot.Godot
+import com.google.vr.youtube.gast.GastActivity
 
-class MainActivity : Godot() {
+class MainActivity : GastActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
