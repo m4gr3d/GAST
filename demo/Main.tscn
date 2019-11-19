@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=2]
+
+[sub_resource type="QuadMesh" id=1]
+
+[sub_resource type="ExternalTexture" id=2]
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_texture = SubResource( 2 )
+
+[node name="Spatial" type="Spatial"]
+
+[node name="MeshInstance" type="MeshInstance" parent="." groups=[
+"gambit_view_container",
+]]
+mesh = SubResource( 1 )
+material/0 = SubResource( 3 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.89513 )
