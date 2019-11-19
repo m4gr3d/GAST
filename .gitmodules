@@ -1,3 +1,6 @@
 [submodule "deps/godot"]
 	path = deps/godot
 	url = git@github.com:m4gr3d/godot.git
+[submodule "deps/godot-cpp"]
+	path = deps/godot-cpp
+	url = https://github.com/GodotNativeTools/godot-cpp.git

@@ -16,8 +16,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":godot:lib"))
+    api(project(":godot:lib"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}")
-    implementation("androidx.appcompat:appcompat:1.1.0")
-    implementation("androidx.core:core-ktx:1.1.0")
+    implementation("com.android.support:appcompat-v7:28.0.0")
 }
