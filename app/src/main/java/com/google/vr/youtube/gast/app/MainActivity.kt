@@ -22,11 +22,16 @@ class MainActivity : GastActivity() {
         runOnUiThread {
             val surfaceTexture = SurfaceTexture(texId)
             surfaceTexture.setDefaultBufferSize(640, 480)
+            surfaceTexture.setOnFrameAvailableListener {
+                if (mView != null) {
+                    mView.queueEvent { surfaceTexture.updateTexImage()}
+                }
+            }
             val surface = Surface(surfaceTexture)
 
             mediaPlayer.setSurface(surface)
             mediaPlayer.isLooping = true
-//            mediaPlayer.start()
+            mediaPlayer.start()
         }
     }
 
