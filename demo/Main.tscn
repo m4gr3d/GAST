@@ -1,22 +1,23 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://icon.png" type="Texture" id=1]
-
 [sub_resource type="QuadMesh" id=1]
 
 [sub_resource type="Shader" id=2]
 code = "shader_type spatial;
 
-uniform sampler2D sampler_texture;
+uniform samplerExternalOES sampler_texture;
 
 void fragment() {
 	ALBEDO = texture(sampler_texture, UV).xyz;
 }"
 custom_defines = PoolStringArray( "#extension GL_OES_EGL_image_external : require" )
 
+[sub_resource type="ExternalTexture" id=4]
+size = Vector2( 640, 480 )
+
 [sub_resource type="ShaderMaterial" id=3]
 shader = SubResource( 2 )
-shader_param/sampler_texture = ExtResource( 1 )
+shader_param/sampler_texture = SubResource( 4 )
 
 [node name="Spatial" type="Spatial"]
 
