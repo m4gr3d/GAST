@@ -1,6 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
 [sub_resource type="QuadMesh" id=1]
+size = Vector2( 3.5, 1.5 )
 
 [sub_resource type="Shader" id=2]
 code = "shader_type spatial;

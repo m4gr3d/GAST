@@ -10,7 +10,7 @@ import org.godotengine.godot.gast.GastManager
 class MainActivity : GastActivity() {
 
     private val mediaPlayer: MediaPlayer by lazy {
-        MediaPlayer.create(applicationContext, R.raw.ytvr_ar)
+        MediaPlayer.create(applicationContext, R.raw.flight)
     }
 
     override fun onGLGodotMainLoopStarted() {
