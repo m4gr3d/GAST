@@ -16,7 +16,7 @@ class MainActivity : GastActivity() {
     override fun onGLGodotMainLoopStarted() {
         super.onGLGodotMainLoopStarted()
 
-        val texId = GastManager.getTextureIdForNode(GastManager.DEFAULT_GROUP_NAME)
+        val texId = GastManager.getExternalTextureId(GastManager.DEFAULT_GROUP_NAME, "sampler_texture")
         Log.d("FHK", "Retrieved $texId from GastManager.")
 
         runOnUiThread {
