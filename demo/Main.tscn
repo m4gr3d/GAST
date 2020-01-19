@@ -10,7 +10,7 @@ uniform samplerExternalOES sampler_texture;
 void fragment() {
 	ALBEDO = texture(sampler_texture, UV).xyz;
 }"
-custom_defines = PoolStringArray( "#extension GL_OES_EGL_image_external : require" )
+custom_defines = PoolStringArray( "#extension GL_OES_EGL_image_external : require", "#extension GL_OES_EGL_image_external_essl3 : require" )
 
 [sub_resource type="ExternalTexture" id=4]
 size = Vector2( 640, 480 )
