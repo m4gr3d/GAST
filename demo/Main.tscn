@@ -11,14 +11,21 @@ uniform samplerExternalOES sampler_texture;
 void fragment() {
 	ALBEDO = texture(sampler_texture, UV).xyz;
 }"
-custom_defines = PoolStringArray( "#extension GL_OES_EGL_image_external : require", "#extension GL_OES_EGL_image_external_essl3 : require" )
+custom_defines = PoolStringArray(
+"#ifdef ANDROID_ENABLED
+#extension GL_OES_EGL_image_external : enable
+#extension GL_OES_EGL_image_external_essl3 : enable
+#else
+#define samplerExternalOES sampler2D
+#endif"
+)
 
-[sub_resource type="ExternalTexture" id=4]
+[sub_resource type="ExternalTexture" id=3]
 size = Vector2( 640, 480 )
 
-[sub_resource type="ShaderMaterial" id=3]
+[sub_resource type="ShaderMaterial" id=4]
 shader = SubResource( 2 )
-shader_param/sampler_texture = SubResource( 4 )
+shader_param/sampler_texture = SubResource( 3 )
 
 [node name="Spatial" type="Spatial"]
 
@@ -26,7 +33,7 @@ shader_param/sampler_texture = SubResource( 4 )
 "gambit_view_container",
 ]]
 mesh = SubResource( 1 )
-material/0 = SubResource( 3 )
+material/0 = SubResource( 4 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.89513 )
