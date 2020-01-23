@@ -12,6 +12,22 @@ android {
         targetSdkVersion(Versions.targetSdk)
         versionName = "1.0"
         versionCode = 1
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++14"
+                arguments += "-DANDROID_STL=c++_shared"
+            }
+        }
+
+        ndk {
+            abiFilters("arm64-v8a")
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            setPath("src/main/cpp/CMakeLists.txt")
+        }
     }
 }
 
