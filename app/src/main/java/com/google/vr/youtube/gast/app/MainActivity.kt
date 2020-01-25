@@ -4,10 +4,10 @@ import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
 import android.util.Log
 import android.view.Surface
-import com.google.vr.youtube.gast.GastActivity
-import org.godotengine.godot.gast.GastManager
+import com.google.vr.youtube.gast.GastManager
+import org.godotengine.godot.Godot
 
-class MainActivity : GastActivity() {
+class MainActivity : Godot() {
 
     private val mediaPlayer: MediaPlayer by lazy {
         MediaPlayer.create(applicationContext, R.raw.flight)
@@ -16,7 +16,8 @@ class MainActivity : GastActivity() {
     override fun onGLGodotMainLoopStarted() {
         super.onGLGodotMainLoopStarted()
 
-        val texId = GastManager.getExternalTextureId(GastManager.DEFAULT_GROUP_NAME, "sampler_texture")
+        val texId =
+            GastManager.getExternalTextureId(GastManager.DEFAULT_GROUP_NAME, "sampler_texture")
         Log.d("FHK", "Retrieved $texId from GastManager.")
 
         runOnUiThread {
@@ -24,7 +25,7 @@ class MainActivity : GastActivity() {
             surfaceTexture.setDefaultBufferSize(640, 480)
             surfaceTexture.setOnFrameAvailableListener {
                 if (mView != null) {
-                    mView.queueEvent { surfaceTexture.updateTexImage()}
+                    mView.queueEvent { surfaceTexture.updateTexImage() }
                 }
             }
             val surface = Surface(surfaceTexture)

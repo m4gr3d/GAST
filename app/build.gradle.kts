@@ -28,6 +28,7 @@ android {
 
 dependencies {
     implementation(project(":gast-lib"))
+    implementation(project(":godot:lib"))
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}")
     implementation("com.android.support:appcompat-v7:28.0.0")

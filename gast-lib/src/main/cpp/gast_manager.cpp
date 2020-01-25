@@ -3,6 +3,8 @@
 #include <gen/Material.hpp>
 #include <gen/SceneTree.hpp>
 #include <gen/ShaderMaterial.hpp>
+#include <gen/Object.hpp>
+#include <core/Godot.hpp>
 #include <gen/Texture.hpp>
 #include "gast_manager.h"
 #include "utils.h"
@@ -93,7 +95,7 @@ namespace gast {
                 continue;
             }
 
-            auto* mesh_instance = Object::cast_to<MeshInstance>(node);
+            auto *mesh_instance = Object::cast_to<MeshInstance>(node);
             return mesh_instance;
         }
         return nullptr;

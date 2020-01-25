@@ -1,0 +1,21 @@
+#ifndef GAST_MANAGER_JNI_H
+#define GAST_MANAGER_JNI_H
+
+#include <jni.h>
+#include "utils.h"
+
+// Current class and package names assumed for the Java side.
+#undef JNI_PACKAGE_NAME
+#define JNI_PACKAGE_NAME com_google_vr_youtube_gast
+
+#undef JNI_CLASS_NAME
+#define JNI_CLASS_NAME GastManager
+
+extern "C" {
+
+JNIEXPORT jint JNICALL
+JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_group_name,
+                                 jstring external_texture_param_name);
+};
+
+#endif // GAST_MANAGER_JNI_H

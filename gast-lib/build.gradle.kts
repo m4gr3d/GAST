@@ -15,7 +15,6 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++14"
-                arguments += "-DANDROID_STL=c++_shared"
             }
         }
 
@@ -32,7 +31,6 @@ android {
 }
 
 dependencies {
-    api(project(":godot:lib"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}")
     implementation("com.android.support:appcompat-v7:28.0.0")
 }
