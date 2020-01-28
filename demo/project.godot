@@ -19,6 +19,10 @@ config/name="Gast Demo"
 run/main_scene="res://Main.tscn"
 config/icon="res://icon.png"
 
+[gdnative]
+
+singletons=[ "res://addons/gastlib/gastlib.gdnlib" ]
+
 [rendering]
 
 quality/driver/driver_name="GLES2"
