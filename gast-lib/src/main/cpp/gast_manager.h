@@ -43,10 +43,11 @@ namespace gast {
         ~GastManager();
 
         static GastManager *singleton_instance;
-        static jmethodID on_gl_process_;
-        static jmethodID on_gl_input_hover_;
-        static jmethodID on_gl_input_press_;
-        static jmethodID on_gl_input_release_;
+
+        jmethodID on_gl_process_;
+        jmethodID on_gl_input_hover_;
+        jmethodID on_gl_input_press_;
+        jmethodID on_gl_input_release_;
     };
 }  // namespace gast
 

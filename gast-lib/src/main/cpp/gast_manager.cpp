@@ -111,4 +111,8 @@ namespace gast {
         return nullptr;
     }
 
+    void GastManager::on_gl_process(float delta) {
+
+    }
+
 }  // namespace gast
