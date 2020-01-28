@@ -1,9 +1,6 @@
-include(":app")
 include(":gast-lib")
 
-include(":godot")
-project(":godot").projectDir = File("deps/godot/platform/android/java")
-
-include(":godot:lib")
+include(":sample-demo")
+project(":sample-demo").projectDir = File("samples/demo/android/build")
 
 rootProject.name= "GAST"
