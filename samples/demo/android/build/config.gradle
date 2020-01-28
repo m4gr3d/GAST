@@ -1,0 +1,43 @@
+ext.versions = [
+        androidGradlePlugin : '3.4.2',
+        compileSdk : 28,
+        minSdk : 18,
+        targetSdk : 28,
+        buildTools : '28.0.3',
+
+]
+
+ext.libraries = [
+        androidGradlePlugin : "com.android.tools.build:gradle:$versions.androidGradlePlugin"
+]
+
+ext.getExportPackageName = { ->
+	// Retrieve the app id from the project property set by the Godot build command.
+	String appId = project.hasProperty("export_package_name") ? project.property("export_package_name") : ""
+	// Check if the app id is valid, otherwise use the default.
+	if (appId == null || appId.isEmpty()) {
+		appId = "com.godot.game"
+	}
+	return appId
+}
+
+/**
+ * Parse the project properties for the 'custom_template_v2_plugins' property and return
+ * their binaries for inclusion in the build dependencies.
+ *
+ * The listed plugins must have their binaries in the 'libs/plugins' directory.
+ */
+ext.getGodotPluginsBinaries = { ->
+	// Default dependencies
+	String[] binDeps = ["GodotPaymentV3*.aar"]
+
+	// Retrieve the list of enabled v2 plugins.
+	String pluginsList = project.hasProperty("custom_template_v2_plugins") ? project.property("custom_template_v2_plugins") : ""
+	if (pluginsList != null && !pluginsList.trim().isEmpty()) {
+		for (String plugin: pluginsList.split(",")) {
+			binDeps += plugin + "*.aar"
+		}
+	}
+
+	return binDeps
+}
