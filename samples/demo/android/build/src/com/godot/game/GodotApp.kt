@@ -1,10 +1,10 @@
-/*************************************************************************/
+/** */
 /*  GodotApp.java                                                        */
-/*************************************************************************/
+/** */
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
-/*************************************************************************/
+/** */
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
@@ -26,15 +26,54 @@
 /* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/** */
 
-package com.godot.game;
+package com.godot.game
 
-import org.godotengine.godot.Godot;
+import android.graphics.SurfaceTexture
+import android.media.MediaPlayer
+import android.util.Log
+import android.view.Surface
+import com.google.vr.youtube.gast.GastManager
+import org.godotengine.godot.Godot
 
 /**
  * Template activity for Godot Android custom builds.
  * Feel free to extend and modify this class for your custom logic.
  */
-public class GodotApp extends Godot {
+class GodotApp : Godot() {
+
+    private val mediaPlayer: MediaPlayer by lazy {
+        MediaPlayer.create(applicationContext, R.raw.flight)
+    }
+
+    override fun onGLGodotMainLoopStarted() {
+        super.onGLGodotMainLoopStarted()
+
+        val texId =
+            GastManager.getExternalTextureId(GastManager.DEFAULT_GROUP_NAME, "sampler_texture")
+        Log.d("FHK", "Retrieved $texId from GastManager.")
+
+        runOnUiThread {
+            val surfaceTexture = SurfaceTexture(texId)
+            surfaceTexture.setDefaultBufferSize(640, 480)
+            surfaceTexture.setOnFrameAvailableListener {
+                if (mView != null) {
+                    mView.queueEvent { surfaceTexture.updateTexImage() }
+                }
+            }
+            val surface = Surface(surfaceTexture)
+
+            mediaPlayer.setSurface(surface)
+            mediaPlayer.isLooping = true
+            mediaPlayer.start()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        mediaPlayer.release()
+        finish()
+    }
 }

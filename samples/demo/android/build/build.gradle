@@ -10,10 +10,13 @@ buildscript {
     }
     dependencies {
         classpath libraries.androidGradlePlugin
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion")
     }
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 allprojects {
     repositories {
@@ -37,6 +40,9 @@ dependencies {
 
 	// Godot plugins dependencies
 	implementation fileTree(dir : 'libs/plugins', include : getGodotPluginsBinaries())
+
+    implementation project(":gast-lib")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion")
 }
 
 android {
