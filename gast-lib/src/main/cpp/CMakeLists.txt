@@ -48,7 +48,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(gastlib)
 
-# Location to the Godot headers directory. The default location is "${CMAKE_SOURCE_DIR}/deps/godot_headers"
+# Location to the Godot headers directory.
 set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/../../../../deps/godot-cpp")
 set(GODOT_HEADERS_DIR "${GODOT_CPP_DIR}/godot_headers")
 
@@ -79,11 +79,6 @@ else ()
     set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -O3")
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
-# Godot-cpp Android static library
-set(GODOT_CPP_STATIC_LIB "${GODOT_CPP_DIR}/bin/libgodot-cpp.android.debug.arm64v8.a")
-add_library(godot-cpp STATIC IMPORTED GLOBAL)
-set_target_properties(godot-cpp PROPERTIES IMPORTED_LOCATION ${GODOT_CPP_STATIC_LIB})
-
 # Get sources
 file(GLOB_RECURSE SOURCES ./*.c**)
 file(GLOB_RECURSE HEADERS ./*.h**)
@@ -112,8 +107,7 @@ target_link_libraries(${PROJECT_NAME}
         android
         log
         EGL
-        GLESv3
-        godot-cpp)
+        GLESv3)
 
 # Add the compile flags
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})
