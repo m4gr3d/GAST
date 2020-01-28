@@ -12,9 +12,9 @@ namespace gast {
         using namespace godot;
     }  // namespace
 
-    class GastManager {
+    class GastNodeManager {
     public:
-        static GastManager *get_singleton_instance();
+        static GastNodeManager *get_singleton_instance();
 
         static void delete_singleton_instance();
 
@@ -38,11 +38,11 @@ namespace gast {
 
         MeshInstance *get_mesh_instance(const String& mesh_name);
 
-        GastManager();
+        GastNodeManager();
 
-        ~GastManager();
+        ~GastNodeManager();
 
-        static GastManager *singleton_instance;
+        static GastNodeManager *singleton_instance;
 
         jmethodID on_gl_process_;
         jmethodID on_gl_input_hover_;

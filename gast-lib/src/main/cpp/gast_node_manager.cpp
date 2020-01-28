@@ -6,7 +6,7 @@
 #include <gen/Object.hpp>
 #include <core/Godot.hpp>
 #include <gen/Texture.hpp>
-#include "gast_manager.h"
+#include "gast_node_manager.h"
 #include "utils.h"
 
 namespace gast {
@@ -15,35 +15,35 @@ namespace gast {
         constexpr int kInvalidTexId = -1;
     } // namespace
 
-    GastManager *GastManager::singleton_instance = nullptr;
-    jmethodID GastManager::on_gl_process_;
-    jmethodID GastManager::on_gl_input_hover_;
-    jmethodID GastManager::on_gl_input_press_;
-    jmethodID GastManager::on_gl_input_release_;
+    GastNodeManager *GastNodeManager::singleton_instance = nullptr;
+    jmethodID GastNodeManager::on_gl_process_;
+    jmethodID GastNodeManager::on_gl_input_hover_;
+    jmethodID GastNodeManager::on_gl_input_press_;
+    jmethodID GastNodeManager::on_gl_input_release_;
 
-    GastManager *GastManager::get_singleton_instance() {
+    GastNodeManager *GastNodeManager::get_singleton_instance() {
         if (singleton_instance == nullptr) {
-            singleton_instance = new GastManager();
+            singleton_instance = new GastNodeManager();
         }
         return singleton_instance;
     }
 
-    void GastManager::delete_singleton_instance() {
+    void GastNodeManager::delete_singleton_instance() {
         delete singleton_instance;
         singleton_instance = nullptr;
     }
 
-    GastManager::GastManager() {}
+    GastNodeManager::GastNodeManager() {}
 
-    GastManager::~GastManager() {}
+    GastNodeManager::~GastNodeManager() {}
 
-    void GastManager::register_callback(JNIEnv *env, jobject callback) {
+    void GastNodeManager::register_callback(JNIEnv *env, jobject callback) {
 
     }
 
-    void GastManager::unregister_callback() {}
+    void GastNodeManager::unregister_callback() {}
 
-    int GastManager::get_external_texture_id(const String &mesh_name,
+    int GastNodeManager::get_external_texture_id(const String &mesh_name,
                                              const String &texture_param_name) {
         ExternalTexture *external_texture = get_external_texture(mesh_name, texture_param_name);
         int tex_id = external_texture == nullptr ? kInvalidTexId
@@ -51,7 +51,7 @@ namespace gast {
         return tex_id;
     }
 
-    ExternalTexture *GastManager::get_external_texture(const String &mesh_name,
+    ExternalTexture *GastNodeManager::get_external_texture(const String &mesh_name,
                                                        const String &texture_param_name) {
         // Go through the mesh instance surface material and look for the external texture.
         ALOGV("Looking for external texture %s", texture_param_name.utf8().get_data());
@@ -79,7 +79,7 @@ namespace gast {
         return nullptr;
     }
 
-    MeshInstance *GastManager::get_mesh_instance(const godot::String &mesh_name) {
+    MeshInstance *GastNodeManager::get_mesh_instance(const godot::String &mesh_name) {
         MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
         if (!main_loop || !main_loop->is_class("SceneTree")) {
             ALOGE("Unable to retrieve main loop.");
@@ -111,7 +111,7 @@ namespace gast {
         return nullptr;
     }
 
-    void GastManager::on_gl_process(float delta) {
+    void GastNodeManager::on_gl_process(float delta) {
 
     }
 
