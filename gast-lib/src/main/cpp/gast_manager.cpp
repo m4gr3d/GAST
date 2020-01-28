@@ -16,6 +16,10 @@ namespace gast {
     } // namespace
 
     GastManager *GastManager::singleton_instance = nullptr;
+    jmethodID GastManager::on_gl_process_;
+    jmethodID GastManager::on_gl_input_hover_;
+    jmethodID GastManager::on_gl_input_press_;
+    jmethodID GastManager::on_gl_input_release_;
 
     GastManager *GastManager::get_singleton_instance() {
         if (singleton_instance == nullptr) {
@@ -32,6 +36,12 @@ namespace gast {
     GastManager::GastManager() {}
 
     GastManager::~GastManager() {}
+
+    void GastManager::register_callback(JNIEnv *env, jobject callback) {
+
+    }
+
+    void GastManager::unregister_callback() {}
 
     int GastManager::get_external_texture_id(const String &mesh_name,
                                              const String &texture_param_name) {

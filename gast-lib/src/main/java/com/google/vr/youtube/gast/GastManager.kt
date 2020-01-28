@@ -30,4 +30,16 @@ class GastManager: FragmentManager.FragmentLifecycleCallbacks() {
     override fun onFragmentViewDestroyed(fragmentManager: FragmentManager, fragment: Fragment) {
         super.onFragmentViewDestroyed(fragmentManager, fragment)
     }
+
+    external fun registerCallback()
+
+    external fun unregisterCallback()
+
+    private fun onGLProcess(delta: Float) {}
+
+    private fun onGLInputHover(xPercent: Float, yPercent: Float) {}
+
+    private fun onGLInputPress(xPercent: Float, yPercent: Float) {}
+
+    private fun onGLInputRelease(xPercent: Float, yPercent: Float) {}
 }
