@@ -16,10 +16,6 @@ namespace gast {
     } // namespace
 
     GastNodeManager *GastNodeManager::singleton_instance = nullptr;
-    jmethodID GastNodeManager::on_gl_process_;
-    jmethodID GastNodeManager::on_gl_input_hover_;
-    jmethodID GastNodeManager::on_gl_input_press_;
-    jmethodID GastNodeManager::on_gl_input_release_;
 
     GastNodeManager *GastNodeManager::get_singleton_instance() {
         if (singleton_instance == nullptr) {
@@ -38,7 +34,23 @@ namespace gast {
     GastNodeManager::~GastNodeManager() {}
 
     void GastNodeManager::register_callback(JNIEnv *env, jobject callback) {
+        callback_instance = env->NewGlobalRef(callback);
+        ALOG_ASSERT(callback_instance != nullptr, "Invalid value for callback.");
 
+        callback_class = env->GetObjectClass(callback_instance);
+        ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
+
+        on_gl_process_ = env->GetMethodID(callback_class, "onGLProcess", "(F)V");
+        ALOG_ASSERT(on_gl_process != nullptr, "Unable to find onGLProcess");
+
+        on_gl_input_hover_ = env->GetMethodID(callback_class, "onGLInputHover", "(FF)V");
+        ALOG_ASSERT(on_gl_input_hover_ != nullptr, "Unable to find onGLInputHover");
+
+        on_gl_input_press_ = env->GetMethodID(callback_class, "onGLInputPress", "(FF)V");
+        ALOG_ASSERT(on_gl_input_press_ != nullptr, "Unable to find onGLInputPress");
+
+        on_gl_input_release_ = env->GetMethodID(callback_class, "onGLInputRelease", "(FF)V");
+        ALOG_ASSERT(on_gl_input_release_ != nullptr, "Unable to find onGLInputRelease");
     }
 
     void GastNodeManager::unregister_callback() {}
