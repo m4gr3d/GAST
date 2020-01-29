@@ -16,8 +16,8 @@ _global_script_class_icons={
 [application]
 
 config/name="Gast Samples"
-run/main_scene="res://samples/demo/Main.tscn"
-config/icon="res://samples/demo/icon.png"
+run/main_scene="res://demo/Main.tscn"
+config/icon="res://demo/icon.png"
 
 [gdnative]
 
@@ -29,4 +29,4 @@ quality/driver/driver_name="GLES2"
 vram_compression/import_s3tc=false
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
-environment/default_environment="res://default_env.tres"
+environment/default_environment="res://demo/default_env.tres"
