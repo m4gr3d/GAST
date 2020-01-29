@@ -18,25 +18,25 @@ namespace gast {
 
         static void delete_singleton_instance();
 
-        int get_external_texture_id(const String& mesh_name, const String& texture_param_name);
+        int get_external_texture_id(const String& node_path);
 
         void register_callback(JNIEnv* env, jobject callback);
 
         void unregister_callback(JNIEnv* env);
 
-        void on_gl_process(float delta);
+        void on_gl_process(const String& node_path, float delta);
 
-        void on_gl_input_hover(float x_percent, float y_percent);
+        void on_gl_input_hover(const String& node_path, float x_percent, float y_percent);
 
-        void on_gl_input_press(float x_percent, float y_percent);
+        void on_gl_input_press(const String& node_path, float x_percent, float y_percent);
 
-        void on_gl_input_release(float x_percent, float y_percent);
+        void on_gl_input_release(const String& node_path, float x_percent, float y_percent);
 
     private:
         ExternalTexture *
-        get_external_texture(const String& mesh_name, const String& texture_param_name);
+        get_external_texture(const String& node_path);
 
-        MeshInstance *get_mesh_instance(const String& mesh_name);
+        MeshInstance *get_mesh_instance(const String& node_path);
 
         GastNodeManager();
 

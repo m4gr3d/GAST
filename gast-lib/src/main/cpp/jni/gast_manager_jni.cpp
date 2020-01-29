@@ -7,18 +7,16 @@ using namespace gast;
 
 extern "C" {
 JNIEXPORT jint JNICALL
-JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_group_name,
-                                 jstring external_texture_param_name) {
+JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_path) {
     return GastNodeManager::get_singleton_instance()->get_external_texture_id(
-            jstring_to_string(env, node_group_name),
-            jstring_to_string(env, external_texture_param_name));
+            jstring_to_string(env, node_path));
 }
 
-JNIEXPORT void JNICALL JNI_METHOD(registerCallback)(JNIEnv* env, jobject object) {
+JNIEXPORT void JNICALL JNI_METHOD(registerCallback)(JNIEnv *env, jobject object) {
     GastNodeManager::get_singleton_instance()->register_callback(env, object);
 }
 
-JNIEXPORT void JNICALL JNI_METHOD(unregisterCallback)(JNIEnv* env, jobject object) {
+JNIEXPORT void JNICALL JNI_METHOD(unregisterCallback)(JNIEnv *env, jobject object) {
     GastNodeManager::get_singleton_instance()->unregister_callback(env);
 }
 };

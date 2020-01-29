@@ -5,7 +5,9 @@
 #include <gen/ShaderMaterial.hpp>
 #include <gen/Object.hpp>
 #include <core/Godot.hpp>
+#include <core/NodePath.hpp>
 #include <gen/Texture.hpp>
+#include <gen/Viewport.hpp>
 #include "gast_node_manager.h"
 #include "utils.h"
 
@@ -13,6 +15,7 @@ namespace gast {
 
     namespace {
         constexpr int kInvalidTexId = -1;
+        const char* kDefaultTextureParamName = "sampler_texture";
     } // namespace
 
     GastNodeManager *GastNodeManager::singleton_instance = nullptr;
@@ -40,16 +43,19 @@ namespace gast {
         jclass callback_class = env->GetObjectClass(callback_instance);
         ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
-        on_gl_process_ = env->GetMethodID(callback_class, "onGLProcess", "(F)V");
+        on_gl_process_ = env->GetMethodID(callback_class, "onGLProcess", "(Ljava/lang/String;F)V");
         ALOG_ASSERT(on_gl_process_ != nullptr, "Unable to find onGLProcess");
 
-        on_gl_input_hover_ = env->GetMethodID(callback_class, "onGLInputHover", "(FF)V");
+        on_gl_input_hover_ = env->GetMethodID(callback_class, "onGLInputHover",
+                                              "(Ljava/lang/String;FF)V");
         ALOG_ASSERT(on_gl_input_hover_ != nullptr, "Unable to find onGLInputHover");
 
-        on_gl_input_press_ = env->GetMethodID(callback_class, "onGLInputPress", "(FF)V");
+        on_gl_input_press_ = env->GetMethodID(callback_class, "onGLInputPress",
+                                              "(Ljava/lang/String;FF)V");
         ALOG_ASSERT(on_gl_input_press_ != nullptr, "Unable to find onGLInputPress");
 
-        on_gl_input_release_ = env->GetMethodID(callback_class, "onGLInputRelease", "(FF)V");
+        on_gl_input_release_ = env->GetMethodID(callback_class, "onGLInputRelease",
+                                                "(Ljava/lang/String;FF)V");
         ALOG_ASSERT(on_gl_input_release_ != nullptr, "Unable to find onGLInputRelease");
     }
 
@@ -60,19 +66,16 @@ namespace gast {
         }
     }
 
-    int GastNodeManager::get_external_texture_id(const String &mesh_name,
-                                             const String &texture_param_name) {
-        ExternalTexture *external_texture = get_external_texture(mesh_name, texture_param_name);
+    int GastNodeManager::get_external_texture_id(const String &node_path) {
+        ExternalTexture *external_texture = get_external_texture(node_path);
         int tex_id = external_texture == nullptr ? kInvalidTexId
                                                  : external_texture->get_external_texture_id();
         return tex_id;
     }
 
-    ExternalTexture *GastNodeManager::get_external_texture(const String &mesh_name,
-                                                       const String &texture_param_name) {
-        // Go through the mesh instance surface material and look for the external texture.
-        ALOGV("Looking for external texture %s", texture_param_name.utf8().get_data());
-        MeshInstance *mesh_instance = get_mesh_instance(mesh_name);
+    ExternalTexture *GastNodeManager::get_external_texture(const String &node_path) {
+        // Go through the mesh instance surface material and look for the default external texture param.
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
         if (!mesh_instance) {
             return nullptr;
         }
@@ -84,75 +87,74 @@ namespace gast {
             }
 
             auto *shader_material = Object::cast_to<ShaderMaterial>(*material);
-            Ref<Texture> texture = shader_material->get_shader_param(texture_param_name);
+            Ref<Texture> texture = shader_material->get_shader_param(kDefaultTextureParamName);
             if (texture.is_null() || !texture->is_class("ExternalTexture")) {
                 continue;
             }
 
             auto *external_texture = Object::cast_to<ExternalTexture>(*texture);
-            ALOGV("Found external texture %s", texture_param_name.utf8().get_data());
+            ALOGV("Found external sampler texture for node %s", node_path.utf8().get_data());
             return external_texture;
         }
         return nullptr;
     }
 
-    MeshInstance *GastNodeManager::get_mesh_instance(const godot::String &mesh_name) {
+    MeshInstance *GastNodeManager::get_mesh_instance(const godot::String &node_path) {
+        if (node_path.empty()) {
+            ALOGE("Invalid node path argument: %s", node_path.utf8().get_data());
+            return nullptr;
+        }
+
+        NodePath node_path_obj(node_path);
         MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
         if (!main_loop || !main_loop->is_class("SceneTree")) {
-            ALOGE("Unable to retrieve main loop.");
+            ALOGW("Unable to retrieve main loop.");
             return nullptr;
         }
 
         auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
-
-        // Retrieve the nodes that are part of the given group.
-        ALOGV("Retrieving nodes for %s", mesh_name.utf8().get_data());
-        Array nodes = scene_tree->get_nodes_in_group(mesh_name);
-        if (nodes.empty()) {
-            ALOGW("No nodes in group %s", mesh_name.utf8().get_data());
+        Node *node = scene_tree->get_root()->get_node_or_null(node_path_obj);
+        if (!node || !node->is_class("MeshInstance")) {
+            ALOGW("Unable to find a MeshInstance node with path %s", node_path.utf8().get_data());
             return nullptr;
         }
 
-        // Return the first node that is a mesh instance.
-        for (int i = 0; i < nodes.size(); i++) {
-            Node *node = nodes[i];
-
-            // Check if the node is a mesh instance.
-            if (!node || !node->is_class("MeshInstance")) {
-                continue;
-            }
-
-            auto *mesh_instance = Object::cast_to<MeshInstance>(node);
-            return mesh_instance;
-        }
-        return nullptr;
+        auto *mesh_instance = Object::cast_to<MeshInstance>(node);
+        return mesh_instance;
     }
 
-    void GastNodeManager::on_gl_process(float delta) {
+    void GastNodeManager::on_gl_process(const String &node_path, float delta) {
         if (callback_instance && on_gl_process_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_process_, delta);
+            env->CallVoidMethod(callback_instance, on_gl_process_,
+                                string_to_jstring(env, node_path), delta);
         }
     }
 
-    void GastNodeManager::on_gl_input_hover(float x_percent, float y_percent) {
+    void
+    GastNodeManager::on_gl_input_hover(const String &node_path, float x_percent, float y_percent) {
         if (callback_instance && on_gl_input_hover_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_input_hover_, x_percent, y_percent);
+            env->CallVoidMethod(callback_instance, on_gl_input_hover_,
+                                string_to_jstring(env, node_path), x_percent, y_percent);
         }
     }
 
-    void GastNodeManager::on_gl_input_press(float x_percent, float y_percent) {
+    void
+    GastNodeManager::on_gl_input_press(const String &node_path, float x_percent, float y_percent) {
         if (callback_instance && on_gl_input_press_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_input_press_, x_percent, y_percent);
+            env->CallVoidMethod(callback_instance, on_gl_input_press_,
+                                string_to_jstring(env, node_path), x_percent, y_percent);
         }
     }
 
-    void GastNodeManager::on_gl_input_release(float x_percent, float y_percent) {
+    void GastNodeManager::on_gl_input_release(const String &node_path, float x_percent,
+                                              float y_percent) {
         if (callback_instance && on_gl_input_release_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_input_release_, x_percent, y_percent);
+            env->CallVoidMethod(callback_instance, on_gl_input_release_,
+                                string_to_jstring(env, node_path), x_percent, y_percent);
         }
     }
 

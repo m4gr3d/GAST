@@ -1,3 +1,4 @@
+#include <gast_node_manager.h>
 #include "node_proxy.h"
 
 namespace gast {
@@ -18,6 +19,6 @@ namespace gast {
     }
 
     void NodeProxy::_process(float delta) {
-
+        GastNodeManager::get_singleton_instance()->on_gl_process(get_path(), delta);
     }
 }

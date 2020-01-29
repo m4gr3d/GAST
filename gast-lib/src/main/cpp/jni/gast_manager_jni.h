@@ -14,8 +14,7 @@
 extern "C" {
 
 JNIEXPORT jint JNICALL
-JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_group_name,
-                                 jstring external_texture_param_name);
+JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_path);
 
 JNIEXPORT void JNICALL JNI_METHOD(registerCallback)(JNIEnv* env, jobject object);
 

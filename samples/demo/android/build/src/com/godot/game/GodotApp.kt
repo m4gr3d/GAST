@@ -43,6 +43,10 @@ import org.godotengine.godot.Godot
  */
 class GodotApp : Godot() {
 
+    companion object {
+        const val NODE_PATH = "/root/Spatial/GastMesh"
+    }
+
     private val mediaPlayer: MediaPlayer by lazy {
         MediaPlayer.create(applicationContext, R.raw.flight)
     }
@@ -51,7 +55,7 @@ class GodotApp : Godot() {
         super.onGLGodotMainLoopStarted()
 
         val texId =
-            GastManager.getExternalTextureId(GastManager.DEFAULT_GROUP_NAME, "sampler_texture")
+            GastManager.getExternalTextureId(NODE_PATH)
         Log.d("FHK", "Retrieved $texId from GastManager.")
 
         runOnUiThread {

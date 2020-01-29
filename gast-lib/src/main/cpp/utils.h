@@ -7,7 +7,7 @@
 #define LOG_TAG "GAST"
 
 #define ALOG_ASSERT(_cond, ...) \
-	if (!(_cond)) __android_log_assert("conditional", LOG_TAG, __VA_ARGS__)
+    if (!(_cond)) __android_log_assert("conditional", LOG_TAG, __VA_ARGS__)
 #define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
 #define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
@@ -57,12 +57,12 @@ namespace gast {
 
     using namespace godot;
 
-    /**
- * Converts JNI jstring to Godot String.
- * @param source Source JNI string. If null an empty string is returned.
- * @param env JNI environment instance. If null obtained by ThreadAndroid::get_env().
- * @return Godot string instance.
- */
+     /**
+     * Converts JNI jstring to Godot String.
+     * @param source Source JNI string. If null an empty string is returned.
+     * @param env JNI environment instance.
+     * @return Godot string instance.
+     */
     static inline String jstring_to_string(JNIEnv *env, jstring source) {
         if (env && source) {
             const char *const source_utf8 = env->GetStringUTFChars(source, NULL);
@@ -73,6 +73,19 @@ namespace gast {
             }
         }
         return String();
+    }
+
+    /**
+     * Converts Godot String to JNI jstring.
+     * @param source Source Godot String.
+     * @param env JNI environment instance.
+     * @return JNI string instance.
+     */
+    static inline jstring string_to_jstring(JNIEnv *env, const String& source) {
+        if (env) {
+            return env->NewStringUTF(source.utf8().get_data());
+        }
+        return nullptr;
     }
 
 }  // namespace gast
