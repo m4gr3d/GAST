@@ -19,6 +19,6 @@ JNIEXPORT void JNICALL JNI_METHOD(registerCallback)(JNIEnv* env, jobject object)
 }
 
 JNIEXPORT void JNICALL JNI_METHOD(unregisterCallback)(JNIEnv* env, jobject object) {
-    GastNodeManager::get_singleton_instance()->unregister_callback();
+    GastNodeManager::get_singleton_instance()->unregister_callback(env);
 }
 };

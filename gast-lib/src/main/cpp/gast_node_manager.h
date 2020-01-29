@@ -22,7 +22,7 @@ namespace gast {
 
         void register_callback(JNIEnv* env, jobject callback);
 
-        void unregister_callback();
+        void unregister_callback(JNIEnv* env);
 
         void on_gl_process(float delta);
 
@@ -45,8 +45,6 @@ namespace gast {
         static GastNodeManager *singleton_instance;
 
         jobject callback_instance;
-        jclass callback_class;
-
         jmethodID on_gl_process_;
         jmethodID on_gl_input_hover_;
         jmethodID on_gl_input_press_;

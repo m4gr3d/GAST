@@ -37,7 +37,7 @@ namespace gast {
         callback_instance = env->NewGlobalRef(callback);
         ALOG_ASSERT(callback_instance != nullptr, "Invalid value for callback.");
 
-        callback_class = env->GetObjectClass(callback_instance);
+        jclass callback_class = env->GetObjectClass(callback_instance);
         ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
         on_gl_process_ = env->GetMethodID(callback_class, "onGLProcess", "(F)V");
@@ -53,7 +53,12 @@ namespace gast {
         ALOG_ASSERT(on_gl_input_release_ != nullptr, "Unable to find onGLInputRelease");
     }
 
-    void GastNodeManager::unregister_callback() {}
+    void GastNodeManager::unregister_callback(JNIEnv *env) {
+        if (callback_instance) {
+            env->DeleteGlobalRef(callback_instance);
+            callback_instance = nullptr;
+        }
+    }
 
     int GastNodeManager::get_external_texture_id(const String &mesh_name,
                                              const String &texture_param_name) {
@@ -124,7 +129,31 @@ namespace gast {
     }
 
     void GastNodeManager::on_gl_process(float delta) {
+        if (callback_instance && on_gl_process_) {
+            JNIEnv *env = godot::android_api->godot_android_get_env();
+            env->CallVoidMethod(callback_instance, on_gl_process_, delta);
+        }
+    }
 
+    void GastNodeManager::on_gl_input_hover(float x_percent, float y_percent) {
+        if (callback_instance && on_gl_input_hover_) {
+            JNIEnv *env = godot::android_api->godot_android_get_env();
+            env->CallVoidMethod(callback_instance, on_gl_input_hover_, x_percent, y_percent);
+        }
+    }
+
+    void GastNodeManager::on_gl_input_press(float x_percent, float y_percent) {
+        if (callback_instance && on_gl_input_press_) {
+            JNIEnv *env = godot::android_api->godot_android_get_env();
+            env->CallVoidMethod(callback_instance, on_gl_input_press_, x_percent, y_percent);
+        }
+    }
+
+    void GastNodeManager::on_gl_input_release(float x_percent, float y_percent) {
+        if (callback_instance && on_gl_input_release_) {
+            JNIEnv *env = godot::android_api->godot_android_get_env();
+            env->CallVoidMethod(callback_instance, on_gl_input_release_, x_percent, y_percent);
+        }
     }
 
 }  // namespace gast
