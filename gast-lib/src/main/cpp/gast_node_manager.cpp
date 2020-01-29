@@ -41,7 +41,7 @@ namespace gast {
         ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
         on_gl_process_ = env->GetMethodID(callback_class, "onGLProcess", "(F)V");
-        ALOG_ASSERT(on_gl_process != nullptr, "Unable to find onGLProcess");
+        ALOG_ASSERT(on_gl_process_ != nullptr, "Unable to find onGLProcess");
 
         on_gl_input_hover_ = env->GetMethodID(callback_class, "onGLInputHover", "(FF)V");
         ALOG_ASSERT(on_gl_input_hover_ != nullptr, "Unable to find onGLInputHover");
