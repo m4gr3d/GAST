@@ -8,6 +8,7 @@
 #include <core/NodePath.hpp>
 #include <gen/Texture.hpp>
 #include <gen/Viewport.hpp>
+#include <gen/Mesh.hpp>
 #include "gast_node_manager.h"
 #include "utils.h"
 
@@ -80,8 +81,14 @@ namespace gast {
             return nullptr;
         }
 
-        for (int i = 0; i < mesh_instance->get_surface_material_count(); i++) {
-            Ref<Material> material = mesh_instance->get_surface_material(i);
+        // Retrieve the mesh resource
+        Ref<Mesh> mesh = mesh_instance->get_mesh();
+        if (mesh.is_null()) {
+            return nullptr;
+        }
+
+        for (int i = 0; i < mesh->get_surface_count(); i++) {
+            Ref<Material> material = mesh->surface_get_material(i);
             if (material.is_null() || !material->is_class("ShaderMaterial")) {
                 continue;
             }
