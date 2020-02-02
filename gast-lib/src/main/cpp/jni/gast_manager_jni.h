@@ -16,9 +16,13 @@ extern "C" {
 JNIEXPORT jint JNICALL
 JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_path);
 
-JNIEXPORT void JNICALL JNI_METHOD(registerCallback)(JNIEnv* env, jobject object);
+JNIEXPORT void JNICALL JNI_METHOD(setupMeshInstance)(JNIEnv *env, jclass clazz, jstring node_path);
 
-JNIEXPORT void JNICALL JNI_METHOD(unregisterCallback)(JNIEnv* env, jobject object);
+JNIEXPORT jstring JNICALL JNI_METHOD(createMeshInstance)(JNIEnv* env, jclass clazz, jstring parent_node_path);
+
+JNIEXPORT void JNICALL JNI_METHOD(registerCallback)(JNIEnv *env, jobject object);
+
+JNIEXPORT void JNICALL JNI_METHOD(unregisterCallback)(JNIEnv *env, jobject object);
 };
 
 #endif // GAST_MANAGER_JNI_H

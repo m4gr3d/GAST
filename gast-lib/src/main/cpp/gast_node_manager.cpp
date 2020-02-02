@@ -9,6 +9,9 @@
 #include <gen/Texture.hpp>
 #include <gen/Viewport.hpp>
 #include <gen/Mesh.hpp>
+#include <gen/Resource.hpp>
+#include <gen/ResourceLoader.hpp>
+#include <gen/QuadMesh.hpp>
 #include "gast_node_manager.h"
 #include "utils.h"
 
@@ -107,6 +110,17 @@ namespace gast {
     }
 
     MeshInstance *GastNodeManager::get_mesh_instance(const godot::String &node_path) {
+        Node* node = get_node(node_path);
+        if (!node || !node->is_class("MeshInstance")) {
+            ALOGW("Unable to find a MeshInstance node with path %s", node_path.utf8().get_data());
+            return nullptr;
+        }
+
+        auto *mesh_instance = Object::cast_to<MeshInstance>(node);
+        return mesh_instance;
+    }
+
+    Node *GastNodeManager::get_node(const godot::String &node_path) {
         if (node_path.empty()) {
             ALOGE("Invalid node path argument: %s", node_path.utf8().get_data());
             return nullptr;
@@ -121,13 +135,49 @@ namespace gast {
 
         auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
         Node *node = scene_tree->get_root()->get_node_or_null(node_path_obj);
-        if (!node || !node->is_class("MeshInstance")) {
-            ALOGW("Unable to find a MeshInstance node with path %s", node_path.utf8().get_data());
-            return nullptr;
+        return node;
+    }
+
+    String GastNodeManager::create_mesh_instance(const godot::String &parent_node_path) {
+        ALOGV("Retrieving node's parent with path %s", parent_node_path.utf8().get_data());
+        Node *parent_node = get_node(parent_node_path);
+        if (!parent_node) {
+            ALOGE("Unable to retrieve parent node with path %s", parent_node_path.utf8().get_data());
+            return "";
         }
 
-        auto *mesh_instance = Object::cast_to<MeshInstance>(node);
-        return mesh_instance;
+        ALOGV("Creating a new mesh instance.");
+        MeshInstance *mesh_instance = MeshInstance::_new();
+        if (mesh_instance->get_parent() != nullptr) {
+            ALOGV("Removing mesh instance parent.");
+            mesh_instance->get_parent()->remove_child(mesh_instance);
+        }
+
+        ALOGV("Adding the mesh instance to the parent node.");
+        parent_node->add_child(mesh_instance);
+        mesh_instance->set_owner(parent_node);
+
+        return (String)mesh_instance->get_path();
+    }
+
+    void GastNodeManager::setup_mesh_instance(const godot::String &node_path) {
+        ALOGV("Retrieving mesh instance with path %s", node_path.utf8().get_data());
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGE("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return;
+        }
+
+        // Load the gast mesh resource.
+        ALOGV("Loading GAST mesh resource.");
+        Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load("res://plugin_artifacts/addons/gastlib/gast_quad_mesh.tres");
+        if (gast_mesh_res.is_null() || !gast_mesh_res->is_class("QuadMesh")) {
+            ALOGE("Unable to load the target resource.");
+            return;
+        }
+
+        ALOGV("Setting up GAST mesh resource.");
+        mesh_instance->set_mesh(gast_mesh_res);
     }
 
     void GastNodeManager::on_gl_process(const String &node_path, float delta) {

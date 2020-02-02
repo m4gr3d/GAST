@@ -11,6 +11,12 @@ object GastManager {
     @JvmStatic
     external fun getExternalTextureId(nodePath: String): Int
 
+    @JvmStatic
+    external fun setupMeshInstance(nodePath: String)
+
+    @JvmStatic
+    external fun createMeshInstance(parentNodePath: String) : String
+
     external fun registerCallback()
 
     external fun unregisterCallback()

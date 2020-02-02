@@ -32,11 +32,18 @@ namespace gast {
 
         void on_gl_input_release(const String& node_path, float x_percent, float y_percent);
 
+        void setup_mesh_instance(const String& node_path);
+
+        // Creates a mesh instance and returns its node path.
+        String create_mesh_instance(const String& parent_node_path);
+
     private:
         ExternalTexture *
         get_external_texture(const String& node_path);
 
         MeshInstance *get_mesh_instance(const String& node_path);
+
+        Node *get_node(const String& node_path);
 
         GastNodeManager();
 

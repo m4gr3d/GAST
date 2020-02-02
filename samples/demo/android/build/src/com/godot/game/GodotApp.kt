@@ -54,8 +54,15 @@ class GodotApp : Godot() {
     override fun onGLGodotMainLoopStarted() {
         super.onGLGodotMainLoopStarted()
 
+        Log.d("FHK", "Creating mesh instance")
+        val nodePath = GastManager.createMeshInstance("/root/Spatial")
+
+        Log.d("FHK", "Setting up mesh instance with path $nodePath")
+        GastManager.setupMeshInstance(nodePath)
+
+        Log.d("FHK", "Retrieving texture id")
         val texId =
-            GastManager.getExternalTextureId(NODE_PATH)
+            GastManager.getExternalTextureId(nodePath)
         Log.d("FHK", "Retrieved $texId from GastManager.")
 
         runOnUiThread {
