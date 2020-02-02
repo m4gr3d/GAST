@@ -1,12 +1,10 @@
 #include <core/Godot.hpp>
 #include <utils.h>
 #include "gast_gdn_setup.h"
-#include "node_proxy.h"
+#include "mesh_instance_proxy.h"
 
 void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options* options) {
     godot::Godot::gdnative_init(options);
-    // TODO: Remove following implementation and setup of GAST native scripts.
-    godot_nativescript_init((void *) options->active_library_path);
 }
 
 void GDN_EXPORT godot_gdnative_singleton() {}
@@ -15,7 +13,7 @@ void GDN_EXPORT godot_nativescript_init(void *handle) {
     ALOGV("FHK - nativescript init.");
     godot::Godot::nativescript_init(handle);
 
-    godot::register_class<gast::NodeProxy>();
+    godot::register_class<gast::MeshInstanceProxy>();
 }
 
 void GDN_EXPORT godot_nativescript_terminate(void *handle) {

@@ -1,9 +1,9 @@
-#ifndef NODE_PROXY_H
-#define NODE_PROXY_H
+#ifndef MESH_INSTANCE_PROXY_H
+#define MESH_INSTANCE_PROXY_H
 
 #include <core/Godot.hpp>
 #include <gen/InputEvent.hpp>
-#include <gen/Node.hpp>
+#include <gen/MeshInstance.hpp>
 
 namespace gast {
 
@@ -11,12 +11,12 @@ namespace gast {
         using namespace godot;
     } //  namespace
 
-    class NodeProxy : public Node {
-        GODOT_CLASS(NodeProxy, Node)
+    class MeshInstanceProxy : public MeshInstance {
+        GODOT_CLASS(MeshInstanceProxy, MeshInstance)
 
     public:
-        NodeProxy();
-        ~NodeProxy();
+        MeshInstanceProxy();
+        ~MeshInstanceProxy();
 
         static void _register_methods();
 
@@ -29,4 +29,4 @@ namespace gast {
     };
 }  // namespace gast
 
-#endif // NODE_PROXY_H
+#endif // MESH_INSTANCE_PROXY_H

@@ -51,11 +51,11 @@ namespace gast {
 
         static GastNodeManager *singleton_instance;
 
-        jobject callback_instance;
-        jmethodID on_gl_process_;
-        jmethodID on_gl_input_hover_;
-        jmethodID on_gl_input_press_;
-        jmethodID on_gl_input_release_;
+        jobject callback_instance = nullptr;
+        jmethodID on_gl_process_ = nullptr;
+        jmethodID on_gl_input_hover_ = nullptr;
+        jmethodID on_gl_input_press_ = nullptr;
+        jmethodID on_gl_input_release_ = nullptr;
     };
 }  // namespace gast
 

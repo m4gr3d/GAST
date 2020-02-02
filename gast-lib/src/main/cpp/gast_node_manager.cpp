@@ -178,6 +178,21 @@ namespace gast {
 
         ALOGV("Setting up GAST mesh resource.");
         mesh_instance->set_mesh(gast_mesh_res);
+
+        // Load the script resource.
+        ALOGV("Loading script resource.");
+        Ref<Resource> script_res = ResourceLoader::get_singleton()->load("res://plugin_artifacts/addons/gastlib/GastMeshInstanceProxy.gdns", "", true);
+        if (script_res.is_null() || !script_res->is_class("NativeScript")) {
+            ALOGE("Unable to load native script resource.");
+            return;
+        }
+
+        ALOGV("Setting up native script resource.");
+        mesh_instance->set_script(*script_res);
+
+        // Set the node to processing
+        mesh_instance->set_process(true);
+        mesh_instance->set_process_input(true);
     }
 
     void GastNodeManager::on_gl_process(const String &node_path, float delta) {

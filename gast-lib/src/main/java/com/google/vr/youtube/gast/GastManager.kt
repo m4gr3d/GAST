@@ -2,6 +2,8 @@
 
 package com.google.vr.youtube.gast
 
+import android.util.Log
+
 object GastManager {
 
     init {
@@ -21,7 +23,9 @@ object GastManager {
 
     external fun unregisterCallback()
 
-    private fun onGLProcess(nodePath: String, delta: Float) {}
+    private fun onGLProcess(nodePath: String, delta: Float) {
+        Log.d("FHK", "Received gl process callback from $nodePath")
+    }
 
     private fun onGLInputHover(nodePath: String, xPercent: Float, yPercent: Float) {}
 
