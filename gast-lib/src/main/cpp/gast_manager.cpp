@@ -12,39 +12,71 @@
 #include <gen/Resource.hpp>
 #include <gen/ResourceLoader.hpp>
 #include <gen/QuadMesh.hpp>
-#include "gast_node_manager.h"
+#include "gast_manager.h"
 #include "utils.h"
 
 namespace gast {
 
     namespace {
         constexpr int kInvalidTexId = -1;
-        const char* kDefaultTextureParamName = "sampler_texture";
+        const char *kDefaultTextureParamName = "sampler_texture";
     } // namespace
 
-    GastNodeManager *GastNodeManager::singleton_instance = nullptr;
+    GastManager *GastManager::singleton_instance_ = nullptr;
+    bool GastManager::gdn_initialized_ = false;
+    bool GastManager::jni_initialized_ = false;
 
-    GastNodeManager *GastNodeManager::get_singleton_instance() {
-        if (singleton_instance == nullptr) {
-            singleton_instance = new GastNodeManager();
+    jobject GastManager::callback_instance_ = nullptr;
+    jmethodID GastManager::on_gl_process_ = nullptr;
+    jmethodID GastManager::on_gl_input_hover_ = nullptr;
+    jmethodID GastManager::on_gl_input_press_ = nullptr;
+    jmethodID GastManager::on_gl_input_release_ = nullptr;
+
+    GastManager::GastManager() {}
+
+    GastManager::~GastManager() {}
+
+    GastManager *GastManager::get_singleton_instance() {
+        ALOG_ASSERT(gdn_initialized_ && jni_initialized_,
+                    "GastManager is not properly initialized.");
+        if (singleton_instance_ == nullptr) {
+            singleton_instance_ = new GastManager();
         }
-        return singleton_instance;
+        return singleton_instance_;
     }
 
-    void GastNodeManager::delete_singleton_instance() {
-        delete singleton_instance;
-        singleton_instance = nullptr;
+    void GastManager::delete_singleton_instance() {
+        if (!gdn_initialized_ && !jni_initialized_) {
+            delete singleton_instance_;
+            singleton_instance_ = nullptr;
+        }
     }
 
-    GastNodeManager::GastNodeManager() {}
+    void GastManager::gdn_initialize() {
+        gdn_initialized_ = true;
+    }
 
-    GastNodeManager::~GastNodeManager() {}
+    void GastManager::gdn_shutdown() {
+        gdn_initialized_ = false;
+        delete_singleton_instance();
+    }
 
-    void GastNodeManager::register_callback(JNIEnv *env, jobject callback) {
-        callback_instance = env->NewGlobalRef(callback);
-        ALOG_ASSERT(callback_instance != nullptr, "Invalid value for callback.");
+    void GastManager::jni_initialize(JNIEnv *env, jobject callback) {
+        jni_initialized_ = true;
+        register_callback(env, callback);
+    }
 
-        jclass callback_class = env->GetObjectClass(callback_instance);
+    void GastManager::jni_shutdown(JNIEnv *env) {
+        jni_initialized_ = false;
+        unregister_callback(env);
+        delete_singleton_instance();
+    }
+
+    void GastManager::register_callback(JNIEnv *env, jobject callback) {
+        callback_instance_ = env->NewGlobalRef(callback);
+        ALOG_ASSERT(callback_instance_ != nullptr, "Invalid value for callback.");
+
+        jclass callback_class = env->GetObjectClass(callback_instance_);
         ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
         on_gl_process_ = env->GetMethodID(callback_class, "onGLProcess", "(Ljava/lang/String;F)V");
@@ -63,21 +95,25 @@ namespace gast {
         ALOG_ASSERT(on_gl_input_release_ != nullptr, "Unable to find onGLInputRelease");
     }
 
-    void GastNodeManager::unregister_callback(JNIEnv *env) {
-        if (callback_instance) {
-            env->DeleteGlobalRef(callback_instance);
-            callback_instance = nullptr;
+    void GastManager::unregister_callback(JNIEnv *env) {
+        if (callback_instance_) {
+            env->DeleteGlobalRef(callback_instance_);
+            callback_instance_ = nullptr;
+            on_gl_process_ = nullptr;
+            on_gl_input_hover_ = nullptr;
+            on_gl_input_press_ = nullptr;
+            on_gl_input_release_ = nullptr;
         }
     }
 
-    int GastNodeManager::get_external_texture_id(const String &node_path) {
+    int GastManager::get_external_texture_id(const String &node_path) {
         ExternalTexture *external_texture = get_external_texture(node_path);
         int tex_id = external_texture == nullptr ? kInvalidTexId
                                                  : external_texture->get_external_texture_id();
         return tex_id;
     }
 
-    ExternalTexture *GastNodeManager::get_external_texture(const String &node_path) {
+    ExternalTexture *GastManager::get_external_texture(const String &node_path) {
         // Go through the mesh instance surface material and look for the default external texture param.
         MeshInstance *mesh_instance = get_mesh_instance(node_path);
         if (!mesh_instance) {
@@ -109,8 +145,8 @@ namespace gast {
         return nullptr;
     }
 
-    MeshInstance *GastNodeManager::get_mesh_instance(const godot::String &node_path) {
-        Node* node = get_node(node_path);
+    MeshInstance *GastManager::get_mesh_instance(const godot::String &node_path) {
+        Node *node = get_node(node_path);
         if (!node || !node->is_class("MeshInstance")) {
             ALOGW("Unable to find a MeshInstance node with path %s", node_path.utf8().get_data());
             return nullptr;
@@ -120,7 +156,7 @@ namespace gast {
         return mesh_instance;
     }
 
-    Node *GastNodeManager::get_node(const godot::String &node_path) {
+    Node *GastManager::get_node(const godot::String &node_path) {
         if (node_path.empty()) {
             ALOGE("Invalid node path argument: %s", node_path.utf8().get_data());
             return nullptr;
@@ -138,11 +174,12 @@ namespace gast {
         return node;
     }
 
-    String GastNodeManager::create_mesh_instance(const godot::String &parent_node_path) {
+    String GastManager::create_mesh_instance(const godot::String &parent_node_path) {
         ALOGV("Retrieving node's parent with path %s", parent_node_path.utf8().get_data());
         Node *parent_node = get_node(parent_node_path);
         if (!parent_node) {
-            ALOGE("Unable to retrieve parent node with path %s", parent_node_path.utf8().get_data());
+            ALOGE("Unable to retrieve parent node with path %s",
+                  parent_node_path.utf8().get_data());
             return "";
         }
 
@@ -157,10 +194,10 @@ namespace gast {
         parent_node->add_child(mesh_instance);
         mesh_instance->set_owner(parent_node);
 
-        return (String)mesh_instance->get_path();
+        return (String) mesh_instance->get_path();
     }
 
-    void GastNodeManager::setup_mesh_instance(const godot::String &node_path) {
+    void GastManager::setup_mesh_instance(const godot::String &node_path) {
         ALOGV("Retrieving mesh instance with path %s", node_path.utf8().get_data());
         MeshInstance *mesh_instance = get_mesh_instance(node_path);
         if (!mesh_instance) {
@@ -170,7 +207,8 @@ namespace gast {
 
         // Load the gast mesh resource.
         ALOGV("Loading GAST mesh resource.");
-        Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load("res://plugin_artifacts/addons/gastlib/gast_quad_mesh.tres");
+        Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
+                "res://plugin_artifacts/addons/gastlib/gast_quad_mesh.tres");
         if (gast_mesh_res.is_null() || !gast_mesh_res->is_class("QuadMesh")) {
             ALOGE("Unable to load the target resource.");
             return;
@@ -181,7 +219,8 @@ namespace gast {
 
         // Load the script resource.
         ALOGV("Loading script resource.");
-        Ref<Resource> script_res = ResourceLoader::get_singleton()->load("res://plugin_artifacts/addons/gastlib/GastMeshInstanceProxy.gdns", "", true);
+        Ref<Resource> script_res = ResourceLoader::get_singleton()->load(
+                "res://plugin_artifacts/addons/gastlib/MeshInstanceProxy.gdns", "", true);
         if (script_res.is_null() || !script_res->is_class("NativeScript")) {
             ALOGE("Unable to load native script resource.");
             return;
@@ -195,37 +234,37 @@ namespace gast {
         mesh_instance->set_process_input(true);
     }
 
-    void GastNodeManager::on_gl_process(const String &node_path, float delta) {
-        if (callback_instance && on_gl_process_) {
+    void GastManager::on_gl_process(const String &node_path, float delta) {
+        if (callback_instance_ && on_gl_process_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_process_,
+            env->CallVoidMethod(callback_instance_, on_gl_process_,
                                 string_to_jstring(env, node_path), delta);
         }
     }
 
     void
-    GastNodeManager::on_gl_input_hover(const String &node_path, float x_percent, float y_percent) {
-        if (callback_instance && on_gl_input_hover_) {
+    GastManager::on_gl_input_hover(const String &node_path, float x_percent, float y_percent) {
+        if (callback_instance_ && on_gl_input_hover_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_input_hover_,
+            env->CallVoidMethod(callback_instance_, on_gl_input_hover_,
                                 string_to_jstring(env, node_path), x_percent, y_percent);
         }
     }
 
     void
-    GastNodeManager::on_gl_input_press(const String &node_path, float x_percent, float y_percent) {
-        if (callback_instance && on_gl_input_press_) {
+    GastManager::on_gl_input_press(const String &node_path, float x_percent, float y_percent) {
+        if (callback_instance_ && on_gl_input_press_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_input_press_,
+            env->CallVoidMethod(callback_instance_, on_gl_input_press_,
                                 string_to_jstring(env, node_path), x_percent, y_percent);
         }
     }
 
-    void GastNodeManager::on_gl_input_release(const String &node_path, float x_percent,
-                                              float y_percent) {
-        if (callback_instance && on_gl_input_release_) {
+    void GastManager::on_gl_input_release(const String &node_path, float x_percent,
+                                          float y_percent) {
+        if (callback_instance_ && on_gl_input_release_) {
             JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance, on_gl_input_release_,
+            env->CallVoidMethod(callback_instance_, on_gl_input_release_,
                                 string_to_jstring(env, node_path), x_percent, y_percent);
         }
     }

@@ -12,17 +12,19 @@ namespace gast {
         using namespace godot;
     }  // namespace
 
-    class GastNodeManager {
+    class GastManager {
     public:
-        static GastNodeManager *get_singleton_instance();
+        static GastManager *get_singleton_instance();
 
-        static void delete_singleton_instance();
+        static void gdn_initialize();
+
+        static void gdn_shutdown();
+
+        static void jni_initialize(JNIEnv* env, jobject callback);
+
+        static void jni_shutdown(JNIEnv* env);
 
         int get_external_texture_id(const String& node_path);
-
-        void register_callback(JNIEnv* env, jobject callback);
-
-        void unregister_callback(JNIEnv* env);
 
         void on_gl_process(const String& node_path, float delta);
 
@@ -38,6 +40,12 @@ namespace gast {
         String create_mesh_instance(const String& parent_node_path);
 
     private:
+        static void delete_singleton_instance();
+
+        static void register_callback(JNIEnv* env, jobject callback);
+
+        static void unregister_callback(JNIEnv* env);
+
         ExternalTexture *
         get_external_texture(const String& node_path);
 
@@ -45,17 +53,19 @@ namespace gast {
 
         Node *get_node(const String& node_path);
 
-        GastNodeManager();
+        GastManager();
 
-        ~GastNodeManager();
+        ~GastManager();
 
-        static GastNodeManager *singleton_instance;
+        static GastManager *singleton_instance_;
+        static bool gdn_initialized_;
+        static bool jni_initialized_;
 
-        jobject callback_instance = nullptr;
-        jmethodID on_gl_process_ = nullptr;
-        jmethodID on_gl_input_hover_ = nullptr;
-        jmethodID on_gl_input_press_ = nullptr;
-        jmethodID on_gl_input_release_ = nullptr;
+        static jobject callback_instance_;
+        static jmethodID on_gl_process_;
+        static jmethodID on_gl_input_hover_;
+        static jmethodID on_gl_input_press_;
+        static jmethodID on_gl_input_release_;
     };
 }  // namespace gast
 

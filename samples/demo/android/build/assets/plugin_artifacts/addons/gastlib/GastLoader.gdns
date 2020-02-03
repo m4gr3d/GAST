@@ -1,0 +1,8 @@
+[gd_resource type="NativeScript" load_steps=2 format=2]
+
+[ext_resource path="res://plugin_artifacts/addons/gastlib/gastlib.gdnlib" type="GDNativeLibrary" id=1]
+
+[resource]
+resource_name = "GastLoader"
+class_name = "GastLoader"
+library = ExtResource( 1 )

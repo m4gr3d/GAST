@@ -11,6 +11,8 @@ namespace gast {
         using namespace godot;
     } //  namespace
 
+    // Proxy for a MeshInstance node. Allows MeshInstance callbacks to be forwarded
+    // and handled by GastManager.
     class MeshInstanceProxy : public MeshInstance {
         GODOT_CLASS(MeshInstanceProxy, MeshInstance)
 

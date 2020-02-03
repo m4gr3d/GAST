@@ -1,7 +1,8 @@
 #include <core/Godot.hpp>
 #include <utils.h>
-#include "gast_gdn_setup.h"
+#include "gdnative_setup.h"
 #include "mesh_instance_proxy.h"
+#include "gast_loader.h"
 
 void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options* options) {
     godot::Godot::gdnative_init(options);
@@ -10,9 +11,9 @@ void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options* options) {
 void GDN_EXPORT godot_gdnative_singleton() {}
 
 void GDN_EXPORT godot_nativescript_init(void *handle) {
-    ALOGV("FHK - nativescript init.");
     godot::Godot::nativescript_init(handle);
 
+    godot::register_class<gast::GastLoader>();
     godot::register_class<gast::MeshInstanceProxy>();
 }
 

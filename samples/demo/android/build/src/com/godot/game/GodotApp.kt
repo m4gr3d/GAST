@@ -54,8 +54,8 @@ class GodotApp : Godot() {
     override fun onGLGodotMainLoopStarted() {
         super.onGLGodotMainLoopStarted()
 
-        Log.d("FHK", "Registering callback")
-        GastManager.registerCallback()
+        Log.d("FHK", "Initializing GastManager")
+        GastManager.initialize()
 
         Log.d("FHK", "Creating mesh instance")
         val nodePath = GastManager.createMeshInstance("/root/Spatial")

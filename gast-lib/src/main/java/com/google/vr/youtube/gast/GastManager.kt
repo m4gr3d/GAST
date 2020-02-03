@@ -10,6 +10,10 @@ object GastManager {
         System.loadLibrary("gastlib")
     }
 
+    external fun initialize()
+
+    external fun shutdown()
+
     @JvmStatic
     external fun getExternalTextureId(nodePath: String): Int
 
@@ -18,10 +22,6 @@ object GastManager {
 
     @JvmStatic
     external fun createMeshInstance(parentNodePath: String) : String
-
-    external fun registerCallback()
-
-    external fun unregisterCallback()
 
     private fun onGLProcess(nodePath: String, delta: Float) {
         Log.d("FHK", "Received gl process callback from $nodePath")

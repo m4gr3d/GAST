@@ -1,4 +1,4 @@
-#include <gast_node_manager.h>
+#include <gast_manager.h>
 #include "mesh_instance_proxy.h"
 #include "utils.h"
 #include <core/String.hpp>
@@ -24,6 +24,6 @@ namespace gast {
     }
 
     void MeshInstanceProxy::_process(float delta) {
-        GastNodeManager::get_singleton_instance()->on_gl_process(get_path(), delta);
+        GastManager::get_singleton_instance()->on_gl_process(get_path(), delta);
     }
 }
