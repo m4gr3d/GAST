@@ -34,7 +34,7 @@
 		<!-- Metadata populated at export time and used by Godot to figure out which (v2) plugins must be enabled. -->
 		<meta-data
 			android:name="custom_template_v2_plugins"
-			android:value="custom_template_v2_plugins_value"/>
+			android:value="Gast"/>
 
         <activity
             android:name=".GodotApp"

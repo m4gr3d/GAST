@@ -18,12 +18,12 @@ JNIEXPORT void JNICALL JNI_METHOD(initialize)(JNIEnv *env, jobject object);
 JNIEXPORT void JNICALL JNI_METHOD(shutdown)(JNIEnv *env, jobject object);
 
 JNIEXPORT jint JNICALL
-JNI_METHOD(getExternalTextureId)(JNIEnv *env, jclass clazz, jstring node_path);
+JNI_METHOD(getExternalTextureId)(JNIEnv *env, jobject object, jstring node_path);
 
-JNIEXPORT void JNICALL JNI_METHOD(setupMeshInstance)(JNIEnv *env, jclass clazz, jstring node_path);
+JNIEXPORT void JNICALL JNI_METHOD(setupMeshInstance)(JNIEnv *env, jobject object, jstring node_path);
 
 JNIEXPORT jstring JNICALL
-JNI_METHOD(createMeshInstance)(JNIEnv *env, jclass clazz, jstring parent_node_path);
+JNI_METHOD(createMeshInstance)(JNIEnv *env, jobject object, jstring parent_node_path);
 
 };
 

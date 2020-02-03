@@ -3,33 +3,51 @@
 package com.google.vr.youtube.gast
 
 import android.util.Log
+import org.godotengine.godot.Godot
+import org.godotengine.godot.plugin.GodotPlugin
 
-object GastManager {
+class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     init {
         System.loadLibrary("gastlib")
     }
 
-    external fun initialize()
+    companion object {
+        val TAG = GastManager::class.java.simpleName
+    }
 
-    external fun shutdown()
+    override fun onGLGodotMainLoopStarted() {
+        Log.d(TAG, "Initializing Gast manager")
+        initialize()
+    }
 
-    @JvmStatic
+    override fun onMainDestroy() {
+        Log.d(TAG, "Shutting down Gast manager")
+        runOnGLThread { shutdown() }
+    }
+
     external fun getExternalTextureId(nodePath: String): Int
 
-    @JvmStatic
     external fun setupMeshInstance(nodePath: String)
 
-    @JvmStatic
-    external fun createMeshInstance(parentNodePath: String) : String
+    external fun createMeshInstance(parentNodePath: String): String
 
     private fun onGLProcess(nodePath: String, delta: Float) {
         Log.d("FHK", "Received gl process callback from $nodePath")
     }
+
+    private external fun initialize()
+
+    private external fun shutdown()
 
     private fun onGLInputHover(nodePath: String, xPercent: Float, yPercent: Float) {}
 
     private fun onGLInputPress(nodePath: String, xPercent: Float, yPercent: Float) {}
 
     private fun onGLInputRelease(nodePath: String, xPercent: Float, yPercent: Float) {}
+
+    override fun getPluginMethods(): MutableList<String> =
+        emptyList<String>().toMutableList()
+
+    override fun getPluginName() = "Gast"
 }

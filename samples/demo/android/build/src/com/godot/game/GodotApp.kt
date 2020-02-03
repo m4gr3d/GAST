@@ -36,6 +36,8 @@ import android.util.Log
 import android.view.Surface
 import com.google.vr.youtube.gast.GastManager
 import org.godotengine.godot.Godot
+import org.godotengine.godot.plugin.GodotPluginRegistry
+import java.lang.IllegalStateException
 
 /**
  * Template activity for Godot Android custom builds.
@@ -44,7 +46,7 @@ import org.godotengine.godot.Godot
 class GodotApp : Godot() {
 
     companion object {
-        const val NODE_PATH = "/root/Spatial/GastMesh"
+        const val TAG = "FHK"
     }
 
     private val mediaPlayer: MediaPlayer by lazy {
@@ -54,18 +56,21 @@ class GodotApp : Godot() {
     override fun onGLGodotMainLoopStarted() {
         super.onGLGodotMainLoopStarted()
 
-        Log.d("FHK", "Initializing GastManager")
-        GastManager.initialize()
+        Log.d(TAG, "Retrieving Gast plugin.")
+        val gastPlugin = GodotPluginRegistry.getPluginRegistry().getPlugin("Gast")
+        if (gastPlugin !is GastManager) {
+            throw IllegalStateException("Invalid plugin type.")
+        }
 
-        Log.d("FHK", "Creating mesh instance")
-        val nodePath = GastManager.createMeshInstance("/root/Spatial")
+        Log.d(TAG, "Creating mesh instance")
+        val nodePath = gastPlugin.createMeshInstance("/root/Spatial")
 
-        Log.d("FHK", "Setting up mesh instance with path $nodePath")
-        GastManager.setupMeshInstance(nodePath)
+        Log.d(TAG, "Setting up mesh instance with path $nodePath")
+        gastPlugin.setupMeshInstance(nodePath)
 
-        Log.d("FHK", "Retrieving texture id")
+        Log.d(TAG, "Retrieving texture id")
         val texId =
-            GastManager.getExternalTextureId(nodePath)
+            gastPlugin.getExternalTextureId(nodePath)
         Log.d("FHK", "Retrieved $texId from GastManager.")
 
         runOnUiThread {
