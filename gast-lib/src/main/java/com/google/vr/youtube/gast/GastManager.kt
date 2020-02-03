@@ -9,7 +9,7 @@ import org.godotengine.godot.plugin.GodotPlugin
 class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     init {
-        System.loadLibrary("gastlib")
+        System.loadLibrary("gast")
     }
 
     companion object {

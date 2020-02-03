@@ -46,7 +46,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-project(gastlib)
+project(gast)
 
 # Location to the Godot headers directory.
 set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/../../../../deps/godot-cpp")

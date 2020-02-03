@@ -3,6 +3,7 @@
 
 #include <core/String.hpp>
 #include <gen/ExternalTexture.hpp>
+#include <gen/InputEvent.hpp>
 #include <gen/MeshInstance.hpp>
 #include <jni.h>
 
@@ -27,6 +28,8 @@ namespace gast {
         int get_external_texture_id(const String& node_path);
 
         void on_gl_process(const String& node_path, float delta);
+
+        void on_gl_input(const String& node_path, const Ref<InputEvent> event);
 
         void on_gl_input_hover(const String& node_path, float x_percent, float y_percent);
 

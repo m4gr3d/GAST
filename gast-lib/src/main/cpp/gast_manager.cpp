@@ -242,6 +242,10 @@ namespace gast {
         }
     }
 
+    void GastManager::on_gl_input(const String &node_path, const Ref<godot::InputEvent> event) {
+        // Process input event, and forward results using the methods below.
+    }
+
     void
     GastManager::on_gl_input_hover(const String &node_path, float x_percent, float y_percent) {
         if (callback_instance_ && on_gl_input_hover_) {
