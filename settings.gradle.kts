@@ -1,6 +1,6 @@
 include(":gast-lib")
 
-include(":sample-demo")
-project(":sample-demo").projectDir = File("samples/video_demo/android/build")
+include(":sample-video-demo")
+project(":sample-video-demo").projectDir = File("samples/video_demo/android/build")
 
 rootProject.name= "GAST"
