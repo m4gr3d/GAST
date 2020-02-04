@@ -26,6 +26,8 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         runOnGLThread { shutdown() }
     }
 
+    override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v2/gast/gastlib.gdnlib")
+
     external fun getExternalTextureId(nodePath: String): Int
 
     external fun setupMeshInstance(nodePath: String)

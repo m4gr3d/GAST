@@ -208,7 +208,7 @@ namespace gast {
         // Load the gast mesh resource.
         ALOGV("Loading GAST mesh resource.");
         Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
-                "res://plugin_artifacts/addons/gastlib/gast_quad_mesh.tres");
+                "res://godot/plugin/v2/gast/gast_quad_mesh.tres");
         if (gast_mesh_res.is_null() || !gast_mesh_res->is_class("QuadMesh")) {
             ALOGE("Unable to load the target resource.");
             return;
@@ -220,7 +220,7 @@ namespace gast {
         // Load the script resource.
         ALOGV("Loading script resource.");
         Ref<Resource> script_res = ResourceLoader::get_singleton()->load(
-                "res://plugin_artifacts/addons/gastlib/MeshInstanceProxy.gdns", "", true);
+                "res://godot/plugin/v2/gast/MeshInstanceProxy.gdns", "", true);
         if (script_res.is_null() || !script_res->is_class("NativeScript")) {
             ALOGE("Unable to load native script resource.");
             return;
