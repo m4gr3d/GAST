@@ -38,20 +38,25 @@ import com.google.vr.youtube.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import java.lang.IllegalStateException
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Template activity for Godot Android custom builds.
  * Feel free to extend and modify this class for your custom logic.
  */
-class GodotApp : Godot() {
+class GodotApp : Godot(), GastManager.GLCallbackListener {
 
     companion object {
         const val TAG = "FHK"
     }
 
+    private val updateTextureImageCounter = AtomicInteger()
+
     private val mediaPlayer: MediaPlayer by lazy {
         MediaPlayer.create(applicationContext, R.raw.flight)
     }
+
+    private var surfaceTexture: SurfaceTexture? = null
 
     override fun onGLGodotMainLoopStarted() {
         super.onGLGodotMainLoopStarted()
@@ -65,6 +70,9 @@ class GodotApp : Godot() {
         Log.d(TAG, "Creating mesh instance")
         val nodePath = gastPlugin.createMeshInstance("/root/Spatial")
 
+        Log.d(TAG, "Registering GL callback listener")
+        gastPlugin.addGLCallbackListener(nodePath, this)
+
         Log.d(TAG, "Setting up mesh instance with path $nodePath")
         gastPlugin.setupMeshInstance(nodePath)
 
@@ -74,12 +82,10 @@ class GodotApp : Godot() {
         Log.d("FHK", "Retrieved $texId from GastManager.")
 
         runOnUiThread {
-            val surfaceTexture = SurfaceTexture(texId)
-            surfaceTexture.setDefaultBufferSize(640, 480)
-            surfaceTexture.setOnFrameAvailableListener {
-                if (mView != null) {
-                    mView.queueEvent { surfaceTexture.updateTexImage() }
-                }
+            surfaceTexture = SurfaceTexture(texId)
+            surfaceTexture?.setDefaultBufferSize(640, 480)
+            surfaceTexture?.setOnFrameAvailableListener {
+                updateTextureImageCounter.incrementAndGet()
             }
             val surface = Surface(surfaceTexture)
 
@@ -94,5 +100,13 @@ class GodotApp : Godot() {
 
         mediaPlayer.release()
         finish()
+    }
+
+    override fun onGLProcess(nodePath: String, delta: Float) {
+        var counter = updateTextureImageCounter.get()
+        while (counter > 0) {
+            surfaceTexture?.updateTexImage()
+            counter = updateTextureImageCounter.decrementAndGet()
+        }
     }
 }
