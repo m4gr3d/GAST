@@ -6,6 +6,8 @@ import android.util.Log
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import javax.microedition.khronos.opengles.GL10
 
 class GastManager(godot: Godot) : GodotPlugin(godot) {
 
@@ -19,11 +21,19 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         fun onGLProcess(nodePath: String, delta: Float)
     }
 
+    interface GLDrawFrameListener {
+        /**
+         * Forward the GL draw frame callback.
+         */
+        fun onGLDrawFrame()
+    }
+
     init {
         System.loadLibrary("gast")
     }
 
     private val glCallbackListeners = ConcurrentHashMap<String, GLCallbackListener>()
+    private val glDrawFrameListeners = ConcurrentLinkedQueue<GLDrawFrameListener>()
 
     companion object {
         val TAG = GastManager::class.java.simpleName
@@ -37,6 +47,20 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     override fun onMainDestroy() {
         Log.d(TAG, "Shutting down Gast manager")
         runOnGLThread { shutdown() }
+    }
+
+    override fun onGLDrawFrame(gl: GL10) {
+        for (listener in glDrawFrameListeners) {
+            listener.onGLDrawFrame()
+        }
+    }
+
+    fun addGLDrawFrameListener(listener: GLDrawFrameListener) {
+        glDrawFrameListeners.add(listener)
+    }
+
+    fun removeGLDrawFrameListener(listener: GLDrawFrameListener) {
+        glDrawFrameListeners.remove(listener)
     }
 
     fun addGLCallbackListener(nodePath: String, listener : GLCallbackListener) {
