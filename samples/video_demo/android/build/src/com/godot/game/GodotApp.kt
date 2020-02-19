@@ -68,18 +68,18 @@ class GodotApp : Godot(), GastManager.GLCallbackListener {
         }
 
         Log.d(TAG, "Creating mesh instance")
-        val nodePath = gastPlugin.createMeshInstance("/root/Spatial")
+        val nodePath = gastPlugin.bindMeshInstance("/root/Spatial")
 
         Log.d(TAG, "Registering GL callback listener")
         gastPlugin.addGLCallbackListener(nodePath, this)
-
-        Log.d(TAG, "Setting up mesh instance with path $nodePath")
-        gastPlugin.setupMeshInstance(nodePath)
 
         Log.d(TAG, "Retrieving texture id")
         val texId =
             gastPlugin.getExternalTextureId(nodePath)
         Log.d("FHK", "Retrieved $texId from GastManager.")
+
+        gastPlugin.updateMeshInstanceScale(nodePath, 0.5F, 1.0F)
+        gastPlugin.updateMeshInstanceRotation(nodePath, 0F, 15F, 20F)
 
         runOnUiThread {
             surfaceTexture = SurfaceTexture(texId)

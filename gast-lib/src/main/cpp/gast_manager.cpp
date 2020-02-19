@@ -6,6 +6,8 @@
 #include <gen/Object.hpp>
 #include <core/Godot.hpp>
 #include <core/NodePath.hpp>
+#include <core/Vector2.hpp>
+#include <core/Vector3.hpp>
 #include <gen/Texture.hpp>
 #include <gen/Viewport.hpp>
 #include <gen/Mesh.hpp>
@@ -34,7 +36,9 @@ namespace gast {
 
     GastManager::GastManager() {}
 
-    GastManager::~GastManager() {}
+    GastManager::~GastManager() {
+        reusable_pool_.clear();
+    }
 
     GastManager *GastManager::get_singleton_instance() {
         ALOG_ASSERT(gdn_initialized_ && jni_initialized_,
@@ -174,7 +178,7 @@ namespace gast {
         return node;
     }
 
-    String GastManager::create_mesh_instance(const godot::String &parent_node_path) {
+    String GastManager::bind_mesh_instance(const godot::String &parent_node_path) {
         ALOGV("Retrieving node's parent with path %s", parent_node_path.utf8().get_data());
         Node *parent_node = get_node(parent_node_path);
         if (!parent_node) {
@@ -183,8 +187,46 @@ namespace gast {
             return "";
         }
 
-        ALOGV("Creating a new mesh instance.");
-        MeshInstance *mesh_instance = MeshInstance::_new();
+        MeshInstance *mesh_instance;
+
+        // Check if we have one already setup in the reusable pool, otherwise create a new one.
+        if (reusable_pool_.size() == 0) {
+            ALOGV("Creating a new mesh instance.");
+            mesh_instance = MeshInstance::_new();
+
+            // Load the gast mesh resource.
+            ALOGV("Loading GAST mesh resource.");
+            Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
+                    "res://godot/plugin/v2/gast/gast_quad_mesh.tres");
+            if (gast_mesh_res.is_null() || !gast_mesh_res->is_class("QuadMesh")) {
+                ALOGE("Unable to load the target resource.");
+                return "";
+            }
+
+            ALOGV("Setting up GAST mesh resource.");
+            mesh_instance->set_mesh(gast_mesh_res);
+
+            // Load the script resource.
+            ALOGV("Loading script resource.");
+            Ref<Resource> script_res = ResourceLoader::get_singleton()->load(
+                    "res://godot/plugin/v2/gast/MeshInstanceProxy.gdns", "", true);
+            if (script_res.is_null() || !script_res->is_class("NativeScript")) {
+                ALOGE("Unable to load native script resource.");
+                return "";
+            }
+
+            ALOGV("Setting up native script resource.");
+            mesh_instance->set_script(*script_res);
+
+        } else {
+            mesh_instance = reusable_pool_.back();
+            reusable_pool_.pop_back();
+        }
+
+        // Set the node to processing
+        mesh_instance->set_process(true);
+        mesh_instance->set_process_input(true);
+
         if (mesh_instance->get_parent() != nullptr) {
             ALOGV("Removing mesh instance parent.");
             mesh_instance->get_parent()->remove_child(mesh_instance);
@@ -197,41 +239,31 @@ namespace gast {
         return (String) mesh_instance->get_path();
     }
 
-    void GastManager::setup_mesh_instance(const godot::String &node_path) {
-        ALOGV("Retrieving mesh instance with path %s", node_path.utf8().get_data());
+    void GastManager::unbind_mesh_instance(const godot::String &node_path) {
+        // Remove the mesh instance from its parent and move it to the reusable pool.
         MeshInstance *mesh_instance = get_mesh_instance(node_path);
         if (!mesh_instance) {
-            ALOGE("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
             return;
         }
 
-        // Load the gast mesh resource.
-        ALOGV("Loading GAST mesh resource.");
-        Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
-                "res://godot/plugin/v2/gast/gast_quad_mesh.tres");
-        if (gast_mesh_res.is_null() || !gast_mesh_res->is_class("QuadMesh")) {
-            ALOGE("Unable to load the target resource.");
-            return;
+        // Stop the node's processing.
+        mesh_instance->set_process(false);
+        mesh_instance->set_process_input(false);
+
+        // Remove the mesh instance children.
+        int64_t child_count = mesh_instance->get_child_count();
+        for (int i = 0; i < child_count; i++) {
+            mesh_instance->remove_child(mesh_instance->get_child(i));
         }
 
-        ALOGV("Setting up GAST mesh resource.");
-        mesh_instance->set_mesh(gast_mesh_res);
-
-        // Load the script resource.
-        ALOGV("Loading script resource.");
-        Ref<Resource> script_res = ResourceLoader::get_singleton()->load(
-                "res://godot/plugin/v2/gast/MeshInstanceProxy.gdns", "", true);
-        if (script_res.is_null() || !script_res->is_class("NativeScript")) {
-            ALOGE("Unable to load native script resource.");
-            return;
+        // Remove the mesh instance from its parent.
+        if (mesh_instance->get_parent() != nullptr) {
+            mesh_instance->get_parent()->remove_child(mesh_instance);
+            mesh_instance->set_owner(nullptr);
         }
 
-        ALOGV("Setting up native script resource.");
-        mesh_instance->set_script(*script_res);
-
-        // Set the node to processing
-        mesh_instance->set_process(true);
-        mesh_instance->set_process_input(true);
+        // Move the mesh instance to the reusable pool.
+        reusable_pool_.push_back(mesh_instance);
     }
 
     void GastManager::on_gl_process(const String &node_path, float delta) {
@@ -271,6 +303,117 @@ namespace gast {
             env->CallVoidMethod(callback_instance_, on_gl_input_release_,
                                 string_to_jstring(env, node_path), x_percent, y_percent);
         }
+    }
+
+    String GastManager::update_mesh_instance_parent(const String &node_path,
+                                                    const String &new_parent_node_path) {
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGW("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return node_path;
+        }
+
+        // Check if current parent differs from new one.
+        if (mesh_instance->get_parent() != nullptr) {
+            String parent_node_path = mesh_instance->get_parent()->get_path();
+            if (parent_node_path == new_parent_node_path) {
+                ALOGV("Current parent is same as newly proposed one.");
+                return node_path;
+            }
+        }
+
+        // Check if the new parent exists.
+        Node *new_parent = get_node(new_parent_node_path);
+        if (!new_parent) {
+            ALOGW("Unable to retrieve new parent node with path %s",
+                  new_parent_node_path.utf8().get_data());
+            return node_path;
+        }
+
+        // Perform the update
+        if (mesh_instance->get_parent() != nullptr) {
+            mesh_instance->get_parent()->remove_child(mesh_instance);
+        }
+
+        new_parent->add_child(mesh_instance);
+        mesh_instance->set_owner(new_parent);
+
+        return (String) mesh_instance->get_path();
+    }
+
+    void GastManager::update_mesh_instance_visibility(const godot::String &node_path,
+                                                      bool should_duplicate_parent_visibility,
+                                                      bool visible) {
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGW("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return;
+        }
+
+        bool is_visible = should_duplicate_parent_visibility ? mesh_instance->is_visible_in_tree()
+                                                             : mesh_instance->is_visible();
+        if (is_visible != visible) {
+            mesh_instance->set_visible(visible);
+        }
+    }
+
+    void GastManager::update_mesh_instance_size(const godot::String &node_path, float width,
+                                                float height) {
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGW("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return;
+        }
+
+        // Retrieve and resize the quad mesh.
+        Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
+        if (mesh_ref.is_null() || !mesh_ref->is_class("QuadMesh")) {
+            ALOGE("Unable to access mesh resource for %s", node_path.utf8().get_data());
+            return;
+        }
+
+        auto *mesh = Object::cast_to<QuadMesh>(*mesh_ref);
+        if (!mesh) {
+            ALOGE("Failed cast to QuadMesh.");
+            return;
+        }
+
+        mesh->set_size(Vector2(width, height));
+    }
+
+    void GastManager::update_mesh_instance_translation(const godot::String &node_path,
+                                                       float x_translation, float y_translation,
+                                                       float z_translation) {
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGW("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return;
+        }
+
+        mesh_instance->set_translation(Vector3(x_translation, y_translation, z_translation));
+    }
+
+    void GastManager::update_mesh_instance_scale(const godot::String &node_path, float x_scale,
+                                                 float y_scale) {
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGW("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return;
+        }
+
+        mesh_instance->set_scale(Vector3(x_scale, y_scale, 1));
+    }
+
+    void GastManager::update_mesh_instance_rotation(const godot::String &node_path,
+                                                    float x_rotation, float y_rotation,
+                                                    float z_rotation) {
+        MeshInstance *mesh_instance = get_mesh_instance(node_path);
+        if (!mesh_instance) {
+            ALOGW("Unable to retrieve mesh instance with path %s", node_path.utf8().get_data());
+            return;
+        }
+
+        mesh_instance->set_rotation_degrees(Vector3(x_rotation, y_rotation, z_rotation));
     }
 
 }  // namespace gast
