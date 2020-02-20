@@ -41,6 +41,7 @@ dependencies {
 	// Godot plugins dependencies
 	implementation fileTree(dir : 'libs/plugins', include : getGodotPluginsBinaries())
 
+    implementation("com.android.support:support-v4:28.0.0")
     implementation project(":gast-lib")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion")
 }
