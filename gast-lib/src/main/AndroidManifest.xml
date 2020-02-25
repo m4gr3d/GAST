@@ -5,7 +5,7 @@
     <application>
 
         <meta-data
-            android:name="org.godotengine.plugin.v2.Gast"
+            android:name="org.godotengine.plugin.v1.Gast"
             android:value="com.google.vr.youtube.gast.GastManager" />
     </application>
 
