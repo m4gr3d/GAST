@@ -69,7 +69,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     override fun getPluginName() = "Gast"
 
-    override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v2/gast/gastlib.gdnlib")
+    override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v1/gast/gastlib.gdnlib")
 
     fun addGLDrawFrameListener(listener: GLDrawFrameListener) {
         glDrawFrameListeners.add(listener)

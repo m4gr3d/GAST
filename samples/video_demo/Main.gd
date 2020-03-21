@@ -1,6 +1,6 @@
 extends Spatial
 
-var gast_loader = load("res://godot/plugin/v2/gast/GastLoader.gdns")
+var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

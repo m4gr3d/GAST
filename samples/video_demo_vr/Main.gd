@@ -18,7 +18,7 @@ var ovr_vr_api_proxy = null;
 # some of the Oculus VrAPI constants are defined in this file. Have a look into it to learn more
 var ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new();
 
-var gast_loader = load("res://godot/plugin/v2/gast/GastLoader.gdns")
+var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
 
 func _ready():
 	_initialize_ovr_mobile_arvr_interface()
