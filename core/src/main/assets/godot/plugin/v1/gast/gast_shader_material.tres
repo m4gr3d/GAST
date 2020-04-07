@@ -1,0 +1,22 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type spatial;
+
+uniform samplerExternalOES sampler_texture;
+
+void fragment() {
+	ALBEDO = texture(sampler_texture, UV).xyz;
+}"
+custom_defines = "#ifdef ANDROID_ENABLED
+#extension GL_OES_EGL_image_external : enable
+#extension GL_OES_EGL_image_external_essl3 : enable	
+#else
+#define samplerExternalOES sampler2D	
+#endif"
+
+[sub_resource type="ExternalTexture" id=2]
+
+[resource]
+shader = SubResource( 1 )
+shader_param/sampler_texture = SubResource( 2 )
