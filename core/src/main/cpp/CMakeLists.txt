@@ -79,15 +79,41 @@ else ()
     set(GODOT_COMPILE_FLAGS "${GODOT_COMPILE_FLAGS} -O3")
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
-# Get sources
-file(GLOB_RECURSE SOURCES ./*.c**)
-file(GLOB_RECURSE HEADERS ./*.h**)
+## godot-cpp library
+set(GODOT-CPP "godot-cpp")
+
 file(GLOB_RECURSE GODOT_CPP_SOURCES ${GODOT_CPP_DIR}/src/*.c**)
 file(GLOB_RECURSE GODOT_CPP_HEADERS ${GODOT_CPP_DIR}/include/*.h**)
 
+add_library(${GODOT-CPP}
+        STATIC
+        ${GODOT_CPP_SOURCES} ${GODOT_CPP_HEADERS})
+
+target_include_directories(${GODOT-CPP}
+        PUBLIC
+        ${GODOT_CPP_DIR}/include
+        ${GODOT_CPP_DIR}/include/core
+        ${GODOT_CPP_DIR}/include/gen
+        )
+
+# Put godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
+target_include_directories(${GODOT-CPP}
+        SYSTEM PUBLIC
+        ${GODOT_HEADERS_DIR}
+        )
+
+# Add the compile flags
+set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})
+set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY LINK_FLAGS ${GODOT_LINKER_FLAGS})
+
+## Setup the plugin library
+# Get sources
+file(GLOB_RECURSE SOURCES ./*.c**)
+file(GLOB_RECURSE HEADERS ./*.h**)
+
 add_library(${PROJECT_NAME}
         SHARED
-        ${SOURCES} ${HEADERS} ${GODOT_CPP_SOURCES} ${GODOT_CPP_HEADERS})
+        ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME}
         PRIVATE
         .
@@ -107,7 +133,8 @@ target_link_libraries(${PROJECT_NAME}
         android
         log
         EGL
-        GLESv3)
+        GLESv3
+        ${GODOT-CPP})
 
 # Add the compile flags
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})

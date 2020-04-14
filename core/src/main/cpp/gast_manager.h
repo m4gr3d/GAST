@@ -2,9 +2,11 @@
 #define GAST_MANAGER_H
 
 #include <core/String.hpp>
+#include <core/Vector3.hpp>
 #include <gen/ExternalTexture.hpp>
 #include <gen/InputEvent.hpp>
 #include <gen/MeshInstance.hpp>
+#include <gen/Spatial.hpp>
 #include <jni.h>
 #include <list>
 
@@ -65,6 +67,8 @@ namespace gast {
                                               float y_translation,
                                               float z_translation);
 
+        Vector3 get_spatial_node_global_translation(const String &node_path);
+
         void update_mesh_instance_scale(const String &node_path, float x_scale, float y_scale);
 
         void
@@ -82,6 +86,8 @@ namespace gast {
         get_external_texture(const String &node_path);
 
         MeshInstance *get_mesh_instance(const String &node_path);
+
+        Spatial* get_spatial_node(const String &node_path);
 
         Node *get_node(const String &node_path);
 

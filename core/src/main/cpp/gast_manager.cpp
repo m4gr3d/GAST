@@ -160,6 +160,18 @@ namespace gast {
         return mesh_instance;
     }
 
+    Spatial *GastManager::get_spatial_node(const gast::String &node_path) {
+        Node *node = get_node(node_path);
+        if (!node || !node->is_class("Spatial")) {
+            ALOGW("Unable to find a Spatial node with path %s",
+                  node_path.utf8().get_data());
+            return nullptr;
+        }
+
+        auto* spatial_node = Object::cast_to<Spatial>(node);
+        return spatial_node;
+    }
+
     Node *GastManager::get_node(const godot::String &node_path) {
         if (node_path.empty()) {
             ALOGE("Invalid node path argument: %s", node_path.utf8().get_data());
@@ -430,6 +442,16 @@ namespace gast {
         }
 
         mesh_instance->set_translation(Vector3(x_translation, y_translation, z_translation));
+    }
+
+    Vector3 GastManager::get_spatial_node_global_translation(const gast::String &node_path) {
+        Spatial* spatial_node = get_spatial_node(node_path);
+        if (!spatial_node) {
+            ALOGE("Unable to retrieve spatial node instance with path %s", node_path.utf8().get_data());
+            return Vector3();
+        }
+
+        return spatial_node->to_global(spatial_node->get_translation());
     }
 
     void GastManager::update_mesh_instance_scale(const godot::String &node_path, float x_scale,

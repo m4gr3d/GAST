@@ -24,6 +24,16 @@ func _ready():
 	_initialize_ovr_mobile_arvr_interface()
 	var gast = gast_loader.new()
 	gast.initialize()
+	
+	if Engine.has_singleton("gast-video"):
+		print("Setting video player...")
+		var gast_video_plugin = Engine.get_singleton("gast-video")
+		gast_video_plugin.preparePlayer("/root/Main/StaticBody/CollisionShape/MeshInstance", ["flight"])
+		gast_video_plugin.play()
+		gast_video_plugin.setRepeatMode(2)
+		gast_video_plugin.setVideoScreenSize(3, 2)
+	else:
+		print("Unable to load gast-video singleton.")
 
 func _process(delta_t):
 	_check_and_perform_runtime_config()
@@ -45,7 +55,7 @@ func _initialize_ovr_mobile_arvr_interface():
 		# Configure the interface init parameters.
 		if arvr_interface.initialize():
 			get_viewport().arvr = true
-			Engine.target_fps = 72 # Quest
+			Engine.iterations_per_second = 72 # Quest
 
 			# load the .gdns classes.
 			ovr_display_refresh_rate = load("res://addons/godot_ovrmobile/OvrDisplayRefreshRate.gdns");
