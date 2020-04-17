@@ -82,6 +82,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         gastEventListeners -= listener
     }
 
+    @JvmOverloads
     external fun getExternalTextureId(nodePath: String, surfaceIndex: Int = INVALID_SURFACE_INDEX): Int
 
     /**
