@@ -3,10 +3,10 @@
 [sub_resource type="Shader" id=1]
 code = "shader_type spatial;
 
-uniform samplerExternalOES sampler_texture;
+uniform samplerExternalOES gast_texture;
 
 void fragment() {
-	ALBEDO = texture(sampler_texture, UV).xyz;
+	ALBEDO = texture(gast_texture, UV).xyz;
 }"
 custom_defines = "#ifdef ANDROID_ENABLED
 #extension GL_OES_EGL_image_external : enable
@@ -19,4 +19,4 @@ custom_defines = "#ifdef ANDROID_ENABLED
 
 [resource]
 shader = SubResource( 1 )
-shader_param/sampler_texture = SubResource( 2 )
+shader_param/gast_texture = SubResource( 2 )

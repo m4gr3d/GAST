@@ -7,7 +7,6 @@ import android.util.Log
 import android.widget.FrameLayout
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.microedition.khronos.opengles.GL10
 
@@ -20,28 +19,26 @@ import javax.microedition.khronos.opengles.GL10
 class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     /**
-     * Registers for Godot callbacks. The callbacks occur on the GL thread.
+     * Used to listen to events dispatched by the Gast plugin.
      */
-    interface GLCallbackListener {
+    interface GastEventListener {
         /**
          * Forward the '_process' callback of the Godot node with the given 'nodePath'
+         * Invoked on the render thread.
          */
-        fun onGLProcess(nodePath: String, delta: Float)
-    }
+        fun onRenderProcess(nodePath: String, delta: Float)
 
-    interface GLDrawFrameListener {
         /**
-         * Forward the GL draw frame callback.
+         * Forward the render draw frame callback.
          */
-        fun onGLDrawFrame()
+        fun onRenderDrawFrame()
     }
 
     init {
         System.loadLibrary("gast")
     }
 
-    private val glCallbackListeners = ConcurrentHashMap<String, GLCallbackListener>()
-    private val glDrawFrameListeners = ConcurrentLinkedQueue<GLDrawFrameListener>()
+    private val gastEventListeners = ConcurrentLinkedQueue<GastEventListener>()
 
     /**
      * Root parent for all GAST views.
@@ -49,10 +46,11 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     val rootView = FrameLayout(godot)
 
     companion object {
-        val TAG = GastManager::class.java.simpleName
+        private val TAG = GastManager::class.java.simpleName
+        private const val INVALID_SURFACE_INDEX = -1
     }
 
-    override fun onGLGodotMainLoopStarted() {
+    override fun onGodotMainLoopStarted() {
         Log.d(TAG, "Initializing ${pluginName} manager")
         initialize()
     }
@@ -61,46 +59,37 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     override fun onMainDestroy() {
         Log.d(TAG, "Shutting down ${pluginName} manager")
-        runOnGLThread { shutdown() }
+        runOnRenderThread { shutdown() }
     }
 
     override fun onGLDrawFrame(gl: GL10) {
-        for (listener in glDrawFrameListeners) {
-            listener.onGLDrawFrame()
+        for (listener in gastEventListeners) {
+            listener.onRenderDrawFrame()
         }
     }
 
-    override fun getPluginMethods(): MutableList<String> =
-        emptyList<String>().toMutableList()
+    override fun getPluginMethods(): MutableList<String> = emptyList<String>().toMutableList()
 
     override fun getPluginName() = "gast-core"
 
     override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v1/gast/gastlib.gdnlib")
 
-    fun addGLDrawFrameListener(listener: GLDrawFrameListener) {
-        glDrawFrameListeners.add(listener)
+    fun addGastEventListener(listener: GastEventListener) {
+        gastEventListeners += listener;
     }
 
-    fun removeGLDrawFrameListener(listener: GLDrawFrameListener) {
-        glDrawFrameListeners.remove(listener)
+    fun removeGastEventListener(listener: GastEventListener) {
+        gastEventListeners -= listener
     }
 
-    fun addGLCallbackListener(nodePath: String, listener: GLCallbackListener) {
-        glCallbackListeners[nodePath] = listener;
-    }
-
-    fun removeGLCallbackListener(nodePath: String) {
-        glCallbackListeners.remove(nodePath)
-    }
-
-    external fun getExternalTextureId(nodePath: String): Int
+    external fun getExternalTextureId(nodePath: String, surfaceIndex: Int = INVALID_SURFACE_INDEX): Int
 
     /**
      * Create a mesh instance with the given parent node and set it up.
      * @param parentNodePath - Path to the parent for the mesh instance that will be created. The parent node must exist
      * @return The node path to the newly created mesh instance
      */
-    external fun acquireAndBindMeshInstance(parentNodePath: String): String
+    external fun acquireAndBindQuadMeshInstance(parentNodePath: String): String
 
     /**
      * Setup the mesh instance with the given node path for GAST view support.
@@ -114,30 +103,30 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     external fun unbindMeshInstance(nodePath: String)
 
     /**
-     * Unbind and release the mesh instance with the given node path. This is the counterpart to [GastManager.acquireAndBindMeshInstance]
+     * Unbind and release the mesh instance with the given node path. This is the counterpart to [GastManager.acquireAndBindQuadMeshInstance]
      */
-    external fun unbindAndReleaseMeshInstance(nodePath: String)
+    external fun unbindAndReleaseQuadMeshInstance(nodePath: String)
 
-    external fun updateMeshInstanceParent(nodePath: String, newParentNodePath: String): String
+    external fun updateNodeParent(nodePath: String, newParentNodePath: String): String
 
-    external fun updateMeshInstanceVisibility(
+    external fun updateSpatialNodeVisibility(
         nodePath: String,
         shouldDuplicateParentVisibility: Boolean,
         visible: Boolean
     )
 
-    external fun updateMeshInstanceSize(nodePath: String, width: Float, height: Float)
+    external fun updateQuadMeshInstanceSize(nodePath: String, width: Float, height: Float)
 
-    external fun updateMeshInstanceTranslation(
+    external fun updateSpatialNodeLocalTranslation(
         nodePath: String,
         xTranslation: Float,
         yTranslation: Float,
         zTranslation: Float
     )
 
-    external fun updateMeshInstanceScale(nodePath: String, xScale: Float, yScale: Float)
+    external fun updateSpatialNodeLocalScale(nodePath: String, xScale: Float, yScale: Float)
 
-    external fun updateMeshInstanceRotation(
+    external fun updateSpatialNodeLocalRotation(
         nodePath: String,
         xRotation: Float,
         yRotation: Float,
@@ -151,15 +140,16 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     /**
      * Invoked by the native layer to forward the node's '_process' callback.
      */
-    private fun onGLProcess(nodePath: String, delta: Float) {
-        val listener = glCallbackListeners[nodePath] ?: return
-        listener.onGLProcess(nodePath, delta)
+    private fun onRenderProcess(nodePath: String, delta: Float) {
+        for (listener in gastEventListeners) {
+            listener.onRenderProcess(nodePath, delta)
+        }
     }
 
-    private fun onGLInputHover(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputHover(nodePath: String, xPercent: Float, yPercent: Float) {}
 
-    private fun onGLInputPress(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputPress(nodePath: String, xPercent: Float, yPercent: Float) {}
 
-    private fun onGLInputRelease(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputRelease(nodePath: String, xPercent: Float, yPercent: Float) {}
 
 }

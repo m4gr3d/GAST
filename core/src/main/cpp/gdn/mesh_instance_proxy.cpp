@@ -20,10 +20,10 @@ namespace gast {
     }
 
     void MeshInstanceProxy::_input(const godot::Ref<godot::InputEvent> event) {
-        GastManager::get_singleton_instance()->on_gl_input(get_path(), event);
+        GastManager::get_singleton_instance()->on_render_input(get_path(), event);
     }
 
     void MeshInstanceProxy::_process(float delta) {
-        GastManager::get_singleton_instance()->on_gl_process(get_path(), delta);
+        GastManager::get_singleton_instance()->on_render_process(get_path(), delta);
     }
 }

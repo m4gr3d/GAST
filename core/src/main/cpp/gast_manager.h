@@ -5,6 +5,7 @@
 #include <core/Vector3.hpp>
 #include <gen/ExternalTexture.hpp>
 #include <gen/InputEvent.hpp>
+#include <gen/Mesh.hpp>
 #include <gen/MeshInstance.hpp>
 #include <gen/Spatial.hpp>
 #include <jni.h>
@@ -14,6 +15,7 @@ namespace gast {
 
     namespace {
         using namespace godot;
+        constexpr int kInvalidSurfaceIndex = -1;
     }  // namespace
 
     class GastManager {
@@ -28,21 +30,21 @@ namespace gast {
 
         static void jni_shutdown(JNIEnv *env);
 
-        int get_external_texture_id(const String &node_path);
+        int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
 
-        void on_gl_process(const String &node_path, float delta);
+        void on_render_process(const String &node_path, float delta);
 
-        void on_gl_input(const String &node_path, const Ref<InputEvent> event);
+        void on_render_input(const String &node_path, const Ref<InputEvent> event);
 
-        void on_gl_input_hover(const String &node_path, float x_percent, float y_percent);
+        void on_render_input_hover(const String &node_path, float x_percent, float y_percent);
 
-        void on_gl_input_press(const String &node_path, float x_percent, float y_percent);
+        void on_render_input_press(const String &node_path, float x_percent, float y_percent);
 
-        void on_gl_input_release(const String &node_path, float x_percent, float y_percent);
+        void on_render_input_release(const String &node_path, float x_percent, float y_percent);
 
-        /// Create a mesh instance with the given parent node and set it up.
+        /// Create a quad mesh instance with the given parent node and set it up.
         /// @return The node path to the newly created mesh instance
-        String acquire_and_bind_mesh_instance(const String &parent_node_path);
+        String acquire_and_bind_quad_mesh_instance(const String &parent_node_path);
 
         /// Setup the mesh instance with the given node path for GAST view support.
         bool bind_mesh_instance(const String &node_path);
@@ -53,27 +55,26 @@ namespace gast {
 
         /// Unbind and release the mesh instance with the given node path. This is the counterpart
         /// to acquire_and_bind_mesh_instance.
-        void unbind_and_release_mesh_instance(const String &node_path);
+        void unbind_and_release_quad_mesh_instance(const String &node_path);
 
-        String
-        update_mesh_instance_parent(const String &node_path, const String &new_parent_node_path);
+        String update_node_parent(const String &node_path, const String &new_parent_node_path);
 
-        void update_mesh_instance_visibility(const String &node_path,
-                                             bool should_duplicate_parent_visibility, bool visible);
+        void update_spatial_node_visibility(const String &node_path,
+                                            bool should_duplicate_parent_visibility, bool visible);
 
-        void update_mesh_instance_size(const String &node_path, float width, float height);
+        void update_quad_mesh_instance_size(const String &node_path, float width, float height);
 
-        void update_mesh_instance_translation(const String &node_path, float x_translation,
-                                              float y_translation,
-                                              float z_translation);
+        void update_spatial_node_local_translation(const String &node_path, float x_translation,
+                                                   float y_translation,
+                                                   float z_translation);
 
         Vector3 get_spatial_node_global_translation(const String &node_path);
 
-        void update_mesh_instance_scale(const String &node_path, float x_scale, float y_scale);
+        void update_spatial_node_local_scale(const String &node_path, float x_scale, float y_scale);
 
         void
-        update_mesh_instance_rotation(const String &node_path, float x_rotation, float y_rotation,
-                                      float z_rotation);
+        update_spatial_node_local_rotation(const String &node_path, float x_rotation, float y_rotation,
+                                           float z_rotation);
 
     private:
         static void delete_singleton_instance();
@@ -83,7 +84,9 @@ namespace gast {
         static void unregister_callback(JNIEnv *env);
 
         ExternalTexture *
-        get_external_texture(const String &node_path);
+        get_external_texture(const String &node_path, int surface_index);
+
+        ExternalTexture *get_external_texture(Ref<Mesh> mesh, int surface_index);
 
         MeshInstance *get_mesh_instance(const String &node_path);
 
@@ -92,6 +95,8 @@ namespace gast {
         Node *get_node(const String &node_path);
 
         bool bind_mesh_instance(MeshInstance& mesh_instance);
+
+        bool is_mesh_with_gast_shader(Ref<Mesh> mesh);
 
         void unbind_mesh_instance(MeshInstance& mesh_instance);
 
@@ -106,10 +111,10 @@ namespace gast {
         static bool jni_initialized_;
 
         static jobject callback_instance_;
-        static jmethodID on_gl_process_;
-        static jmethodID on_gl_input_hover_;
-        static jmethodID on_gl_input_press_;
-        static jmethodID on_gl_input_release_;
+        static jmethodID on_render_process_;
+        static jmethodID on_render_input_hover_;
+        static jmethodID on_render_input_press_;
+        static jmethodID on_render_input_release_;
     };
 }  // namespace gast
 

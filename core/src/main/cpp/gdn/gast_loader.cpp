@@ -25,10 +25,10 @@ namespace gast {
     }
 
     void GastLoader::on_process(const String &node_path, float delta) {
-        GastManager::get_singleton_instance()->on_gl_process(node_path, delta);
+        GastManager::get_singleton_instance()->on_render_process(node_path, delta);
     }
 
     void GastLoader::on_input(const String& node_path, const Ref<InputEvent> event) {
-        GastManager::get_singleton_instance()->on_gl_input(node_path, event);
+        GastManager::get_singleton_instance()->on_render_input(node_path, event);
     }
 }

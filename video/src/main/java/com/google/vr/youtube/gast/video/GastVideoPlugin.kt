@@ -1,9 +1,11 @@
 package com.google.vr.youtube.gast.video
 
+import android.app.Activity
 import android.graphics.SurfaceTexture
 import android.text.TextUtils
 import android.util.Log
 import android.view.Surface
+import android.view.View
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -26,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * It's powered by Exoplayer and thus support a wide range of codecs.
  */
 class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
-    SurfaceTexture.OnFrameAvailableListener, GastManager.GLCallbackListener {
+    SurfaceTexture.OnFrameAvailableListener, GastManager.GastEventListener {
 
     companion object {
         val TAG = GastVideoPlugin::class.java.simpleName
@@ -60,7 +62,13 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     override fun getPluginName() = "gast-video"
 
+    override fun onMainCreateView(activity: Activity): View? {
+        gastManager.addGastEventListener(this)
+        return null
+    }
+
     override fun onMainDestroy() {
+        gastManager.removeGastEventListener(this)
         player.release()
         surfaceTexture?.release()
     }
@@ -77,13 +85,19 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         updateTextureImageCounter.incrementAndGet()
     }
 
-    override fun onGLProcess(nodePath: String, delta: Float) {
-        var counter = updateTextureImageCounter.get()
-        while (counter > 0) {
-            surfaceTexture?.updateTexImage()
-            counter = updateTextureImageCounter.decrementAndGet()
+    override fun onRenderProcess(nodePath: String, delta: Float) {
+        when(nodePath) {
+            videoNodePath -> {
+                var counter = updateTextureImageCounter.get()
+                while (counter > 0) {
+                    surfaceTexture?.updateTexImage()
+                    counter = updateTextureImageCounter.decrementAndGet()
+                }
+            }
         }
     }
+
+    override fun onRenderDrawFrame() {}
 
     override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
         when(reason) {
@@ -108,10 +122,9 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
             return
         }
 
-        runOnGLThread {
+        runOnRenderThread {
             // Reset the current node.
             if (!TextUtils.isEmpty(videoNodePath)) {
-                gastManager.removeGLCallbackListener(videoNodePath)
                 gastManager.unbindMeshInstance(videoNodePath)
                 runOnUiThread {
                     player.clearVideoSurface()
@@ -122,7 +135,6 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
             // Setup the new node
             gastManager.bindMeshInstance(nodePath)
-            gastManager.addGLCallbackListener(nodePath, this)
             val texId = gastManager.getExternalTextureId(nodePath)
             videoNodePath = nodePath
 
@@ -171,8 +183,8 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     }
 
     fun setVideoScreenSize(width: Float, height: Float) {
-        runOnGLThread {
-            gastManager.updateMeshInstanceSize(videoNodePath, width, height)
+        runOnRenderThread {
+            gastManager.updateQuadMeshInstanceSize(videoNodePath, width, height)
         }
     }
 
