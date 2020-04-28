@@ -49,7 +49,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(gast)
 
 # Location to the Godot headers directory.
-set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/../../../../deps/godot-cpp")
+set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp")
 set(GODOT_HEADERS_DIR "${GODOT_CPP_DIR}/godot_headers")
 
 set(GODOT_COMPILE_FLAGS)
@@ -108,15 +108,16 @@ set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY LINK_FLAGS ${GODOT_LINKE
 
 ## Setup the plugin library
 # Get sources
-file(GLOB_RECURSE SOURCES ./*.c**)
-file(GLOB_RECURSE HEADERS ./*.h**)
+file(GLOB_RECURSE SOURCES src/main/cpp/*.c**)
+file(GLOB_RECURSE HEADERS src/main/cpp/*.h**)
 
 add_library(${PROJECT_NAME}
         SHARED
         ${SOURCES} ${HEADERS})
+
 target_include_directories(${PROJECT_NAME}
         PRIVATE
-        .
+        src/main/cpp
         ${GODOT_CPP_DIR}/src
         ${GODOT_CPP_DIR}/src/core
         ${GODOT_CPP_DIR}/src/gen
