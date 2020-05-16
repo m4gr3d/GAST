@@ -32,6 +32,6 @@ android {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}")
-    implementation("com.android.support:support-v4:28.0.0")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
     compileOnly(fileTree(mapOf("dir" to "../libs", "include" to listOf("godot-lib*.aar"))))
 }
