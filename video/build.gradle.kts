@@ -22,9 +22,9 @@ android {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlinVersion}")
+    implementation("com.google.android.exoplayer:exoplayer:2.11.3")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     implementation(project(":gast-core"))
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     compileOnly(fileTree(mapOf("dir" to "../libs", "include" to listOf("godot-lib*.aar"))))
 }

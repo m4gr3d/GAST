@@ -19,6 +19,10 @@ config/name="Video Demo VR"
 run/main_scene="res://Main.tscn"
 config/icon="res://icon.png"
 
+[debug]
+
+settings/stdout/verbose_stdout=true
+
 [rendering]
 
 quality/driver/driver_name="GLES2"
