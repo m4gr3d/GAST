@@ -1,6 +1,6 @@
 @file:JvmName("GastManager")
 
-package com.google.vr.youtube.gast
+package org.godotengine.plugin.gast
 
 import android.app.Activity
 import android.util.Log

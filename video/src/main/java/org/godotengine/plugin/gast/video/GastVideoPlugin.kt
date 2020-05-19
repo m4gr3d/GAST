@@ -1,4 +1,4 @@
-package com.google.vr.youtube.gast.video
+package org.godotengine.plugin.gast.video
 
 import android.app.Activity
 import android.graphics.SurfaceTexture
@@ -14,7 +14,7 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.util.Util
-import com.google.vr.youtube.gast.GastManager
+import org.godotengine.plugin.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry

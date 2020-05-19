@@ -2,4 +2,4 @@
 
 name="gast-core"
 binary_type="local"
-binary="gast-core-debug.aar"
+binary="gast-core-release.aar"

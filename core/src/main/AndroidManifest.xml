@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.google.vr.youtube.gast">
+    package="org.godotengine.plugin.gast">
 
     <application>
 
         <meta-data
             android:name="org.godotengine.plugin.v1.gast-core"
-            android:value="com.google.vr.youtube.gast.GastManager" />
+            android:value="org.godotengine.plugin.gast.GastManager" />
     </application>
 
 </manifest>

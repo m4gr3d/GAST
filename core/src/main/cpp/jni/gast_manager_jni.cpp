@@ -4,7 +4,7 @@
 
 // Current class and package names assumed for the Java side.
 #undef JNI_PACKAGE_NAME
-#define JNI_PACKAGE_NAME com_google_vr_youtube_gast
+#define JNI_PACKAGE_NAME org_godotengine_plugin_gast
 
 #undef JNI_CLASS_NAME
 #define JNI_CLASS_NAME GastManager
