@@ -42,6 +42,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     private val updateTextureImageCounter = AtomicInteger()
     private val playing = AtomicBoolean(false)
 
+    private var parentNodePath = ""
     private var videoNodePath = ""
     private var surfaceTexture: SurfaceTexture? = null
 
@@ -85,19 +86,13 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         updateTextureImageCounter.incrementAndGet()
     }
 
-    override fun onRenderProcess(nodePath: String, delta: Float) {
-        when(nodePath) {
-            videoNodePath -> {
-                var counter = updateTextureImageCounter.get()
-                while (counter > 0) {
-                    surfaceTexture?.updateTexImage()
-                    counter = updateTextureImageCounter.decrementAndGet()
-                }
-            }
+    override fun onRenderDrawFrame() {
+        var counter = updateTextureImageCounter.get()
+        while (counter > 0) {
+            surfaceTexture?.updateTexImage()
+            counter = updateTextureImageCounter.decrementAndGet()
         }
     }
-
-    override fun onRenderDrawFrame() {}
 
     override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
         when(reason) {
@@ -111,21 +106,21 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     private fun isInitialized() = !TextUtils.isEmpty(videoNodePath)
 
-    private fun setVideoNodePath(nodePath: String) {
-        if (TextUtils.isEmpty(nodePath)) {
-            Log.e(TAG, "Invalid node path value: $nodePath")
+    private fun setVideoNodePath(parentNodePath: String) {
+        if (TextUtils.isEmpty(parentNodePath)) {
+            Log.e(TAG, "Invalid parent node path value: $parentNodePath")
             return
         }
 
-        if (nodePath == videoNodePath) {
-            // Nothing to do since it's the same node.
+        if (parentNodePath == this.parentNodePath) {
+            // Nothing to do since it's the same parent node.
             return
         }
 
         runOnRenderThread {
             // Reset the current node.
             if (!TextUtils.isEmpty(videoNodePath)) {
-                gastManager.unbindMeshInstance(videoNodePath)
+                gastManager.unbindAndReleaseGastNode(videoNodePath)
                 runOnUiThread {
                     player.clearVideoSurface()
                     surfaceTexture?.release()
@@ -134,9 +129,9 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
             }
 
             // Setup the new node
-            gastManager.bindMeshInstance(nodePath)
-            val texId = gastManager.getExternalTextureId(nodePath)
-            videoNodePath = nodePath
+            videoNodePath = gastManager.acquireAndBindGastNode(parentNodePath)
+            val texId = gastManager.getExternalTextureId(videoNodePath)
+            this.parentNodePath = parentNodePath
 
             runOnUiThread {
                 surfaceTexture = SurfaceTexture(texId)
@@ -177,14 +172,14 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
     }
 
-    fun preparePlayer(nodePath: String, videoRawNames: Array<String>) {
-        setVideoNodePath(nodePath)
+    fun preparePlayer(parentNodePath: String, videoRawNames: Array<String>) {
+        setVideoNodePath(parentNodePath)
         setVideoSource(videoRawNames)
     }
 
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
-            gastManager.updateQuadMeshInstanceSize(videoNodePath, width, height)
+            gastManager.updateGastNodeSize(videoNodePath, width, height)
         }
     }
 

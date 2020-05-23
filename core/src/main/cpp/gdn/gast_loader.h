@@ -31,9 +31,6 @@ namespace gast {
         // Shutdown GastManager
         void shutdown();
 
-        // Used to forward _process callback to the Gast library
-        void on_process(const String& node_path, float delta);
-
         // Used to forward _input callback to the Gast library
         void on_input(const String& node_path, const Ref<InputEvent> event);
     };
