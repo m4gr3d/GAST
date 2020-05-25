@@ -124,10 +124,16 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     private external fun shutdown()
 
-    private fun onRenderInputHover(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputHover(nodePath: String, pointerId: String, xPercent: Float, yPercent: Float) {
+        Log.v(TAG, "Received hover event for $nodePath from $pointerId at {$xPercent, $yPercent}")
+    }
 
-    private fun onRenderInputPress(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputPress(nodePath: String, pointerId: String, xPercent: Float, yPercent: Float) {
+        Log.v(TAG, "Received press event for $nodePath from $pointerId at {$xPercent, $yPercent}")
+    }
 
-    private fun onRenderInputRelease(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputRelease(nodePath: String, pointerId: String, xPercent: Float, yPercent: Float) {
+        Log.v(TAG, "Received release event for $nodePath from $pointerId at {$xPercent, $yPercent}")
+    }
 
 }

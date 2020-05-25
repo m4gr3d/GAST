@@ -85,15 +85,15 @@ namespace gast {
         ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
         on_render_input_hover_ = env->GetMethodID(callback_class, "onRenderInputHover",
-                                                  "(Ljava/lang/String;FF)V");
+                                                  "(Ljava/lang/String;Ljava/lang/String;FF)V");
         ALOG_ASSERT(on_render_input_hover_ != nullptr, "Unable to find onRenderInputHover");
 
         on_render_input_press_ = env->GetMethodID(callback_class, "onRenderInputPress",
-                                                  "(Ljava/lang/String;FF)V");
+                                                  "(Ljava/lang/String;Ljava/lang/String;FF)V");
         ALOG_ASSERT(on_render_input_press_ != nullptr, "Unable to find onRenderInputPress");
 
         on_render_input_release_ = env->GetMethodID(callback_class, "onRenderInputRelease",
-                                                    "(Ljava/lang/String;FF)V");
+                                                    "(Ljava/lang/String;Ljava/lang/String;FF)V");
         ALOG_ASSERT(on_render_input_release_ != nullptr, "Unable to find onRenderInputRelease");
     }
 
@@ -334,36 +334,48 @@ namespace gast {
         reusable_pool_.push_back(gast_node);
     }
 
-    void GastManager::on_render_input(const String &node_path, const Ref<godot::InputEvent> event) {
-        // Process input event, and forward results using the methods below.
+    void GastManager::process_input(const Ref <InputEvent> event) {
+        //TODO: Process input event.
+        // The API should allow the user to pass a set of registered actions to watch for.
+        // When this method is invoked, the logic should go through the list, checking if the given
+        // input event action matches one of the registered ones.
+        // If it does, the API should send a callback on the Android UI thread.
     }
 
-    void
-    GastManager::on_render_input_hover(const String &node_path, float x_percent, float y_percent) {
-        if (callback_instance_ && on_render_input_hover_) {
-            JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance_, on_render_input_hover_,
-                                string_to_jstring(env, node_path), x_percent, y_percent);
-        }
+void
+GastManager::on_render_input_hover(const String &node_path, const String &pointer_id,
+                                   float x_percent,
+                                   float y_percent) {
+    if (callback_instance_ && on_render_input_hover_) {
+        JNIEnv *env = godot::android_api->godot_android_get_env();
+        env->CallVoidMethod(callback_instance_, on_render_input_hover_,
+                            string_to_jstring(env, node_path), string_to_jstring(env, pointer_id),
+                            x_percent, y_percent);
     }
+}
 
-    void
-    GastManager::on_render_input_press(const String &node_path, float x_percent, float y_percent) {
-        if (callback_instance_ && on_render_input_press_) {
-            JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance_, on_render_input_press_,
-                                string_to_jstring(env, node_path), x_percent, y_percent);
-        }
+void
+GastManager::on_render_input_press(const String &node_path, const String &pointer_id,
+                                   float x_percent,
+                                   float y_percent) {
+    if (callback_instance_ && on_render_input_press_) {
+        JNIEnv *env = godot::android_api->godot_android_get_env();
+        env->CallVoidMethod(callback_instance_, on_render_input_press_,
+                            string_to_jstring(env, node_path), string_to_jstring(env, pointer_id),
+                            x_percent, y_percent);
     }
+}
 
-    void GastManager::on_render_input_release(const String &node_path, float x_percent,
-                                              float y_percent) {
-        if (callback_instance_ && on_render_input_release_) {
-            JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance_, on_render_input_release_,
-                                string_to_jstring(env, node_path), x_percent, y_percent);
-        }
+void GastManager::on_render_input_release(const String &node_path, const String &pointer_id,
+                                          float x_percent,
+                                          float y_percent) {
+    if (callback_instance_ && on_render_input_release_) {
+        JNIEnv *env = godot::android_api->godot_android_get_env();
+        env->CallVoidMethod(callback_instance_, on_render_input_release_,
+                            string_to_jstring(env, node_path), string_to_jstring(env, pointer_id),
+                            x_percent, y_percent);
     }
+}
 
     String GastManager::update_gast_node_parent(const String &node_path,
                                                 const String &new_parent_node_path) {

@@ -9,3 +9,11 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.89513 )
 
 [node name="VideoContainer" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0733395, 0 )
+
+[node name="RayCast" type="RayCast" parent="." groups=[
+"gast_ray_caster",
+]]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.260684, 0.479548 )
+enabled = true
+cast_to = Vector3( 0, 0, -5 )

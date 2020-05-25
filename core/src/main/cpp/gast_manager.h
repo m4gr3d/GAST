@@ -19,6 +19,9 @@ namespace gast {
     namespace {
         using namespace godot;
         constexpr int kInvalidSurfaceIndex = -1;
+
+        // Name of the group containing the RayCast nodes that interact with the Gast nodes.
+        const char* kGastRayCasterGroupName = "gast_ray_caster";
     }  // namespace
 
     class GastManager {
@@ -35,13 +38,19 @@ namespace gast {
 
         int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
 
-        void on_render_input(const String &node_path, const Ref<InputEvent> event);
+        void process_input(const Ref<InputEvent> event);
 
-        void on_render_input_hover(const String &node_path, float x_percent, float y_percent);
+        void
+        on_render_input_hover(const String &node_path, const String &pointer_id, float x_percent,
+                              float y_percent);
 
-        void on_render_input_press(const String &node_path, float x_percent, float y_percent);
+        void
+        on_render_input_press(const String &node_path, const String &pointer_id, float x_percent,
+                              float y_percent);
 
-        void on_render_input_release(const String &node_path, float x_percent, float y_percent);
+        void
+        on_render_input_release(const String &node_path, const String &pointer_id, float x_percent,
+                                float y_percent);
 
         /// Create a Gast node with the given parent node and set it up.
         /// @return The node path to the newly created Gast node
