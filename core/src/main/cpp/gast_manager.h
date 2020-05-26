@@ -2,6 +2,7 @@
 #define GAST_MANAGER_H
 
 #include <core/String.hpp>
+#include <core/Vector2.hpp>
 #include <core/Vector3.hpp>
 #include <gen/CollisionShape.hpp>
 #include <gen/ExternalTexture.hpp>
@@ -61,6 +62,8 @@ public:
 
     void update_gast_node_visibility(const String &node_path,
                                      bool should_duplicate_parent_visibility, bool visible);
+
+    Vector2 get_gast_node_size(const String &node_path);
 
     void update_gast_node_size(const String &node_path, float width, float height);
 

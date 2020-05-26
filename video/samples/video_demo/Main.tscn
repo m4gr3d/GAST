@@ -15,5 +15,4 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0733395, 0 )
 "gast_ray_caster",
 ]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.260684, 0.479548 )
-enabled = true
 cast_to = Vector3( 0, 0, -5 )

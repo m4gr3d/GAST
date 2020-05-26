@@ -427,6 +427,24 @@ void GastManager::update_gast_node_visibility(const godot::String &node_path,
     }
 }
 
+Vector2 GastManager::get_gast_node_size(const godot::String &node_path) {
+    Vector2 size;
+    StaticBody *gast_node = get_gast_node(node_path);
+    if (gast_node) {
+        MeshInstance *mesh_instance = get_mesh_instance_from_gast_node(*gast_node);
+        if (mesh_instance) {
+            Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
+            if (mesh_ref.is_valid() && mesh_ref->is_class(QuadMesh::___get_class_name())) {
+                auto *quad_mesh = Object::cast_to<QuadMesh>(*mesh_ref);
+                if (quad_mesh) {
+                    size = quad_mesh->get_size();
+                }
+            }
+        }
+    }
+    return size;
+}
+
 void GastManager::update_gast_node_size(const godot::String &node_path, float width,
                                         float height) {
     // We need to update both the size of the box shape and the size of the quad mesh resources.

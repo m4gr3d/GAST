@@ -1,6 +1,5 @@
 #include "gast_node_script.h"
 
-#include <gast_manager.h>
 #include <core/Array.hpp>
 #include <core/String.hpp>
 #include <core/NodePath.hpp>
@@ -9,8 +8,6 @@
 #include <gen/InputEventScreenTouch.hpp>
 #include <gen/Node.hpp>
 #include <gen/SceneTree.hpp>
-
-#include "utils.h"
 
 namespace gast {
 
@@ -36,9 +33,11 @@ void GastNodeScript::_input_event(const godot::Object *camera,
     }
 
     String node_path = get_path();
-    //TODO: Calculate the 2D collision point of the raycast on the Gast node.
-    float x_percent = 0;
-    float y_percent = 0;
+
+    // Calculate the 2D collision point of the raycast on the Gast node.
+    Vector2 relative_collision_point = get_relative_collision_point(click_position);
+    float x_percent = relative_collision_point.x;
+    float y_percent = relative_collision_point.y;
 
     // This should only fire for touch screen input events, so we filter for those.
     if (event->is_class(InputEventScreenTouch::___get_class_name())) {
@@ -105,9 +104,10 @@ void GastNodeScript::handle_ray_cast_input(const RayCast &ray_cast) {
     String ray_cast_path = ray_cast.get_path();
     Input *input = Input::get_singleton();
 
-    //TODO: Calculate the 2D collision point of the raycast on the Gast node.
-    float x_percent = 0;
-    float y_percent = 0;
+    // Calculate the 2D collision point of the raycast on the Gast node.
+    Vector2 relative_collision_point = get_relative_collision_point(ray_cast.get_collision_point());
+    float x_percent = relative_collision_point.x;
+    float y_percent = relative_collision_point.y;
     if (input->is_action_just_pressed(ray_cast_path)) {
         GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_path,
                                                                      x_percent, y_percent);
