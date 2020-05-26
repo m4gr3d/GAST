@@ -102,16 +102,17 @@ void GastNodeScript::_physics_process(const real_t delta) {
 void GastNodeScript::handle_ray_cast_input(const RayCast &ray_cast) {
     String node_path = get_path();
     String ray_cast_path = ray_cast.get_path();
+    String ray_cast_action = get_action_from_node_path(ray_cast_path);
     Input *input = Input::get_singleton();
 
     // Calculate the 2D collision point of the raycast on the Gast node.
     Vector2 relative_collision_point = get_relative_collision_point(ray_cast.get_collision_point());
     float x_percent = relative_collision_point.x;
     float y_percent = relative_collision_point.y;
-    if (input->is_action_just_pressed(ray_cast_path)) {
+    if (input->is_action_just_pressed(ray_cast_action)) {
         GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_path,
                                                                      x_percent, y_percent);
-    } else if (input->is_action_just_released(ray_cast_path)) {
+    } else if (input->is_action_just_released(ray_cast_action)) {
         GastManager::get_singleton_instance()->on_render_input_release(node_path, ray_cast_path,
                                                                        x_percent, y_percent);
     } else {

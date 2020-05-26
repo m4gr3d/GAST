@@ -81,6 +81,11 @@ private:
         return relative_collision_point;
     }
 
+    inline String get_action_from_node_path(const String& node_path) {
+        // Replace the '/' character with a '_' character
+        return node_path.replace("/", "_");
+    }
+
     void handle_ray_cast_input(const RayCast &ray_cast);
 };
 }  // namespace gast
