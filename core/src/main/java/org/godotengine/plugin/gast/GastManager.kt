@@ -7,9 +7,11 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.FrameLayout
-import androidx.core.util.Pools
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
+import org.godotengine.plugin.gast.input.InputDispatcher
+import org.godotengine.plugin.gast.input.GastInputListener
+import org.godotengine.plugin.gast.input.InputType
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.microedition.khronos.opengles.GL10
 
@@ -29,7 +31,6 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     private val gastInputListeners = ConcurrentLinkedQueue<GastInputListener>()
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
-    private val inputDispatcherPool = Pools.SimplePool<InputDispatcher>(POOL_MAX_SIZE)
 
     /**
      * Root parent for all GAST views.
@@ -39,57 +40,17 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     companion object {
         private val TAG = GastManager::class.java.simpleName
         private const val INVALID_SURFACE_INDEX = -1
-        private const val POOL_MAX_SIZE = 100
-    }
-
-    private enum class InputType {
-        HOVER, PRESS, RELEASE
-    }
-
-    private inner class InputDispatcher(
-        var inputType: InputType,
-        var nodePath: String,
-        var pointerId: String,
-        var xPercent: Float,
-        var yPercent: Float
-    ) : Runnable {
-        override fun run() {
-
-            when (inputType) {
-                InputType.HOVER -> {
-                    for (listener in gastInputListeners) {
-                        listener.onMainInputHover(nodePath, pointerId, xPercent, yPercent)
-                    }
-                }
-
-                InputType.PRESS -> {
-                    for (listener in gastInputListeners) {
-                        listener.onMainInputPress(nodePath, pointerId, xPercent, yPercent)
-                    }
-                }
-
-                InputType.RELEASE -> {
-                    for (listener in gastInputListeners) {
-                        listener.onMainInputRelease(nodePath, pointerId, xPercent, yPercent)
-                    }
-                }
-            }
-
-            if (!inputDispatcherPool.release(this)) {
-                Log.w(TAG, "Input dispatcher pool reached its size limit ($POOL_MAX_SIZE)!")
-            }
-        }
     }
 
     override fun onGodotMainLoopStarted() {
-        Log.d(TAG, "Initializing ${pluginName} manager")
+        Log.d(TAG, "Initializing $pluginName manager")
         initialize()
     }
 
     override fun onMainCreateView(activity: Activity) = rootView
 
     override fun onMainDestroy() {
-        Log.d(TAG, "Shutting down ${pluginName} manager")
+        Log.d(TAG, "Shutting down $pluginName manager")
         runOnRenderThread { shutdown() }
     }
 
@@ -106,7 +67,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v1/gast/gastlib.gdnlib")
 
     fun addGastEventListener(listener: GastRenderListener) {
-        gastEventListeners += listener;
+        gastEventListeners += listener
     }
 
     fun removeGastEventListener(listener: GastRenderListener) {
@@ -165,20 +126,21 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         zRotation: Float
     )
 
-    private fun dispatchInputEvent(inputType: InputType, nodePath: String, pointerId: String, xPercent: Float, yPercent: Float) {
-        var dispatcher = inputDispatcherPool.acquire()
-        if (dispatcher == null) {
-            dispatcher = InputDispatcher(inputType, nodePath, pointerId, xPercent, yPercent)
-        } else {
-            dispatcher.apply {
-                this.inputType = inputType
-                this.nodePath = nodePath
-                this.pointerId = pointerId
-                this.xPercent = xPercent
-                this.yPercent = yPercent
-            }
-        }
-
+    private fun dispatchInputEvent(
+        inputType: InputType,
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+        val dispatcher = InputDispatcher.acquireInputDispatcher(
+            gastInputListeners,
+            inputType,
+            nodePath,
+            pointerId,
+            xPercent,
+            yPercent
+        )
         mainThreadHandler.post(dispatcher)
     }
 

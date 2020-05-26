@@ -21,9 +21,21 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.727, -0.4 )
 [node name="touch_controller" parent="ARVROrigin/LeftTouchController" instance=ExtResource( 1 )]
 transform = Transform( -1, 0, 3.25841e-07, 0, 1, 0, -3.25841e-07, 0, -1, 0, 0, 0 )
 
+[node name="RayCast" type="RayCast" parent="ARVROrigin/LeftTouchController" groups=[
+"gast_ray_caster",
+]]
+enabled = true
+cast_to = Vector3( 0, 0, -5 )
+
 [node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.727, -0.4 )
 controller_id = 2
 
 [node name="touch_controller" parent="ARVROrigin/RightTouchController" instance=ExtResource( 1 )]
 transform = Transform( 1, -3.25841e-07, 0, 3.25841e-07, 1, 0, 0, 0, -1, 0, 0, 0 )
+
+[node name="RayCast" type="RayCast" parent="ARVROrigin/RightTouchController" groups=[
+"gast_ray_caster",
+]]
+enabled = true
+cast_to = Vector3( 0, 0, -5 )

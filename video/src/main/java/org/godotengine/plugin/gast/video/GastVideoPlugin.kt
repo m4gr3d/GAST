@@ -18,7 +18,7 @@ import org.godotengine.plugin.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
-import org.godotengine.plugin.gast.GastInputListener
+import org.godotengine.plugin.gast.input.GastInputListener
 import org.godotengine.plugin.gast.GastRenderListener
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -33,7 +33,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     SurfaceTexture.OnFrameAvailableListener, GastRenderListener, GastInputListener {
 
     companion object {
-        val TAG = GastVideoPlugin::class.java.simpleName
+        private val TAG = GastVideoPlugin::class.java.simpleName
     }
 
     private val gastManager: GastManager by lazy {

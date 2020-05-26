@@ -1,4 +1,4 @@
-package org.godotengine.plugin.gast
+package org.godotengine.plugin.gast.input
 
 /**
  * Used to listen to input events dispatched by the Gast plugin.
