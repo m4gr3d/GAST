@@ -18,6 +18,7 @@ import org.godotengine.plugin.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
+import org.godotengine.plugin.gast.GastRenderListener
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * It's powered by Exoplayer and thus support a wide range of codecs.
  */
 class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
-    SurfaceTexture.OnFrameAvailableListener, GastManager.GastEventListener {
+    SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
 
     companion object {
         val TAG = GastVideoPlugin::class.java.simpleName
@@ -95,12 +96,13 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     }
 
     override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
-        when(reason) {
+        when (reason) {
 
             Player.DISCONTINUITY_REASON_PERIOD_TRANSITION, Player.DISCONTINUITY_REASON_SEEK -> {
                 // TODO: use to detect when switching video in a playlist
             }
-            else -> {}
+            else -> {
+            }
         }
     }
 
@@ -151,13 +153,17 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         runOnUiThread {
             val resources = godot.resources
             val packageName = godot.packageName
-            val dataSourceFactory = DefaultDataSourceFactory(godot, Util.getUserAgent(godot, pluginName))
+            val dataSourceFactory =
+                DefaultDataSourceFactory(godot, Util.getUserAgent(godot, pluginName))
             val videosSource = ConcatenatingMediaSource()
 
             for (videoRawName in videoRawNames) {
                 val videoRawId = resources.getIdentifier(videoRawName, "raw", packageName)
                 if (videoRawId == 0) {
-                    Log.e(TAG, "Unable to find video $videoRawName in the resources 'raw' directory.")
+                    Log.e(
+                        TAG,
+                        "Unable to find video $videoRawName in the resources 'raw' directory."
+                    )
                     continue
                 }
 
