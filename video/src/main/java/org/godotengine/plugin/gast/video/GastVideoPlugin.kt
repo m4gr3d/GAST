@@ -18,6 +18,7 @@ import org.godotengine.plugin.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
+import org.godotengine.plugin.gast.GastInputListener
 import org.godotengine.plugin.gast.GastRenderListener
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -29,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * It's powered by Exoplayer and thus support a wide range of codecs.
  */
 class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
-    SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
+    SurfaceTexture.OnFrameAvailableListener, GastRenderListener, GastInputListener {
 
     companion object {
         val TAG = GastVideoPlugin::class.java.simpleName
@@ -66,11 +67,13 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     override fun onMainCreateView(activity: Activity): View? {
         gastManager.addGastEventListener(this)
+        gastManager.addGastInputListener(this)
         return null
     }
 
     override fun onMainDestroy() {
         gastManager.removeGastEventListener(this)
+        gastManager.removeGastInputListener(this)
         player.release()
         surfaceTexture?.release()
     }
@@ -219,6 +222,39 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     fun stop() {
         runOnUiThread {
             player.stop()
+        }
+    }
+
+    override fun onMainInputHover(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+
+    }
+
+    override fun onMainInputPress(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+
+    }
+
+    override fun onMainInputRelease(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+        if (nodePath == videoNodePath) {
+            if (isPlaying()) {
+                pause()
+            } else {
+                play()
+            }
         }
     }
 
