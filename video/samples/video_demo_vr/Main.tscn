@@ -1,13 +1,21 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://touch_controller.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Main.gd" type="Script" id=2]
 
-[sub_resource type="BoxShape" id=1]
-extents = Vector3( 1, 0.400998, 0.106705 )
+[sub_resource type="SpatialMaterial" id=1]
+albedo_color = Color( 0.929412, 0.858824, 0.858824, 1 )
+
+[sub_resource type="CapsuleMesh" id=2]
+material = SubResource( 1 )
+radius = 0.004
+mid_height = 0.5
 
 [node name="Main" type="Spatial"]
 script = ExtResource( 2 )
+
+[node name="VideoContainer" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.68129, -0.868541 )
 
 [node name="ARVROrigin" type="ARVROrigin" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1 )
@@ -21,6 +29,17 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.727, -0.4 )
 [node name="touch_controller" parent="ARVROrigin/LeftTouchController" instance=ExtResource( 1 )]
 transform = Transform( -1, 0, 3.25841e-07, 0, 1, 0, -3.25841e-07, 0, -1, 0, 0, 0 )
 
+[node name="MeshInstance" type="MeshInstance" parent="ARVROrigin/LeftTouchController"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.009, 0, -0.297 )
+mesh = SubResource( 2 )
+material/0 = null
+
+[node name="RayCast" type="RayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" groups=[
+"gast_ray_caster",
+]]
+enabled = true
+cast_to = Vector3( 0, 0, -5 )
+
 [node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.727, -0.4 )
 controller_id = 2
@@ -28,10 +47,13 @@ controller_id = 2
 [node name="touch_controller" parent="ARVROrigin/RightTouchController" instance=ExtResource( 1 )]
 transform = Transform( 1, -3.25841e-07, 0, 3.25841e-07, 1, 0, 0, 0, -1, 0, 0, 0 )
 
-[node name="StaticBody" type="StaticBody" parent="."]
+[node name="MeshInstance" type="MeshInstance" parent="ARVROrigin/RightTouchController"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.009, 0, -0.297 )
+mesh = SubResource( 2 )
+material/0 = null
 
-[node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.68129, -0.868541 )
-shape = SubResource( 1 )
-
-[node name="MeshInstance" type="MeshInstance" parent="StaticBody/CollisionShape"]
+[node name="RayCast" type="RayCast" parent="ARVROrigin/RightTouchController/MeshInstance" groups=[
+"gast_ray_caster",
+]]
+enabled = true
+cast_to = Vector3( 0, 0, -5 )

@@ -8,35 +8,33 @@
 
 namespace gast {
 
-    namespace {
-        using namespace godot;
-    }  // namespace
+namespace {
+using namespace godot;
+}  // namespace
 
-    // Loader for GastManager. The 'initialize()' method must be invoked for
-    // GastManager to be properly setup.
-    class GastLoader : public Reference {
-        GODOT_CLASS(GastLoader, Reference)
+// Loader for GastManager. The 'initialize()' method must be invoked for
+// GastManager to be properly setup.
+class GastLoader : public Reference {
+GODOT_CLASS(GastLoader, Reference)
 
-    public:
-        GastLoader();
-        ~GastLoader();
+public:
+    GastLoader();
 
-        static void _register_methods();
+    ~GastLoader();
 
-        void _init();
+    static void _register_methods();
 
-        // Initialize GastManager
-        void initialize();
+    void _init();
 
-        // Shutdown GastManager
-        void shutdown();
+    // Initialize GastManager
+    void initialize();
 
-        // Used to forward _process callback to the Gast library
-        void on_process(const String& node_path, float delta);
+    // Shutdown GastManager
+    void shutdown();
 
-        // Used to forward _input callback to the Gast library
-        void on_input(const String& node_path, const Ref<InputEvent> event);
-    };
+    // Used to forward _input callback to the Gast library
+    void on_unhandled_input(const Ref<InputEvent> event);
+};
 }  // namespace gast
 
 

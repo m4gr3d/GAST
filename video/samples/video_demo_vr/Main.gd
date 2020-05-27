@@ -8,36 +8,36 @@ var ovr_init_config = null;
 # the other APIs are available during runtime; details about the exposed functions can be found
 # in the *.h files in https://github.com/GodotVR/godot_oculus_mobile/tree/master/src/config
 var ovr_performance = null;
-var ovr_display_refresh_rate = null;
-var ovr_guardian_system = null;
-var ovr_tracking_transform = null;
-var ovr_utilities = null;
-var ovr_vr_api_proxy = null;
-
 
 # some of the Oculus VrAPI constants are defined in this file. Have a look into it to learn more
 var ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new();
 
 var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
+var gast = null
 
 func _ready():
 	_initialize_ovr_mobile_arvr_interface()
-	var gast = gast_loader.new()
+	gast = gast_loader.new()
 	gast.initialize()
-	
+
 	if Engine.has_singleton("gast-video"):
 		print("Setting video player...")
 		var gast_video_plugin = Engine.get_singleton("gast-video")
-		gast_video_plugin.preparePlayer("/root/Main/StaticBody/CollisionShape/MeshInstance", ["flight"])
+		gast_video_plugin.preparePlayer("/root/Main/VideoContainer", ["flight"])
 		gast_video_plugin.play()
 		gast_video_plugin.setRepeatMode(2)
 		gast_video_plugin.setVideoScreenSize(3, 2)
 	else:
 		print("Unable to load gast-video singleton.")
 
+
 func _process(delta_t):
 	_check_and_perform_runtime_config()
-	
+
+func _unhandled_input(event):
+	gast.on_unhandled_input(event)
+
+
 # this code check for the OVRMobile inteface; and if successful also initializes the
 # .gdns APIs used to communicate with the VR device
 func _initialize_ovr_mobile_arvr_interface():
@@ -58,27 +58,14 @@ func _initialize_ovr_mobile_arvr_interface():
 			Engine.iterations_per_second = 72 # Quest
 
 			# load the .gdns classes.
-			ovr_display_refresh_rate = load("res://addons/godot_ovrmobile/OvrDisplayRefreshRate.gdns");
-			ovr_guardian_system = load("res://addons/godot_ovrmobile/OvrGuardianSystem.gdns");
 			ovr_performance = load("res://addons/godot_ovrmobile/OvrPerformance.gdns");
-			ovr_tracking_transform = load("res://addons/godot_ovrmobile/OvrTrackingTransform.gdns");
-			ovr_utilities = load("res://addons/godot_ovrmobile/OvrUtilities.gdns");
-			ovr_vr_api_proxy = load("res://addons/godot_ovrmobile/OvrVrApiProxy.gdns");
-
-			# and now instance the .gdns classes for use if load was successfull
-			if (ovr_display_refresh_rate): ovr_display_refresh_rate = ovr_display_refresh_rate.new()
-			if (ovr_guardian_system): ovr_guardian_system = ovr_guardian_system.new()
 			if (ovr_performance): ovr_performance = ovr_performance.new()
-			if (ovr_tracking_transform): ovr_tracking_transform = ovr_tracking_transform.new()
-			if (ovr_utilities): ovr_utilities = ovr_utilities.new()
-			if (ovr_vr_api_proxy): ovr_vr_api_proxy = ovr_vr_api_proxy.new()
 
 			print("Loaded OVRMobile")
 			return true
 		else:
 			print("Failed to enable OVRMobile")
 			return false
-
 
 
 # many settings should only be applied once when running; this variable
@@ -90,11 +77,8 @@ var _performed_runtime_config = false
 # recreated when the Android device wakes up from sleep and then all settings wil
 # need to be reapplied
 func _notification(what):
-	if (what == NOTIFICATION_APP_PAUSED):
-		pass
 	if (what == NOTIFICATION_APP_RESUMED):
 		_performed_runtime_config = false # redo runtime config
-
 
 func _check_and_perform_runtime_config():
 	if _performed_runtime_config: return

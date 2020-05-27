@@ -2,120 +2,143 @@
 #define GAST_MANAGER_H
 
 #include <core/String.hpp>
+#include <core/Vector2.hpp>
 #include <core/Vector3.hpp>
+#include <gen/CollisionShape.hpp>
 #include <gen/ExternalTexture.hpp>
 #include <gen/InputEvent.hpp>
 #include <gen/Mesh.hpp>
 #include <gen/MeshInstance.hpp>
+#include <gen/Shape.hpp>
 #include <gen/Spatial.hpp>
+#include <gen/StaticBody.hpp>
 #include <jni.h>
 #include <list>
 
 namespace gast {
 
-    namespace {
-        using namespace godot;
-        constexpr int kInvalidSurfaceIndex = -1;
-    }  // namespace
+namespace {
+using namespace godot;
+constexpr int kInvalidSurfaceIndex = -1;
 
-    class GastManager {
-    public:
-        static GastManager *get_singleton_instance();
+// Name of the group containing the RayCast nodes that interact with the Gast nodes.
+const char *kGastRayCasterGroupName = "gast_ray_caster";
+}  // namespace
 
-        static void gdn_initialize();
+class GastManager {
+public:
+    static GastManager *get_singleton_instance();
 
-        static void gdn_shutdown();
+    static void gdn_initialize();
 
-        static void jni_initialize(JNIEnv *env, jobject callback);
+    static void gdn_shutdown();
 
-        static void jni_shutdown(JNIEnv *env);
+    static void jni_initialize(JNIEnv *env, jobject callback);
 
-        int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
+    static void jni_shutdown(JNIEnv *env);
 
-        void on_render_process(const String &node_path, float delta);
+    int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
 
-        void on_render_input(const String &node_path, const Ref<InputEvent> event);
+    void process_input(const Ref<InputEvent> event);
 
-        void on_render_input_hover(const String &node_path, float x_percent, float y_percent);
+    void on_render_input_hover(const String &node_path, const String &pointer_id, float x_percent,
+                               float y_percent);
 
-        void on_render_input_press(const String &node_path, float x_percent, float y_percent);
+    void on_render_input_press(const String &node_path, const String &pointer_id, float x_percent,
+                               float y_percent);
 
-        void on_render_input_release(const String &node_path, float x_percent, float y_percent);
+    void on_render_input_release(const String &node_path, const String &pointer_id, float x_percent,
+                                 float y_percent);
 
-        /// Create a quad mesh instance with the given parent node and set it up.
-        /// @return The node path to the newly created mesh instance
-        String acquire_and_bind_quad_mesh_instance(const String &parent_node_path);
+    /// Create a Gast node with the given parent node and set it up.
+    /// @return The node path to the newly created Gast node
+    String acquire_and_bind_gast_node(const String &parent_node_path);
 
-        /// Setup the mesh instance with the given node path for GAST view support.
-        bool bind_mesh_instance(const String &node_path);
+    /// Unbind and release the Gast node with the given node path. This is the counterpart
+    /// to acquire_and_bind_gast_node.
+    void unbind_and_release_gast_node(const String &node_path);
 
-        /// Unbind the mesh instance with the given node path. This is the counterpart to
-        /// bind_mesh_instance.
-        void unbind_mesh_instance(const String &node_path);
+    String update_gast_node_parent(const String &node_path, const String &new_parent_node_path);
 
-        /// Unbind and release the mesh instance with the given node path. This is the counterpart
-        /// to acquire_and_bind_mesh_instance.
-        void unbind_and_release_quad_mesh_instance(const String &node_path);
+    void update_gast_node_visibility(const String &node_path,
+                                     bool should_duplicate_parent_visibility, bool visible);
 
-        String update_node_parent(const String &node_path, const String &new_parent_node_path);
+    void set_gast_node_collidable(const String &node_path, bool collidable);
 
-        void update_spatial_node_visibility(const String &node_path,
-                                            bool should_duplicate_parent_visibility, bool visible);
+    bool is_gast_node_collidable(const String &node_path);
 
-        void update_quad_mesh_instance_size(const String &node_path, float width, float height);
+    Vector2 get_gast_node_size(const String &node_path);
 
-        void update_spatial_node_local_translation(const String &node_path, float x_translation,
-                                                   float y_translation,
-                                                   float z_translation);
+    void update_gast_node_size(const String &node_path, float width, float height);
 
-        Vector3 get_spatial_node_global_translation(const String &node_path);
+    void update_gast_node_local_translation(const String &node_path, float x_translation,
+                                            float y_translation,
+                                            float z_translation);
 
-        void update_spatial_node_local_scale(const String &node_path, float x_scale, float y_scale);
+    void update_gast_node_local_scale(const String &node_path, float x_scale, float y_scale);
 
-        void
-        update_spatial_node_local_rotation(const String &node_path, float x_rotation, float y_rotation,
-                                           float z_rotation);
+    void update_gast_node_local_rotation(const String &node_path, float x_rotation,
+                                         float y_rotation,
+                                         float z_rotation);
 
-    private:
-        static void delete_singleton_instance();
+private:
+    static void delete_singleton_instance();
 
-        static void register_callback(JNIEnv *env, jobject callback);
+    static void register_callback(JNIEnv *env, jobject callback);
 
-        static void unregister_callback(JNIEnv *env);
+    static void unregister_callback(JNIEnv *env);
 
-        ExternalTexture *
-        get_external_texture(const String &node_path, int surface_index);
+    inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
+        CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);
+        if (!collision_shape) {
+            return nullptr;
+        }
 
-        ExternalTexture *get_external_texture(Ref<Mesh> mesh, int surface_index);
+        Node *node = collision_shape->get_child(0);
+        if (!node || !node->is_class("MeshInstance")) {
+            return nullptr;
+        }
+        MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(node);
+        return mesh_instance;
+    }
 
-        MeshInstance *get_mesh_instance(const String &node_path);
+    inline CollisionShape *get_collision_shape_from_gast_node(StaticBody &static_body) {
+        Node *node = static_body.get_child(0);
+        if (!node || !node->is_class("CollisionShape")) {
+            return nullptr;
+        }
 
-        Spatial* get_spatial_node(const String &node_path);
+        CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
+        return collision_shape;
+    }
 
-        Node *get_node(const String &node_path);
+    ExternalTexture *get_external_texture(const String &node_path, int surface_index);
 
-        bool bind_mesh_instance(MeshInstance& mesh_instance);
+    ExternalTexture *get_external_texture(Ref<Mesh> mesh, int surface_index);
 
-        bool is_mesh_with_gast_shader(Ref<Mesh> mesh);
+    StaticBody *get_gast_node(const String &node_path);
 
-        void unbind_mesh_instance(MeshInstance& mesh_instance);
+    Node *get_node(const String &node_path);
 
-        GastManager();
+    bool bind_gast_node(StaticBody &static_body);
 
-        ~GastManager();
+    void unbind_gast_node(StaticBody &static_body);
 
-        std::list<MeshInstance *> reusable_pool_;
+    GastManager();
 
-        static GastManager *singleton_instance_;
-        static bool gdn_initialized_;
-        static bool jni_initialized_;
+    ~GastManager();
 
-        static jobject callback_instance_;
-        static jmethodID on_render_process_;
-        static jmethodID on_render_input_hover_;
-        static jmethodID on_render_input_press_;
-        static jmethodID on_render_input_release_;
-    };
+    std::list<StaticBody *> reusable_pool_;
+
+    static GastManager *singleton_instance_;
+    static bool gdn_initialized_;
+    static bool jni_initialized_;
+
+    static jobject callback_instance_;
+    static jmethodID on_render_input_hover_;
+    static jmethodID on_render_input_press_;
+    static jmethodID on_render_input_release_;
+};
 }  // namespace gast
 
 #endif // GAST_MANAGER_H

@@ -55,38 +55,38 @@
 
 namespace gast {
 
-    using namespace godot;
+using namespace godot;
 
-     /**
-     * Converts JNI jstring to Godot String.
-     * @param source Source JNI string. If null an empty string is returned.
-     * @param env JNI environment instance.
-     * @return Godot string instance.
-     */
-    static inline String jstring_to_string(JNIEnv *env, jstring source) {
-        if (env && source) {
-            const char *const source_utf8 = env->GetStringUTFChars(source, NULL);
-            if (source_utf8) {
-                String result(source_utf8);
-                env->ReleaseStringUTFChars(source, source_utf8);
-                return result;
-            }
+/**
+* Converts JNI jstring to Godot String.
+* @param source Source JNI string. If null an empty string is returned.
+* @param env JNI environment instance.
+* @return Godot string instance.
+*/
+static inline String jstring_to_string(JNIEnv *env, jstring source) {
+    if (env && source) {
+        const char *const source_utf8 = env->GetStringUTFChars(source, NULL);
+        if (source_utf8) {
+            String result(source_utf8);
+            env->ReleaseStringUTFChars(source, source_utf8);
+            return result;
         }
-        return String();
     }
+    return String();
+}
 
-    /**
-     * Converts Godot String to JNI jstring.
-     * @param source Source Godot String.
-     * @param env JNI environment instance.
-     * @return JNI string instance.
-     */
-    static inline jstring string_to_jstring(JNIEnv *env, const String& source) {
-        if (env) {
-            return env->NewStringUTF(source.utf8().get_data());
-        }
-        return nullptr;
+/**
+ * Converts Godot String to JNI jstring.
+ * @param source Source Godot String.
+ * @param env JNI environment instance.
+ * @return JNI string instance.
+ */
+static inline jstring string_to_jstring(JNIEnv *env, const String &source) {
+    if (env) {
+        return env->NewStringUTF(source.utf8().get_data());
     }
+    return nullptr;
+}
 
 }  // namespace gast
 

@@ -3,10 +3,15 @@
 package org.godotengine.plugin.gast
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.FrameLayout
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
+import org.godotengine.plugin.gast.input.InputDispatcher
+import org.godotengine.plugin.gast.input.GastInputListener
+import org.godotengine.plugin.gast.input.InputType
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.microedition.khronos.opengles.GL10
 
@@ -18,27 +23,14 @@ import javax.microedition.khronos.opengles.GL10
  */
 class GastManager(godot: Godot) : GodotPlugin(godot) {
 
-    /**
-     * Used to listen to events dispatched by the Gast plugin.
-     */
-    interface GastEventListener {
-        /**
-         * Forward the '_process' callback of the Godot node with the given 'nodePath'
-         * Invoked on the render thread.
-         */
-        fun onRenderProcess(nodePath: String, delta: Float)
-
-        /**
-         * Forward the render draw frame callback.
-         */
-        fun onRenderDrawFrame()
-    }
-
     init {
         System.loadLibrary("gast")
     }
 
-    private val gastEventListeners = ConcurrentLinkedQueue<GastEventListener>()
+    private val gastEventListeners = ConcurrentLinkedQueue<GastRenderListener>()
+    private val gastInputListeners = ConcurrentLinkedQueue<GastInputListener>()
+
+    private val mainThreadHandler = Handler(Looper.getMainLooper())
 
     /**
      * Root parent for all GAST views.
@@ -51,14 +43,14 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     }
 
     override fun onGodotMainLoopStarted() {
-        Log.d(TAG, "Initializing ${pluginName} manager")
+        Log.d(TAG, "Initializing $pluginName manager")
         initialize()
     }
 
     override fun onMainCreateView(activity: Activity) = rootView
 
     override fun onMainDestroy() {
-        Log.d(TAG, "Shutting down ${pluginName} manager")
+        Log.d(TAG, "Shutting down $pluginName manager")
         runOnRenderThread { shutdown() }
     }
 
@@ -74,83 +66,117 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v1/gast/gastlib.gdnlib")
 
-    fun addGastEventListener(listener: GastEventListener) {
-        gastEventListeners += listener;
+    fun addGastEventListener(listener: GastRenderListener) {
+        gastEventListeners += listener
     }
 
-    fun removeGastEventListener(listener: GastEventListener) {
+    fun removeGastEventListener(listener: GastRenderListener) {
         gastEventListeners -= listener
     }
 
+    fun addGastInputListener(listener: GastInputListener) {
+        gastInputListeners += listener
+    }
+
+    fun removeGastInputListener(listener: GastInputListener) {
+        gastInputListeners -= listener
+    }
+
     @JvmOverloads
-    external fun getExternalTextureId(nodePath: String, surfaceIndex: Int = INVALID_SURFACE_INDEX): Int
+    external fun getExternalTextureId(
+        nodePath: String,
+        surfaceIndex: Int = INVALID_SURFACE_INDEX
+    ): Int
 
     /**
-     * Create a mesh instance with the given parent node and set it up.
-     * @param parentNodePath - Path to the parent for the mesh instance that will be created. The parent node must exist
-     * @return The node path to the newly created mesh instance
+     * Create a Gast node with the given parent node and set it up.
+     * @param parentNodePath - Path to the parent for the Gast node that will be created. The parent node must exist
+     * @return The node path to the newly created Gast node
      */
-    external fun acquireAndBindQuadMeshInstance(parentNodePath: String): String
+    external fun acquireAndBindGastNode(parentNodePath: String): String
 
     /**
-     * Setup the mesh instance with the given node path for GAST view support.
-     * @param nodePath - Path to an existing mesh instance node
+     * Unbind and release the Gast node with the given node path. This is the counterpart to [GastManager.acquireAndBindGastNode]
      */
-    external fun bindMeshInstance(nodePath: String): Boolean
+    external fun unbindAndReleaseGastNode(nodePath: String)
 
-    /**
-     * Unbind the mesh instance with the given node path. This is the counterpart to [GastManager.bindMeshInstance]
-     */
-    external fun unbindMeshInstance(nodePath: String)
+    external fun updateGastNodeParent(nodePath: String, newParentNodePath: String): String
 
-    /**
-     * Unbind and release the mesh instance with the given node path. This is the counterpart to [GastManager.acquireAndBindQuadMeshInstance]
-     */
-    external fun unbindAndReleaseQuadMeshInstance(nodePath: String)
-
-    external fun updateNodeParent(nodePath: String, newParentNodePath: String): String
-
-    external fun updateSpatialNodeVisibility(
+    external fun updateGastNodeVisibility(
         nodePath: String,
         shouldDuplicateParentVisibility: Boolean,
         visible: Boolean
     )
 
-    external fun updateQuadMeshInstanceSize(nodePath: String, width: Float, height: Float)
+    external fun setGastNodeCollidable(nodePath: String, collidable: Boolean)
 
-    external fun updateSpatialNodeLocalTranslation(
+    external fun isGastNodeCollidable(nodePath: String): Boolean
+
+    external fun updateGastNodeSize(nodePath: String, width: Float, height: Float)
+
+    external fun updateGastNodeLocalTranslation(
         nodePath: String,
         xTranslation: Float,
         yTranslation: Float,
         zTranslation: Float
     )
 
-    external fun updateSpatialNodeLocalScale(nodePath: String, xScale: Float, yScale: Float)
+    external fun updateGastNodeLocalScale(nodePath: String, xScale: Float, yScale: Float)
 
-    external fun updateSpatialNodeLocalRotation(
+    external fun updateGastNodeLocalRotation(
         nodePath: String,
         xRotation: Float,
         yRotation: Float,
         zRotation: Float
     )
 
+    private fun dispatchInputEvent(
+        inputType: InputType,
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+        val dispatcher = InputDispatcher.acquireInputDispatcher(
+            gastInputListeners,
+            inputType,
+            nodePath,
+            pointerId,
+            xPercent,
+            yPercent
+        )
+        mainThreadHandler.post(dispatcher)
+    }
+
     private external fun initialize()
 
     private external fun shutdown()
 
-    /**
-     * Invoked by the native layer to forward the node's '_process' callback.
-     */
-    private fun onRenderProcess(nodePath: String, delta: Float) {
-        for (listener in gastEventListeners) {
-            listener.onRenderProcess(nodePath, delta)
-        }
+    private fun onRenderInputHover(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+        dispatchInputEvent(InputType.HOVER, nodePath, pointerId, xPercent, yPercent)
     }
 
-    private fun onRenderInputHover(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputPress(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+        dispatchInputEvent(InputType.PRESS, nodePath, pointerId, xPercent, yPercent)
+    }
 
-    private fun onRenderInputPress(nodePath: String, xPercent: Float, yPercent: Float) {}
-
-    private fun onRenderInputRelease(nodePath: String, xPercent: Float, yPercent: Float) {}
+    private fun onRenderInputRelease(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float
+    ) {
+        dispatchInputEvent(InputType.RELEASE, nodePath, pointerId, xPercent, yPercent)
+    }
 
 }
