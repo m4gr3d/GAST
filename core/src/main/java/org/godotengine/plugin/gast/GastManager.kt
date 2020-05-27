@@ -108,6 +108,10 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         visible: Boolean
     )
 
+    external fun setGastNodeCollidable(nodePath: String, collidable: Boolean)
+
+    external fun isGastNodeCollidable(nodePath: String): Boolean
+
     external fun updateGastNodeSize(nodePath: String, width: Float, height: Float)
 
     external fun updateGastNodeLocalTranslation(

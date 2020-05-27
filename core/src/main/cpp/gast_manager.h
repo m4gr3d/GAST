@@ -63,6 +63,10 @@ public:
     void update_gast_node_visibility(const String &node_path,
                                      bool should_duplicate_parent_visibility, bool visible);
 
+    void set_gast_node_collidable(const String &node_path, bool collidable);
+
+    bool is_gast_node_collidable(const String &node_path);
+
     Vector2 get_gast_node_size(const String &node_path);
 
     void update_gast_node_size(const String &node_path, float width, float height);

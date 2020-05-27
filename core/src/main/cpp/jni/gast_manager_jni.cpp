@@ -57,6 +57,18 @@ JNI_METHOD(updateGastNodeVisibility)(JNIEnv *env, jobject, jstring node_path,
 }
 
 JNIEXPORT void JNICALL
+JNI_METHOD(setGastNodeCollidable)(JNIEnv *env, jobject, jstring node_path, jboolean collidable) {
+    GastManager::get_singleton_instance()->set_gast_node_collidable(
+        jstring_to_string(env, node_path), collidable);
+}
+
+JNIEXPORT jboolean JNICALL
+JNI_METHOD(isGastNodeCollidable)(JNIEnv *env, jobject, jstring node_path) {
+    return GastManager::get_singleton_instance()->is_gast_node_collidable(
+        jstring_to_string(env, node_path));
+}
+
+JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeSize)(JNIEnv *env, jobject, jstring node_path, jfloat width,
                                jfloat height) {
     GastManager::get_singleton_instance()->update_gast_node_size(jstring_to_string(env, node_path),

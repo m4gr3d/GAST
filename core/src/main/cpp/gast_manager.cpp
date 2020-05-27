@@ -427,6 +427,26 @@ void GastManager::update_gast_node_visibility(const godot::String &node_path,
     }
 }
 
+void GastManager::set_gast_node_collidable(const godot::String &node_path, bool collidable) {
+    StaticBody *gast_node = get_gast_node(node_path);
+    if (!gast_node) {
+        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        return;
+    }
+
+    gast_node->set_ray_pickable(collidable);
+}
+
+bool GastManager::is_gast_node_collidable(const godot::String &node_path) {
+    StaticBody *gast_node = get_gast_node(node_path);
+    if (!gast_node) {
+        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        return false;
+    }
+
+    return gast_node->is_ray_pickable();
+}
+
 Vector2 GastManager::get_gast_node_size(const godot::String &node_path) {
     Vector2 size;
     StaticBody *gast_node = get_gast_node(node_path);
