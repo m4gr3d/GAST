@@ -4,14 +4,7 @@ import android.util.Log
 import androidx.core.util.Pools
 import java.util.concurrent.ConcurrentLinkedQueue
 
-internal class InputDispatcher(
-    var gastInputListeners: ConcurrentLinkedQueue<GastInputListener>,
-    var inputType: InputType,
-    var nodePath: String,
-    var pointerId: String,
-    var xPercent: Float,
-    var yPercent: Float
-) : Runnable {
+internal class InputDispatcher private constructor() : Runnable {
 
     companion object {
         private const val POOL_MAX_SIZE = 100
@@ -24,28 +17,15 @@ internal class InputDispatcher(
             inputType: InputType,
             nodePath: String,
             pointerId: String,
-            xPercent: Float,
-            yPercent: Float
+            inputData: FloatArray
         ): InputDispatcher {
-            var dispatcher = inputDispatcherPool.acquire()
-            if (dispatcher == null) {
-                dispatcher = InputDispatcher(
-                    gastInputListeners,
-                    inputType,
-                    nodePath,
-                    pointerId,
-                    xPercent,
-                    yPercent
-                )
-            } else {
-                dispatcher.apply {
-                    this.gastInputListeners = gastInputListeners
-                    this.inputType = inputType
-                    this.nodePath = nodePath
-                    this.pointerId = pointerId
-                    this.xPercent = xPercent
-                    this.yPercent = yPercent
-                }
+            val dispatcher = inputDispatcherPool.acquire() ?: InputDispatcher()
+            dispatcher.apply {
+                this.gastInputListeners = gastInputListeners
+                this.inputType = inputType
+                this.nodePath = nodePath
+                this.pointerId = pointerId
+                this.inputData = inputData
             }
 
             return dispatcher
@@ -58,24 +38,43 @@ internal class InputDispatcher(
         }
     }
 
+    lateinit var gastInputListeners: ConcurrentLinkedQueue<GastInputListener>
+    lateinit var inputType: InputType
+    lateinit var nodePath: String
+    lateinit var pointerId: String
+    lateinit var inputData: FloatArray
+
     override fun run() {
 
         when (inputType) {
             InputType.HOVER -> {
                 for (listener in gastInputListeners) {
-                    listener.onMainInputHover(nodePath, pointerId, xPercent, yPercent)
+                    listener.onMainInputHover(nodePath, pointerId, inputData[0], inputData[1])
                 }
             }
 
             InputType.PRESS -> {
                 for (listener in gastInputListeners) {
-                    listener.onMainInputPress(nodePath, pointerId, xPercent, yPercent)
+                    listener.onMainInputPress(nodePath, pointerId, inputData[0], inputData[1])
                 }
             }
 
             InputType.RELEASE -> {
                 for (listener in gastInputListeners) {
-                    listener.onMainInputRelease(nodePath, pointerId, xPercent, yPercent)
+                    listener.onMainInputRelease(nodePath, pointerId, inputData[0], inputData[1])
+                }
+            }
+
+            InputType.SCROLL -> {
+                for (listener in gastInputListeners) {
+                    listener.onMainInputScroll(
+                        nodePath,
+                        pointerId,
+                        inputData[0],
+                        inputData[1],
+                        inputData[2],
+                        inputData[3]
+                    )
                 }
             }
         }

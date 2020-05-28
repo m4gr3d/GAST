@@ -34,6 +34,7 @@ jobject GastManager::callback_instance_ = nullptr;
 jmethodID GastManager::on_render_input_hover_ = nullptr;
 jmethodID GastManager::on_render_input_press_ = nullptr;
 jmethodID GastManager::on_render_input_release_ = nullptr;
+jmethodID GastManager::on_render_input_scroll_ = nullptr;
 
 GastManager::GastManager() {}
 
@@ -95,6 +96,10 @@ void GastManager::register_callback(JNIEnv *env, jobject callback) {
     on_render_input_release_ = env->GetMethodID(callback_class, "onRenderInputRelease",
                                                 "(Ljava/lang/String;Ljava/lang/String;FF)V");
     ALOG_ASSERT(on_render_input_release_ != nullptr, "Unable to find onRenderInputRelease");
+
+    on_render_input_scroll_ = env->GetMethodID(callback_class, "onRenderInputScroll",
+                                               "(Ljava/lang/String;Ljava/lang/String;FFFF)V");
+    ALOG_ASSERT(on_render_input_scroll_ != nullptr, "Unable to find onRenderInputScroll");
 }
 
 void GastManager::unregister_callback(JNIEnv *env) {
@@ -104,6 +109,7 @@ void GastManager::unregister_callback(JNIEnv *env) {
         on_render_input_hover_ = nullptr;
         on_render_input_press_ = nullptr;
         on_render_input_release_ = nullptr;
+        on_render_input_scroll_ = nullptr;
     }
 }
 
@@ -372,6 +378,18 @@ void GastManager::on_render_input_release(const String &node_path, const String 
         env->CallVoidMethod(callback_instance_, on_render_input_release_,
                             string_to_jstring(env, node_path), string_to_jstring(env, pointer_id),
                             x_percent, y_percent);
+    }
+}
+
+void GastManager::on_render_input_scroll(const godot::String &node_path,
+                                         const godot::String &pointer_id, float x_percent,
+                                         float y_percent, float horizontal_delta,
+                                         float vertical_delta) {
+    if (callback_instance_ && on_render_input_scroll_) {
+        JNIEnv *env = godot::android_api->godot_android_get_env();
+        env->CallVoidMethod(callback_instance_, on_render_input_scroll_,
+                            string_to_jstring(env, node_path), string_to_jstring(env, pointer_id),
+                            x_percent, y_percent, horizontal_delta, vertical_delta);
     }
 }
 

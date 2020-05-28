@@ -50,6 +50,9 @@ public:
     void on_render_input_release(const String &node_path, const String &pointer_id, float x_percent,
                                  float y_percent);
 
+    void on_render_input_scroll(const String &node_path, const String &pointer_id, float x_percent,
+                                float y_percent, float horizontal_delta, float vertical_delta);
+
     /// Create a Gast node with the given parent node and set it up.
     /// @return The node path to the newly created Gast node
     String acquire_and_bind_gast_node(const String &parent_node_path);
@@ -138,6 +141,7 @@ private:
     static jmethodID on_render_input_hover_;
     static jmethodID on_render_input_press_;
     static jmethodID on_render_input_release_;
+    static jmethodID on_render_input_scroll_;
 };
 }  // namespace gast
 

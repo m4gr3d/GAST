@@ -21,7 +21,21 @@ interface GastInputListener {
     /**
      * Callback for release input events.
      *
-     * This is invoke on the main thread.
+     * This is invoked on the main thread.
      */
     fun onMainInputRelease(nodePath: String, pointerId: String, xPercent: Float, yPercent: Float)
+
+    /**
+     * Callback for scroll input events.
+     *
+     * This is invoked on the main thread.
+     */
+    fun onMainInputScroll(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float,
+        horizontalDelta: Float,
+        verticalDelta: Float
+    )
 }

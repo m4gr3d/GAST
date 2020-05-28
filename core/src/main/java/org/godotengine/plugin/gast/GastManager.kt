@@ -134,16 +134,14 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         inputType: InputType,
         nodePath: String,
         pointerId: String,
-        xPercent: Float,
-        yPercent: Float
+        vararg inputData: Float
     ) {
         val dispatcher = InputDispatcher.acquireInputDispatcher(
             gastInputListeners,
             inputType,
             nodePath,
             pointerId,
-            xPercent,
-            yPercent
+            inputData
         )
         mainThreadHandler.post(dispatcher)
     }
@@ -177,6 +175,25 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         yPercent: Float
     ) {
         dispatchInputEvent(InputType.RELEASE, nodePath, pointerId, xPercent, yPercent)
+    }
+
+    private fun onRenderInputScroll(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float,
+        horizontalDelta: Float,
+        verticalDelta: Float
+    ) {
+        dispatchInputEvent(
+            InputType.SCROLL,
+            nodePath,
+            pointerId,
+            xPercent,
+            yPercent,
+            horizontalDelta,
+            verticalDelta
+        )
     }
 
 }

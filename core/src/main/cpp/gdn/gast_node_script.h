@@ -81,9 +81,29 @@ private:
         return relative_collision_point;
     }
 
-    inline String get_action_from_node_path(const String& node_path) {
+    inline String get_click_action_from_node_path(const String& node_path) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_");
+        return node_path.replace("/", "_") + "_click";
+    }
+
+    inline String get_horizontal_left_scroll_action_from_node_path(const String& node_path) {
+        // Replace the '/' character with a '_' character
+        return node_path.replace("/", "_") + "_horizontal_left_scroll";
+    }
+
+    inline String get_horizontal_right_scroll_action_from_node_path(const String& node_path) {
+        // Replace the '/' character with a '_' character
+        return node_path.replace("/", "_") + "_horizontal_right_scroll";
+    }
+
+    inline String get_vertical_up_scroll_action_from_node_path(const String& node_path) {
+        // Replace the '/' character with a '_' character
+        return node_path.replace("/", "_") + "_vertical_up_scroll";
+    }
+
+    inline String get_vertical_down_scroll_action_from_node_path(const String& node_path) {
+        // Replace the '/' character with a '_' character
+        return node_path.replace("/", "_") + "_vertical_down_scroll";
     }
 
     void handle_ray_cast_input(const RayCast &ray_cast);
