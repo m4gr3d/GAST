@@ -41,12 +41,8 @@ public:
 
 private:
     inline RayCast *get_ray_cast_from_variant(Variant variant) {
-        if (variant.get_type() != Variant::OBJECT) {
-            return nullptr;
-        }
-
-        Object *object = get_wrapper<Object>(variant.operator godot_object *());
-        if (!object || !object->is_class("RayCast")) {
+        Node *node = get_node_from_variant(variant);
+        if (!node || !node->is_class("RayCast")) {
             return nullptr;
         }
 

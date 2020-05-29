@@ -9,11 +9,14 @@
 #include <gen/InputEvent.hpp>
 #include <gen/Mesh.hpp>
 #include <gen/MeshInstance.hpp>
+#include <gen/Node.hpp>
 #include <gen/Shape.hpp>
 #include <gen/Spatial.hpp>
 #include <gen/StaticBody.hpp>
 #include <jni.h>
 #include <list>
+
+#include "utils.h"
 
 namespace gast {
 
@@ -55,13 +58,14 @@ public:
 
     /// Create a Gast node with the given parent node and set it up.
     /// @return The node path to the newly created Gast node
-    String acquire_and_bind_gast_node(const String &parent_node_path);
+    String acquire_and_bind_gast_node(const String &parent_node_path, bool empty_parent);
 
     /// Unbind and release the Gast node with the given node path. This is the counterpart
     /// to acquire_and_bind_gast_node.
     void unbind_and_release_gast_node(const String &node_path);
 
-    String update_gast_node_parent(const String &node_path, const String &new_parent_node_path);
+    String update_gast_node_parent(const String &node_path, const String &new_parent_node_path,
+                                   bool empty_parent);
 
     void update_gast_node_visibility(const String &node_path,
                                      bool should_duplicate_parent_visibility, bool visible);
@@ -90,6 +94,20 @@ private:
     static void register_callback(JNIEnv *env, jobject callback);
 
     static void unregister_callback(JNIEnv *env);
+
+    inline void remove_all_children_from_node(Node *node) {
+        if (!node) {
+            return;
+        }
+
+        Array children = node->get_children();
+        for (int i = 0; i < children.size(); i++) {
+            Node *child = get_node_from_variant(children[i]);
+            if (child) {
+                node->remove_child(child);
+            }
+        }
+    }
 
     inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
         CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);

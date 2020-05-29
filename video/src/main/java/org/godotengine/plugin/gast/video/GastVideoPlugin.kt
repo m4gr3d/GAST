@@ -66,14 +66,14 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     override fun getPluginName() = "gast-video"
 
     override fun onMainCreateView(activity: Activity): View? {
-        gastManager.addGastEventListener(this)
-        gastManager.addGastInputListener(this)
+        gastManager.registerGastRenderListener(this)
+        gastManager.registerGastInputListener(this)
         return null
     }
 
     override fun onMainDestroy() {
-        gastManager.removeGastEventListener(this)
-        gastManager.removeGastInputListener(this)
+        gastManager.unregisterGastRenderListener(this)
+        gastManager.unregisterGastInputListener(this)
         player.release()
         surfaceTexture?.release()
     }

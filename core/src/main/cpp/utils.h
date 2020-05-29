@@ -2,7 +2,11 @@
 #define UTILS_H
 
 #include <android/log.h>
+#include <core/Godot.hpp>
 #include <core/String.hpp>
+#include <core/Variant.hpp>
+#include <gen/Node.hpp>
+#include <gen/Object.hpp>
 
 #define LOG_TAG "GAST"
 
@@ -86,6 +90,20 @@ static inline jstring string_to_jstring(JNIEnv *env, const String &source) {
         return env->NewStringUTF(source.utf8().get_data());
     }
     return nullptr;
+}
+
+static inline Node *get_node_from_variant(Variant variant) {
+    if (variant.get_type() != Variant::OBJECT) {
+        return nullptr;
+    }
+
+    Object *object = get_wrapper<Object>(variant.operator godot_object *());
+    if (!object || !object->is_class("Node")) {
+        return nullptr;
+    }
+
+    Node *node = Object::cast_to<Node>(variant);
+    return node;
 }
 
 }  // namespace gast

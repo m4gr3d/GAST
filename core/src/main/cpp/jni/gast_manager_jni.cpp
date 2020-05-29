@@ -28,9 +28,10 @@ JNI_METHOD(getExternalTextureId)(JNIEnv *env, jobject, jstring node_path, jint s
 }
 
 JNIEXPORT jstring JNICALL
-JNI_METHOD(acquireAndBindGastNode)(JNIEnv *env, jobject, jstring parent_node_path) {
+JNI_METHOD(acquireAndBindGastNode)(JNIEnv *env, jobject, jstring parent_node_path,
+                                   jboolean empty_parent) {
     return string_to_jstring(env, GastManager::get_singleton_instance()->acquire_and_bind_gast_node(
-        jstring_to_string(env, parent_node_path)));
+        jstring_to_string(env, parent_node_path), empty_parent));
 }
 
 JNIEXPORT void JNICALL
@@ -41,11 +42,11 @@ JNI_METHOD(unbindAndReleaseGastNode)(JNIEnv *env, jobject, jstring node_path) {
 
 JNIEXPORT jstring JNICALL
 JNI_METHOD(updateGastNodeParent)(JNIEnv *env, jobject, jstring node_path,
-                                 jstring new_parent_node_path) {
+                                 jstring new_parent_node_path, jboolean empty_parent) {
     return string_to_jstring(env,
                              GastManager::get_singleton_instance()->update_gast_node_parent(
                                  jstring_to_string(env, node_path),
-                                 jstring_to_string(env, new_parent_node_path)));
+                                 jstring_to_string(env, new_parent_node_path), empty_parent));
 }
 
 JNIEXPORT void JNICALL

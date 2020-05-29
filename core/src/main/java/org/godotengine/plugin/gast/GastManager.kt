@@ -27,7 +27,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         System.loadLibrary("gast")
     }
 
-    private val gastEventListeners = ConcurrentLinkedQueue<GastRenderListener>()
+    private val gastRenderListeners = ConcurrentLinkedQueue<GastRenderListener>()
     private val gastInputListeners = ConcurrentLinkedQueue<GastInputListener>()
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
@@ -55,7 +55,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     }
 
     override fun onGLDrawFrame(gl: GL10) {
-        for (listener in gastEventListeners) {
+        for (listener in gastRenderListeners) {
             listener.onRenderDrawFrame()
         }
     }
@@ -66,22 +66,38 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v1/gast/gastlib.gdnlib")
 
-    fun addGastEventListener(listener: GastRenderListener) {
-        gastEventListeners += listener
+    /**
+     * Register a [GastRenderListener] instance to be notified of rendering related events.
+     */
+    fun registerGastRenderListener(listener: GastRenderListener) {
+        gastRenderListeners += listener
     }
 
-    fun removeGastEventListener(listener: GastRenderListener) {
-        gastEventListeners -= listener
+    /**
+     * Unregister a previously registered [GastRenderListener] instance.
+     */
+    fun unregisterGastRenderListener(listener: GastRenderListener) {
+        gastRenderListeners -= listener
     }
 
-    fun addGastInputListener(listener: GastInputListener) {
+    /**
+     * Register a [GastInputListener] instance to be notified of input related events.
+     */
+    fun registerGastInputListener(listener: GastInputListener) {
         gastInputListeners += listener
     }
 
-    fun removeGastInputListener(listener: GastInputListener) {
+    /**
+     * Unregister a previously registered [GastInputListener] instance.
+     */
+    fun unregisterGastInputListener(listener: GastInputListener) {
         gastInputListeners -= listener
     }
 
+    /**
+     * Get the texture id for the Gast node with the given path.
+     * @param nodePath - Path to the Gast node whose texture id to retrieve
+     */
     @JvmOverloads
     external fun getExternalTextureId(
         nodePath: String,
@@ -91,29 +107,60 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     /**
      * Create a Gast node with the given parent node and set it up.
      * @param parentNodePath - Path to the parent for the Gast node that will be created. The parent node must exist
+     * @param emptyParent - If true, remove the children of the parent (if any) prior to inserting the Gast node
      * @return The node path to the newly created Gast node
      */
-    external fun acquireAndBindGastNode(parentNodePath: String): String
+    @JvmOverloads
+    external fun acquireAndBindGastNode(parentNodePath: String, emptyParent: Boolean = false): String
 
     /**
      * Unbind and release the Gast node with the given node path. This is the counterpart to [GastManager.acquireAndBindGastNode]
+     * @param nodePath - Path to the Gast node that should be released
      */
     external fun unbindAndReleaseGastNode(nodePath: String)
 
-    external fun updateGastNodeParent(nodePath: String, newParentNodePath: String): String
+    /**
+     * Reparent the given Gast node to the specified parent node.
+     * @param nodePath - Path to the Gast node
+     * @param newParentNodePath - Path to the new parent
+     * @param emptyParent - If true, remove the children of the parent (if any) prior to inserting the Gast node
+     * @return The new path for the reparented Gast node
+     */
+    @JvmOverloads
+    external fun updateGastNodeParent(nodePath: String, newParentNodePath: String, emptyParent: Boolean = false): String
 
+    /**
+     * Update the visibility of the given Gast node.
+     * @param nodePath - Path to the Gast node
+     * @param shouldDuplicateParentVisibility - Whether the node should match its parent's visibility
+     * @param visible - True to make the node visible, false otherwise
+     */
     external fun updateGastNodeVisibility(
         nodePath: String,
         shouldDuplicateParentVisibility: Boolean,
         visible: Boolean
     )
 
+    /**
+     * Update the collision flag for the Gast node.
+     * @param nodePath - Path to the Gast node
+     * @param collidable - True to enable collision, false to disable.
+     */
     external fun setGastNodeCollidable(nodePath: String, collidable: Boolean)
 
+    /**
+     * Return true if collision is enabled for the node.
+     */
     external fun isGastNodeCollidable(nodePath: String): Boolean
 
+    /**
+     * Update the size of the Gast node.
+     */
     external fun updateGastNodeSize(nodePath: String, width: Float, height: Float)
 
+    /**
+     * Translate the Gast node relative to its parent.
+     */
     external fun updateGastNodeLocalTranslation(
         nodePath: String,
         xTranslation: Float,
@@ -121,8 +168,14 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         zTranslation: Float
     )
 
+    /**
+     * Scale the Gast node relative to its parent.
+     */
     external fun updateGastNodeLocalScale(nodePath: String, xScale: Float, yScale: Float)
 
+    /**
+     * Rotate the Gast node relative to its parent.
+     */
     external fun updateGastNodeLocalRotation(
         nodePath: String,
         xRotation: Float,

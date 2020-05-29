@@ -15,7 +15,6 @@
 #include <gen/ResourceLoader.hpp>
 #include <gen/QuadMesh.hpp>
 #include "gast_manager.h"
-#include "utils.h"
 
 namespace gast {
 
@@ -206,7 +205,8 @@ Node *GastManager::get_node(const godot::String &node_path) {
     return node;
 }
 
-String GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path) {
+String
+GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
     ALOGV("Retrieving node's parent with path %s", parent_node_path.utf8().get_data());
     Node *parent_node = get_node(parent_node_path);
     if (!parent_node) {
@@ -250,6 +250,9 @@ String GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_
     }
 
     ALOGV("Adding the Gast node to the parent node.");
+    if (empty_parent) {
+        remove_all_children_from_node(parent_node);
+    }
     parent_node->add_child(static_body);
     static_body->set_owner(parent_node);
 
@@ -394,7 +397,7 @@ void GastManager::on_render_input_scroll(const godot::String &node_path,
 }
 
 String GastManager::update_gast_node_parent(const String &node_path,
-                                            const String &new_parent_node_path) {
+                                            const String &new_parent_node_path, bool empty_parent) {
     Node *node = get_gast_node(node_path);
     if (!node) {
         ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
@@ -423,6 +426,9 @@ String GastManager::update_gast_node_parent(const String &node_path,
         node->get_parent()->remove_child(node);
     }
 
+    if (empty_parent) {
+        remove_all_children_from_node(new_parent);
+    }
     new_parent->add_child(node);
     node->set_owner(new_parent);
 
