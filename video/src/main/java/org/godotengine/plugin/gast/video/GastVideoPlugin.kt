@@ -258,4 +258,17 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
     }
 
+    override fun onMainInputScroll(
+        nodePath: String,
+        pointerId: String,
+        xPercent: Float,
+        yPercent: Float,
+        horizontalDelta: Float,
+        verticalDelta: Float
+    ) {
+        if (nodePath == videoNodePath) {
+
+        }
+    }
+
 }
