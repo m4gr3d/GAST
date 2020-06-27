@@ -35,7 +35,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     /**
      * Root parent for all GAST views.
      */
-    val rootView = FrameLayout(godot)
+    val rootView = FrameLayout(activity!!)
 
     companion object {
         private val TAG = GastManager::class.java.simpleName
@@ -47,7 +47,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         initialize()
     }
 
-    override fun onMainCreateView(activity: Activity) = rootView
+    override fun onMainCreate(activity: Activity) = rootView
 
     override fun onMainDestroy() {
         Log.d(TAG, "Shutting down $pluginName manager")

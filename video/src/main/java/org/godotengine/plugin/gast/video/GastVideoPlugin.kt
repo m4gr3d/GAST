@@ -39,7 +39,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     private val gastManager: GastManager by lazy {
         GodotPluginRegistry.getPluginRegistry().getPlugin("gast-core") as GastManager
     }
-    private val player = SimpleExoPlayer.Builder(godot).build()
+    private val player = SimpleExoPlayer.Builder(activity!!).build()
 
     private val updateTextureImageCounter = AtomicInteger()
     private val playing = AtomicBoolean(false)
@@ -65,7 +65,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     override fun getPluginName() = "gast-video"
 
-    override fun onMainCreateView(activity: Activity): View? {
+    override fun onMainCreate(activity: Activity): View? {
         gastManager.registerGastRenderListener(this)
         gastManager.registerGastInputListener(this)
         return null
@@ -154,10 +154,11 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
 
         runOnUiThread {
-            val resources = godot.resources
-            val packageName = godot.packageName
+            val activity = activity?: return@runOnUiThread
+            val resources = activity.resources
+            val packageName = activity.packageName
             val dataSourceFactory =
-                DefaultDataSourceFactory(godot, Util.getUserAgent(godot, pluginName))
+                DefaultDataSourceFactory(activity, Util.getUserAgent(activity, pluginName))
             val videosSource = ConcatenatingMediaSource()
 
             for (videoRawName in videoRawNames) {
