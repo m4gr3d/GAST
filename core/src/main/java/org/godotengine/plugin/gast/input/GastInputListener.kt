@@ -4,6 +4,23 @@ package org.godotengine.plugin.gast.input
  * Used to listen to input events dispatched by the Gast plugin.
  */
 interface GastInputListener {
+
+    /**
+     * Return a set of input actions to monitor.
+     * @see [onMainInputAction]
+     * @see https://docs.godotengine.org/en/stable/classes/class_inputeventaction.html
+     */
+    fun getInputActionsToMonitor(): Set<String> = emptySet()
+
+    /**
+     * Callback for input action events.
+     *
+     * This is invoked on the main thread.
+     * @see [getInputActionsToMonitor]
+     * @see https://docs.godotengine.org/en/stable/classes/class_inputeventaction.html
+     */
+    fun onMainInputAction(action: String, pressed: Boolean, strength: Float)
+
     /**
      * Callback for hover input events.
      *
