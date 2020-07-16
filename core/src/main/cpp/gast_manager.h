@@ -95,8 +95,12 @@ public:
                                          float y_rotation,
                                          float z_rotation);
 
-    void set_input_actions_to_monitor(std::list<String> input_actions) {
-        input_actions_to_monitor_ = input_actions;
+    void reset_monitored_input_actions() {
+        input_actions_to_monitor_.clear();
+    }
+
+    void add_input_actions_to_monitor(String input_action) {
+        input_actions_to_monitor_.push_back(input_action);
     }
 
 private:

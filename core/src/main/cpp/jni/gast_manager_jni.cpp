@@ -23,15 +23,14 @@ JNIEXPORT void JNICALL JNI_METHOD(shutdown)(JNIEnv *env, jobject) {
 
 JNIEXPORT void JNICALL
 JNI_METHOD(setInputActionsToMonitor)(JNIEnv *env, jobject, jobjectArray input_actions_to_monitor) {
-    int count = env->GetArrayLength(input_actions_to_monitor);
-    std::list<String> input_actions_list;
+    GastManager::get_singleton_instance()->reset_monitored_input_actions();
 
+    int count = env->GetArrayLength(input_actions_to_monitor);
     for (int i = 0; i < count; i++) {
         auto input_action = (jstring) (env->GetObjectArrayElement(input_actions_to_monitor, i));
-        input_actions_list.push_back(jstring_to_string(env, input_action));
+        GastManager::get_singleton_instance()->add_input_actions_to_monitor(
+                jstring_to_string(env, input_action));
     }
-
-    GastManager::get_singleton_instance()->set_input_actions_to_monitor(input_actions_list);
 }
 
 JNIEXPORT jint JNICALL
