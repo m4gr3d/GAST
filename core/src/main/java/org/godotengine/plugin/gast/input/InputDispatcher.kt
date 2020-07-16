@@ -43,7 +43,7 @@ internal class InputDispatcher private constructor() : Runnable {
                 for (listener in gastInputListeners) {
                     listener.onMainInputAction(
                         actionEventData.action,
-                        actionEventData.pressed,
+                        actionEventData.pressState,
                         actionEventData.strength
                     )
                 }

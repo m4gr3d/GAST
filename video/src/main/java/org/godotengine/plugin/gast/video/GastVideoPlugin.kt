@@ -226,7 +226,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
     }
 
-    override fun onMainInputAction(action: String, pressed: Boolean, strength: Float) {
+    override fun onMainInputAction(action: String, pressState: GastInputListener.InputPressState, strength: Float) {
 
     }
 

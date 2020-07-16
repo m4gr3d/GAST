@@ -3,7 +3,6 @@
 
 #include <core/Godot.hpp>
 #include <core/String.hpp>
-#include <gen/InputEvent.hpp>
 #include <gen/Reference.hpp>
 
 namespace gast {
@@ -32,8 +31,7 @@ public:
     // Shutdown GastManager
     void shutdown();
 
-    // Used to forward _input callback to the Gast library
-    void on_unhandled_input(const Ref<InputEvent> event);
+    void on_process();
 };
 }  // namespace gast
 

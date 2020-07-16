@@ -21,6 +21,7 @@ import java.util.ArrayDeque
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.microedition.khronos.opengles.GL10
 
 /**
@@ -41,6 +42,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     private val gastInputListenersPerActions = ConcurrentHashMap<String, ArrayDeque<GastInputListener>>()
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
+    private val initialized = AtomicBoolean(false)
 
     /**
      * Root parent for all GAST views.
@@ -55,13 +57,19 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     override fun onGodotMainLoopStarted() {
         Log.d(TAG, "Initializing $pluginName manager")
         initialize()
+        initialized.set(true)
+
+        updateMonitoredInputActions()
     }
 
     override fun onMainCreate(activity: Activity) = rootView
 
     override fun onMainDestroy() {
         Log.d(TAG, "Shutting down $pluginName manager")
-        runOnRenderThread { shutdown() }
+        runOnRenderThread {
+            initialized.set(false);
+            shutdown()
+        }
     }
 
     override fun onGLDrawFrame(gl: GL10) {
@@ -105,6 +113,8 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
                 val actionListeners = gastInputListenersPerActions.getOrPut(action) { ArrayDeque() }
                 actionListeners.add(listener)
             }
+
+            updateMonitoredInputActions()
         }
     }
 
@@ -126,6 +136,15 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
                     gastInputListenersPerActions.remove(action)
                 }
             }
+
+            updateMonitoredInputActions()
+        }
+    }
+
+    private fun updateMonitoredInputActions() {
+        if (initialized.get()) {
+            // Update the list of input actions to monitor for the native code
+            setInputActionsToMonitor(gastInputListenersPerActions.keys.toTypedArray())
         }
     }
 
@@ -219,10 +238,10 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     )
 
     private inline fun dispatchInputEvent(
-        listeners: Queue<GastInputListener>,
+        listeners: Queue<GastInputListener>?,
         eventDataProvider : () -> InputEventData
     ) {
-        if (listeners.isEmpty()) {
+        if (listeners.isNullOrEmpty()) {
             return
         }
 
@@ -237,9 +256,16 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     private external fun shutdown()
 
-    private fun onRenderInputAction(action: String, pressed: Boolean, strength: Float) {
-        dispatchInputEvent(gastInputListenersPerActions[action] ?: return) {
-            ActionEventData(action, pressed, strength)
+    private external fun setInputActionsToMonitor(inputActions: Array<String>)
+
+    private fun onRenderInputAction(action: String, pressStateIndex: Int, strength: Float) {
+        val pressState = GastInputListener.InputPressState.fromIndex(pressStateIndex)
+        if (pressState == GastInputListener.InputPressState.INVALID) {
+            return
+        }
+
+        dispatchInputEvent(gastInputListenersPerActions[action]) {
+            ActionEventData(action, pressState, strength)
         }
     }
 

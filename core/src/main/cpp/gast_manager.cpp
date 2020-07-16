@@ -1,5 +1,6 @@
 #include <gen/BoxShape.hpp>
 #include <gen/Engine.hpp>
+#include <gen/Input.hpp>
 #include <gen/InputEventAction.hpp>
 #include <gen/MainLoop.hpp>
 #include <gen/Material.hpp>
@@ -87,7 +88,7 @@ void GastManager::register_callback(JNIEnv *env, jobject callback) {
     ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
     on_render_input_action_ = env->GetMethodID(callback_class, "onRenderInputAction",
-                                               "(Ljava/lang/String;ZF)V");
+                                               "(Ljava/lang/String;IF)V");
     ALOG_ASSERT(on_render_input_action_ != nullptr, "Unable to find onRenderInputAction");
 
     on_render_input_hover_ = env->GetMethodID(callback_class, "onRenderInputHover",
@@ -350,16 +351,35 @@ void GastManager::unbind_and_release_gast_node(const godot::String &node_path) {
     reusable_pool_.push_back(gast_node);
 }
 
-void GastManager::process_input(const Ref<InputEvent> event) {
-    // Forward input action events.
-    if (event->is_class(InputEventAction::___get_class_name())) {
-        auto* action_event = Object::cast_to<InputEventAction>(*event);
-        if (action_event && callback_instance_ && on_render_input_action_) {
-            JNIEnv *env = godot::android_api->godot_android_get_env();
-            env->CallVoidMethod(callback_instance_, on_render_input_action_,
-                                string_to_jstring(env, action_event->get_action()),
-                                action_event->is_pressed(), action_event->get_strength());
+void GastManager::on_process() {
+    // Check if one of the monitored input actions was dispatched.
+    if (input_actions_to_monitor_.empty()) {
+        return;
+    }
+
+    Input *input = Input::get_singleton();
+    for (auto const& action : input_actions_to_monitor_) {
+        InputPressState press_state = kInvalid;
+
+        if (input->is_action_just_pressed(action)) {
+            press_state = kJustPressed;
+        } else if (input->is_action_pressed(action)) {
+            press_state = kPressed;
+        } else if (input->is_action_just_released(action)) {
+            press_state = kJustReleased;
         }
+
+        if (press_state != kInvalid) {
+            on_render_input_action(action, press_state, input->get_action_strength(action));
+        }
+    }
+}
+
+void GastManager::on_render_input_action(const String &action, InputPressState press_state, float strength) {
+    if (callback_instance_ && on_render_input_action_) {
+        JNIEnv *env = godot::android_api->godot_android_get_env();
+        env->CallVoidMethod(callback_instance_, on_render_input_action_,
+                            string_to_jstring(env, action), press_state, strength);
     }
 }
 

@@ -6,7 +6,6 @@
 #include <core/Vector3.hpp>
 #include <gen/CollisionShape.hpp>
 #include <gen/ExternalTexture.hpp>
-#include <gen/InputEvent.hpp>
 #include <gen/Mesh.hpp>
 #include <gen/MeshInstance.hpp>
 #include <gen/Node.hpp>
@@ -26,6 +25,14 @@ constexpr int kInvalidSurfaceIndex = -1;
 
 // Name of the group containing the RayCast nodes that interact with the Gast nodes.
 const char *kGastRayCasterGroupName = "gast_ray_caster";
+
+/// Mirrors src/main/java/org/godotengine/plugin/gast/input/GastInputListener#InputPressState
+enum InputPressState {
+    kInvalid = -1,
+    kJustPressed = 0,
+    kPressed = 1,
+    kJustReleased = 2
+};
 }  // namespace
 
 class GastManager {
@@ -42,7 +49,7 @@ public:
 
     int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
 
-    void process_input(const Ref<InputEvent> event);
+    void on_process();
 
     void on_render_input_hover(const String &node_path, const String &pointer_id, float x_percent,
                                float y_percent);
@@ -87,6 +94,10 @@ public:
     void update_gast_node_local_rotation(const String &node_path, float x_rotation,
                                          float y_rotation,
                                          float z_rotation);
+
+    void set_input_actions_to_monitor(std::list<String> input_actions) {
+        input_actions_to_monitor_ = input_actions;
+    }
 
 private:
     static void delete_singleton_instance();
@@ -133,6 +144,8 @@ private:
         return collision_shape;
     }
 
+    void on_render_input_action(const String &action, InputPressState press_state, float strength);
+
     ExternalTexture *get_external_texture(const String &node_path, int surface_index);
 
     ExternalTexture *get_external_texture(Ref<Mesh> mesh, int surface_index);
@@ -150,6 +163,7 @@ private:
     ~GastManager();
 
     std::list<StaticBody *> reusable_pool_;
+    std::list<String> input_actions_to_monitor_;
 
     static GastManager *singleton_instance_;
     static bool gdn_initialized_;

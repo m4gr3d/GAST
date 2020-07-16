@@ -2,8 +2,11 @@ package org.godotengine.plugin.gast.input
 
 internal sealed class InputEventData()
 
-internal data class ActionEventData(val action: String, val pressed: Boolean, val strength: Float) :
-    InputEventData()
+internal data class ActionEventData(
+    val action: String,
+    val pressState: GastInputListener.InputPressState,
+    val strength: Float
+) : InputEventData()
 
 internal data class HoverEventData(
     val nodePath: String,
