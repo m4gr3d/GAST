@@ -2,7 +2,7 @@ package org.godotengine.plugin.gast.input
 
 import android.util.Log
 import androidx.core.util.Pools
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.Queue
 
 internal class InputDispatcher private constructor() : Runnable {
 
@@ -13,19 +13,13 @@ internal class InputDispatcher private constructor() : Runnable {
         private val inputDispatcherPool = Pools.SynchronizedPool<InputDispatcher>(POOL_MAX_SIZE)
 
         fun acquireInputDispatcher(
-            gastInputListeners: ConcurrentLinkedQueue<GastInputListener>,
-            inputType: InputType,
-            nodePath: String,
-            pointerId: String,
-            inputData: FloatArray
+            gastInputListeners: Queue<GastInputListener>,
+            eventData: InputEventData
         ): InputDispatcher {
             val dispatcher = inputDispatcherPool.acquire() ?: InputDispatcher()
             dispatcher.apply {
                 this.gastInputListeners = gastInputListeners
-                this.inputType = inputType
-                this.nodePath = nodePath
-                this.pointerId = pointerId
-                this.inputData = inputData
+                this.eventData = eventData
             }
 
             return dispatcher
@@ -38,42 +32,69 @@ internal class InputDispatcher private constructor() : Runnable {
         }
     }
 
-    lateinit var gastInputListeners: ConcurrentLinkedQueue<GastInputListener>
-    lateinit var inputType: InputType
-    lateinit var nodePath: String
-    lateinit var pointerId: String
-    lateinit var inputData: FloatArray
+    lateinit var gastInputListeners: Queue<GastInputListener>
+    lateinit var eventData: InputEventData
 
     override fun run() {
 
-        when (inputType) {
-            InputType.HOVER -> {
+        when (eventData) {
+            is ActionEventData -> {
+                val actionEventData = eventData as ActionEventData
                 for (listener in gastInputListeners) {
-                    listener.onMainInputHover(nodePath, pointerId, inputData[0], inputData[1])
+                    listener.onMainInputAction(
+                        actionEventData.action,
+                        actionEventData.pressState,
+                        actionEventData.strength
+                    )
                 }
             }
 
-            InputType.PRESS -> {
+            is HoverEventData -> {
+                val hoverEventData = eventData as HoverEventData
                 for (listener in gastInputListeners) {
-                    listener.onMainInputPress(nodePath, pointerId, inputData[0], inputData[1])
+                    listener.onMainInputHover(
+                        hoverEventData.nodePath,
+                        hoverEventData.pointerId,
+                        hoverEventData.xPercent,
+                        hoverEventData.yPercent
+                    )
                 }
             }
 
-            InputType.RELEASE -> {
+            is PressEventData -> {
+                val pressEventData = eventData as PressEventData
                 for (listener in gastInputListeners) {
-                    listener.onMainInputRelease(nodePath, pointerId, inputData[0], inputData[1])
+                    listener.onMainInputPress(
+                        pressEventData.nodePath,
+                        pressEventData.pointerId,
+                        pressEventData.xPercent,
+                        pressEventData.yPercent
+                    )
                 }
             }
 
-            InputType.SCROLL -> {
+            is ReleaseEventData -> {
+                val releaseEventData = eventData as ReleaseEventData
+                for (listener in gastInputListeners) {
+                    listener.onMainInputRelease(
+                        releaseEventData.nodePath,
+                        releaseEventData.pointerId,
+                        releaseEventData.xPercent,
+                        releaseEventData.yPercent
+                    )
+                }
+            }
+
+            is ScrollEventData -> {
+                val scrollEventData = eventData as ScrollEventData
                 for (listener in gastInputListeners) {
                     listener.onMainInputScroll(
-                        nodePath,
-                        pointerId,
-                        inputData[0],
-                        inputData[1],
-                        inputData[2],
-                        inputData[3]
+                        scrollEventData.nodePath,
+                        scrollEventData.pointerId,
+                        scrollEventData.xPercent,
+                        scrollEventData.yPercent,
+                        scrollEventData.horizontalDelta,
+                        scrollEventData.verticalDelta
                     )
                 }
             }

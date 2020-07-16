@@ -9,7 +9,8 @@ android {
         minSdkVersion minSdk
         targetSdkVersion targetSdk
         versionCode 1
-        versionName '1.0'
+        versionName '0.1.0'
+        setProperty("archivesBaseName", "gast-core.${versionName}")
 
         externalNativeBuild {
             cmake {

@@ -84,22 +84,22 @@ private:
 
     inline String get_horizontal_left_scroll_action_from_node_path(const String& node_path) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_horizontal_left_scroll";
+        return node_path.replace("/", "_") + "_left_scroll";
     }
 
     inline String get_horizontal_right_scroll_action_from_node_path(const String& node_path) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_horizontal_right_scroll";
+        return node_path.replace("/", "_") + "_right_scroll";
     }
 
     inline String get_vertical_up_scroll_action_from_node_path(const String& node_path) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_vertical_up_scroll";
+        return node_path.replace("/", "_") + "_up_scroll";
     }
 
     inline String get_vertical_down_scroll_action_from_node_path(const String& node_path) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_vertical_down_scroll";
+        return node_path.replace("/", "_") + "_down_scroll";
     }
 
     void handle_ray_cast_input(const RayCast &ray_cast);

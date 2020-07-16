@@ -2,9 +2,9 @@
 
 name="gast-video"
 binary_type="local"
-binary="gast-video-release.aar"
+binary="gast-video.0.1.0-release.aar"
 
 [dependencies]
 
-local=["gast-core-release.aar"]
+local=["gast-core.0.1.0-release.aar"]
 remote=["com.google.android.exoplayer:exoplayer:2.11.3"]

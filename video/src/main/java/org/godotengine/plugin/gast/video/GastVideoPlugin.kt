@@ -14,12 +14,12 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.util.Util
-import org.godotengine.plugin.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
-import org.godotengine.plugin.gast.input.GastInputListener
+import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastRenderListener
+import org.godotengine.plugin.gast.input.GastInputListener
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -39,7 +39,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     private val gastManager: GastManager by lazy {
         GodotPluginRegistry.getPluginRegistry().getPlugin("gast-core") as GastManager
     }
-    private val player = SimpleExoPlayer.Builder(godot).build()
+    private val player = SimpleExoPlayer.Builder(activity!!).build()
 
     private val updateTextureImageCounter = AtomicInteger()
     private val playing = AtomicBoolean(false)
@@ -65,7 +65,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     override fun getPluginName() = "gast-video"
 
-    override fun onMainCreateView(activity: Activity): View? {
+    override fun onMainCreate(activity: Activity): View? {
         gastManager.registerGastRenderListener(this)
         gastManager.registerGastInputListener(this)
         return null
@@ -154,10 +154,11 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
 
         runOnUiThread {
-            val resources = godot.resources
-            val packageName = godot.packageName
+            val activity = activity?: return@runOnUiThread
+            val resources = activity.resources
+            val packageName = activity.packageName
             val dataSourceFactory =
-                DefaultDataSourceFactory(godot, Util.getUserAgent(godot, pluginName))
+                DefaultDataSourceFactory(activity, Util.getUserAgent(activity, pluginName))
             val videosSource = ConcatenatingMediaSource()
 
             for (videoRawName in videoRawNames) {
@@ -223,6 +224,10 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         runOnUiThread {
             player.stop()
         }
+    }
+
+    override fun onMainInputAction(action: String, pressState: GastInputListener.InputPressState, strength: Float) {
+
     }
 
     override fun onMainInputHover(

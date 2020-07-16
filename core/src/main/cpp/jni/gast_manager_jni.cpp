@@ -21,6 +21,18 @@ JNIEXPORT void JNICALL JNI_METHOD(shutdown)(JNIEnv *env, jobject) {
     GastManager::jni_shutdown(env);
 }
 
+JNIEXPORT void JNICALL
+JNI_METHOD(setInputActionsToMonitor)(JNIEnv *env, jobject, jobjectArray input_actions_to_monitor) {
+    GastManager::get_singleton_instance()->reset_monitored_input_actions();
+
+    int count = env->GetArrayLength(input_actions_to_monitor);
+    for (int i = 0; i < count; i++) {
+        auto input_action = (jstring) (env->GetObjectArrayElement(input_actions_to_monitor, i));
+        GastManager::get_singleton_instance()->add_input_actions_to_monitor(
+                jstring_to_string(env, input_action));
+    }
+}
+
 JNIEXPORT jint JNICALL
 JNI_METHOD(getExternalTextureId)(JNIEnv *env, jobject, jstring node_path, jint surface_index) {
     return GastManager::get_singleton_instance()->get_external_texture_id(

@@ -1,5 +1,7 @@
 #include <gen/BoxShape.hpp>
 #include <gen/Engine.hpp>
+#include <gen/Input.hpp>
+#include <gen/InputEventAction.hpp>
 #include <gen/MainLoop.hpp>
 #include <gen/Material.hpp>
 #include <gen/SceneTree.hpp>
@@ -30,12 +32,13 @@ bool GastManager::gdn_initialized_ = false;
 bool GastManager::jni_initialized_ = false;
 
 jobject GastManager::callback_instance_ = nullptr;
+jmethodID GastManager::on_render_input_action_ = nullptr;
 jmethodID GastManager::on_render_input_hover_ = nullptr;
 jmethodID GastManager::on_render_input_press_ = nullptr;
 jmethodID GastManager::on_render_input_release_ = nullptr;
 jmethodID GastManager::on_render_input_scroll_ = nullptr;
 
-GastManager::GastManager() {}
+GastManager::GastManager() = default;
 
 GastManager::~GastManager() {
     reusable_pool_.clear();
@@ -84,6 +87,10 @@ void GastManager::register_callback(JNIEnv *env, jobject callback) {
     jclass callback_class = env->GetObjectClass(callback_instance_);
     ALOG_ASSERT(callback_class != nullptr, "Invalid value for callback.");
 
+    on_render_input_action_ = env->GetMethodID(callback_class, "onRenderInputAction",
+                                               "(Ljava/lang/String;IF)V");
+    ALOG_ASSERT(on_render_input_action_ != nullptr, "Unable to find onRenderInputAction");
+
     on_render_input_hover_ = env->GetMethodID(callback_class, "onRenderInputHover",
                                               "(Ljava/lang/String;Ljava/lang/String;FF)V");
     ALOG_ASSERT(on_render_input_hover_ != nullptr, "Unable to find onRenderInputHover");
@@ -105,6 +112,7 @@ void GastManager::unregister_callback(JNIEnv *env) {
     if (callback_instance_) {
         env->DeleteGlobalRef(callback_instance_);
         callback_instance_ = nullptr;
+        on_render_input_action_ = nullptr;
         on_render_input_hover_ = nullptr;
         on_render_input_press_ = nullptr;
         on_render_input_release_ = nullptr;
@@ -218,7 +226,7 @@ GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, b
     StaticBody *static_body;
 
     // Check if we have one already setup in the reusable pool, otherwise create a new one.
-    if (reusable_pool_.size() == 0) {
+    if (reusable_pool_.empty()) {
         ALOGV("Creating a new Gast node.");
         // Creating a new static body node
         static_body = StaticBody::_new();
@@ -343,12 +351,36 @@ void GastManager::unbind_and_release_gast_node(const godot::String &node_path) {
     reusable_pool_.push_back(gast_node);
 }
 
-void GastManager::process_input(const Ref<InputEvent> event) {
-    //TODO: Process input event.
-    // The API should allow the user to pass a set of registered actions to watch for.
-    // When this method is invoked, the logic should go through the list, checking if the given
-    // input event action matches one of the registered ones.
-    // If it does, the API should send a callback on the Android UI thread.
+void GastManager::on_process() {
+    // Check if one of the monitored input actions was dispatched.
+    if (input_actions_to_monitor_.empty()) {
+        return;
+    }
+
+    Input *input = Input::get_singleton();
+    for (auto const& action : input_actions_to_monitor_) {
+        InputPressState press_state = kInvalid;
+
+        if (input->is_action_just_pressed(action)) {
+            press_state = kJustPressed;
+        } else if (input->is_action_pressed(action)) {
+            press_state = kPressed;
+        } else if (input->is_action_just_released(action)) {
+            press_state = kJustReleased;
+        }
+
+        if (press_state != kInvalid) {
+            on_render_input_action(action, press_state, input->get_action_strength(action));
+        }
+    }
+}
+
+void GastManager::on_render_input_action(const String &action, InputPressState press_state, float strength) {
+    if (callback_instance_ && on_render_input_action_) {
+        JNIEnv *env = godot::android_api->godot_android_get_env();
+        env->CallVoidMethod(callback_instance_, on_render_input_action_,
+                            string_to_jstring(env, action), press_state, strength);
+    }
 }
 
 void GastManager::on_render_input_hover(const String &node_path, const String &pointer_id,

@@ -6,7 +6,6 @@
 #include <core/Vector3.hpp>
 #include <gen/CollisionShape.hpp>
 #include <gen/ExternalTexture.hpp>
-#include <gen/InputEvent.hpp>
 #include <gen/Mesh.hpp>
 #include <gen/MeshInstance.hpp>
 #include <gen/Node.hpp>
@@ -26,6 +25,14 @@ constexpr int kInvalidSurfaceIndex = -1;
 
 // Name of the group containing the RayCast nodes that interact with the Gast nodes.
 const char *kGastRayCasterGroupName = "gast_ray_caster";
+
+/// Mirrors src/main/java/org/godotengine/plugin/gast/input/GastInputListener#InputPressState
+enum InputPressState {
+    kInvalid = -1,
+    kJustPressed = 0,
+    kPressed = 1,
+    kJustReleased = 2
+};
 }  // namespace
 
 class GastManager {
@@ -42,7 +49,7 @@ public:
 
     int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
 
-    void process_input(const Ref<InputEvent> event);
+    void on_process();
 
     void on_render_input_hover(const String &node_path, const String &pointer_id, float x_percent,
                                float y_percent);
@@ -88,6 +95,14 @@ public:
                                          float y_rotation,
                                          float z_rotation);
 
+    void reset_monitored_input_actions() {
+        input_actions_to_monitor_.clear();
+    }
+
+    void add_input_actions_to_monitor(String input_action) {
+        input_actions_to_monitor_.push_back(input_action);
+    }
+
 private:
     static void delete_singleton_instance();
 
@@ -95,7 +110,7 @@ private:
 
     static void unregister_callback(JNIEnv *env);
 
-    inline void remove_all_children_from_node(Node *node) {
+    static inline void remove_all_children_from_node(Node *node) {
         if (!node) {
             return;
         }
@@ -109,7 +124,7 @@ private:
         }
     }
 
-    inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
+    static inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
         CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);
         if (!collision_shape) {
             return nullptr;
@@ -123,7 +138,7 @@ private:
         return mesh_instance;
     }
 
-    inline CollisionShape *get_collision_shape_from_gast_node(StaticBody &static_body) {
+    static inline CollisionShape *get_collision_shape_from_gast_node(StaticBody &static_body) {
         Node *node = static_body.get_child(0);
         if (!node || !node->is_class("CollisionShape")) {
             return nullptr;
@@ -132,6 +147,8 @@ private:
         CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
         return collision_shape;
     }
+
+    void on_render_input_action(const String &action, InputPressState press_state, float strength);
 
     ExternalTexture *get_external_texture(const String &node_path, int surface_index);
 
@@ -150,12 +167,14 @@ private:
     ~GastManager();
 
     std::list<StaticBody *> reusable_pool_;
+    std::list<String> input_actions_to_monitor_;
 
     static GastManager *singleton_instance_;
     static bool gdn_initialized_;
     static bool jni_initialized_;
 
     static jobject callback_instance_;
+    static jmethodID on_render_input_action_;
     static jmethodID on_render_input_hover_;
     static jmethodID on_render_input_press_;
     static jmethodID on_render_input_release_;

@@ -18,5 +18,5 @@ func _ready():
 	else:
 		print("Unable to load gast-video singleton.")
 
-func _unhandled_input(event):
-	gast.on_unhandled_input(event)
+func _process(delta):
+	gast.on_process()
