@@ -14,12 +14,12 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.util.Util
-import org.godotengine.plugin.gast.GastManager
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
-import org.godotengine.plugin.gast.input.GastInputListener
+import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastRenderListener
+import org.godotengine.plugin.gast.input.GastInputListener
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -224,6 +224,10 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         runOnUiThread {
             player.stop()
         }
+    }
+
+    override fun onMainInputAction(action: String, pressed: Boolean, strength: Float) {
+
     }
 
     override fun onMainInputHover(

@@ -9,9 +9,17 @@ import android.util.Log
 import android.widget.FrameLayout
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
-import org.godotengine.plugin.gast.input.InputDispatcher
+import org.godotengine.plugin.gast.input.ActionEventData
 import org.godotengine.plugin.gast.input.GastInputListener
-import org.godotengine.plugin.gast.input.InputType
+import org.godotengine.plugin.gast.input.HoverEventData
+import org.godotengine.plugin.gast.input.InputDispatcher
+import org.godotengine.plugin.gast.input.InputEventData
+import org.godotengine.plugin.gast.input.PressEventData
+import org.godotengine.plugin.gast.input.ReleaseEventData
+import org.godotengine.plugin.gast.input.ScrollEventData
+import java.util.ArrayDeque
+import java.util.Queue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.microedition.khronos.opengles.GL10
 
@@ -29,6 +37,8 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     private val gastRenderListeners = ConcurrentLinkedQueue<GastRenderListener>()
     private val gastInputListeners = ConcurrentLinkedQueue<GastInputListener>()
+
+    private val gastInputListenersPerActions = ConcurrentHashMap<String, ArrayDeque<GastInputListener>>()
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
 
@@ -84,14 +94,39 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
      * Register a [GastInputListener] instance to be notified of input related events.
      */
     fun registerGastInputListener(listener: GastInputListener) {
-        gastInputListeners += listener
+        if (gastInputListeners.add(listener)) {
+
+            val actionsToMonitor = listener.getInputActionsToMonitor()
+            if (actionsToMonitor.isEmpty()) {
+                return
+            }
+
+            for (action in actionsToMonitor) {
+                val actionListeners = gastInputListenersPerActions.getOrPut(action) { ArrayDeque() }
+                actionListeners.add(listener)
+            }
+        }
     }
 
     /**
      * Unregister a previously registered [GastInputListener] instance.
      */
     fun unregisterGastInputListener(listener: GastInputListener) {
-        gastInputListeners -= listener
+        if (gastInputListeners.remove(listener)) {
+
+            val monitoredActions = listener.getInputActionsToMonitor()
+            if (monitoredActions.isEmpty()) {
+                return
+            }
+
+            for (action in monitoredActions) {
+                val actionListeners = gastInputListenersPerActions.get(action) ?: continue
+                actionListeners.remove(listener)
+                if (actionListeners.isEmpty()) {
+                    gastInputListenersPerActions.remove(action)
+                }
+            }
+        }
     }
 
     /**
@@ -183,18 +218,17 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         zRotation: Float
     )
 
-    private fun dispatchInputEvent(
-        inputType: InputType,
-        nodePath: String,
-        pointerId: String,
-        vararg inputData: Float
+    private inline fun dispatchInputEvent(
+        listeners: Queue<GastInputListener>,
+        eventDataProvider : () -> InputEventData
     ) {
+        if (listeners.isEmpty()) {
+            return
+        }
+
         val dispatcher = InputDispatcher.acquireInputDispatcher(
-            gastInputListeners,
-            inputType,
-            nodePath,
-            pointerId,
-            inputData
+            listeners,
+            eventDataProvider()
         )
         mainThreadHandler.post(dispatcher)
     }
@@ -203,13 +237,21 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     private external fun shutdown()
 
+    private fun onRenderInputAction(action: String, pressed: Boolean, strength: Float) {
+        dispatchInputEvent(gastInputListenersPerActions[action] ?: return) {
+            ActionEventData(action, pressed, strength)
+        }
+    }
+
     private fun onRenderInputHover(
         nodePath: String,
         pointerId: String,
         xPercent: Float,
         yPercent: Float
     ) {
-        dispatchInputEvent(InputType.HOVER, nodePath, pointerId, xPercent, yPercent)
+        dispatchInputEvent(gastInputListeners) {
+            HoverEventData(nodePath, pointerId, xPercent, yPercent)
+        }
     }
 
     private fun onRenderInputPress(
@@ -218,7 +260,9 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         xPercent: Float,
         yPercent: Float
     ) {
-        dispatchInputEvent(InputType.PRESS, nodePath, pointerId, xPercent, yPercent)
+        dispatchInputEvent(gastInputListeners){
+            PressEventData(nodePath, pointerId, xPercent, yPercent)
+        }
     }
 
     private fun onRenderInputRelease(
@@ -227,7 +271,9 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         xPercent: Float,
         yPercent: Float
     ) {
-        dispatchInputEvent(InputType.RELEASE, nodePath, pointerId, xPercent, yPercent)
+        dispatchInputEvent(gastInputListeners){
+            ReleaseEventData(nodePath, pointerId, xPercent, yPercent)
+        }
     }
 
     private fun onRenderInputScroll(
@@ -238,15 +284,16 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         horizontalDelta: Float,
         verticalDelta: Float
     ) {
-        dispatchInputEvent(
-            InputType.SCROLL,
-            nodePath,
-            pointerId,
-            xPercent,
-            yPercent,
-            horizontalDelta,
-            verticalDelta
-        )
+        dispatchInputEvent(gastInputListeners) {
+            ScrollEventData(
+                nodePath,
+                pointerId,
+                xPercent,
+                yPercent,
+                horizontalDelta,
+                verticalDelta
+            )
+        }
     }
 
 }

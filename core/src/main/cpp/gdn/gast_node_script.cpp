@@ -41,7 +41,7 @@ void GastNodeScript::_input_event(const godot::Object *camera,
 
     // This should only fire for touch screen input events, so we filter for those.
     if (event->is_class(InputEventScreenTouch::___get_class_name())) {
-        InputEventScreenTouch *touch_event = Object::cast_to<InputEventScreenTouch>(*event);
+        auto *touch_event = Object::cast_to<InputEventScreenTouch>(*event);
         if (touch_event) {
             String touch_event_id = InputEventScreenTouch::___get_class_name() +
                                     String::num_int64(touch_event->get_index());
@@ -58,7 +58,7 @@ void GastNodeScript::_input_event(const godot::Object *camera,
             }
         }
     } else if (event->is_class(InputEventScreenDrag::___get_class_name())) {
-        InputEventScreenDrag *drag_event = Object::cast_to<InputEventScreenDrag>(*event);
+        auto *drag_event = Object::cast_to<InputEventScreenDrag>(*event);
         if (drag_event) {
             String drag_event_id = InputEventScreenDrag::___get_class_name() +
                                    String::num_int64(drag_event->get_index());

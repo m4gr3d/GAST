@@ -95,7 +95,7 @@ private:
 
     static void unregister_callback(JNIEnv *env);
 
-    inline void remove_all_children_from_node(Node *node) {
+    static inline void remove_all_children_from_node(Node *node) {
         if (!node) {
             return;
         }
@@ -109,7 +109,7 @@ private:
         }
     }
 
-    inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
+    static inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
         CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);
         if (!collision_shape) {
             return nullptr;
@@ -123,7 +123,7 @@ private:
         return mesh_instance;
     }
 
-    inline CollisionShape *get_collision_shape_from_gast_node(StaticBody &static_body) {
+    static inline CollisionShape *get_collision_shape_from_gast_node(StaticBody &static_body) {
         Node *node = static_body.get_child(0);
         if (!node || !node->is_class("CollisionShape")) {
             return nullptr;
@@ -156,6 +156,7 @@ private:
     static bool jni_initialized_;
 
     static jobject callback_instance_;
+    static jmethodID on_render_input_action_;
     static jmethodID on_render_input_hover_;
     static jmethodID on_render_input_press_;
     static jmethodID on_render_input_release_;
