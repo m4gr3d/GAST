@@ -2,7 +2,6 @@ package org.godotengine.plugin.gast.webview
 
 import android.app.Activity
 import android.view.View
-import android.webkit.WebView
 import org.godotengine.godot.Godot
 import org.godotengine.plugin.gast.extension.GastExtension
 
@@ -18,8 +17,8 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
         private val TAG = GastWebviewPlugin::class.java.simpleName
     }
 
-    private lateinit var webView: WebView
-    private lateinit var loadProgress: View
+    private val webPanelsList = ArrayList<WebPanel>()
+    private lateinit var webPanelsContainerView: View
 
     override fun getPluginName() = "gast-webview"
 
@@ -29,29 +28,29 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
 
     override fun onMainCreate(activity: Activity): View? {
         super.onMainCreate(activity)
-
-        val view = activity.layoutInflater.inflate(R.layout.webview_panel, null)
-        loadProgress = view.findViewById(R.id.load_progress)
-        webView = view.findViewById(R.id.webview)
-        webView.scrollBarStyle = WebView.SCROLLBARS_INSIDE_INSET;
-        webView.isScrollbarFadingEnabled = true;
-
-        return view
+        webPanelsContainerView = activity.layoutInflater.inflate(R.layout.web_panels_container, null)
+        return webPanelsContainerView
     }
 
     override fun onMainResume() {
         super.onMainResume()
-        webView.onResume()
+        for (webPanel in webPanelsList) {
+            webPanel.onResume()
+        }
     }
 
     override fun onMainPause() {
         super.onMainPause()
-        webView.onPause()
+        for (webPanel in webPanelsList) {
+            webPanel.onPause()
+        }
     }
 
     override fun onMainDestroy() {
         super.onMainDestroy()
-        webView.destroy()
+        for (webPanel in webPanelsList) {
+            webPanel.onDestroy()
+        }
     }
 
     override fun onMainInputHover(
