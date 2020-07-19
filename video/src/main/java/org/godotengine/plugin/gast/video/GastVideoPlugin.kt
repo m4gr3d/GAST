@@ -1,9 +1,7 @@
 package org.godotengine.plugin.gast.video
 
-import android.app.Activity
 import android.text.TextUtils
 import android.util.Log
-import android.view.View
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -13,29 +11,22 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.util.Util
 import org.godotengine.godot.Godot
-import org.godotengine.godot.plugin.GodotPlugin
-import org.godotengine.godot.plugin.GodotPluginRegistry
-import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
-import org.godotengine.plugin.gast.input.GastInputListener
+import org.godotengine.plugin.gast.extension.GastExtension
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * GAST video plugin
+ * GAST-Video plugin
  *
  * This plugin is used to play audio/video contents in the Godot engine.
  * It's powered by Exoplayer and thus support a wide range of codecs.
  */
-class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
-    GastInputListener {
+class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener {
 
     companion object {
         private val TAG = GastVideoPlugin::class.java.simpleName
     }
 
-    private val gastManager: GastManager by lazy {
-        GodotPluginRegistry.getPluginRegistry().getPlugin("gast-core") as GastManager
-    }
     private val player = SimpleExoPlayer.Builder(activity!!).build()
     private val playing = AtomicBoolean(false)
     private var gastNode: GastNode? = null
@@ -57,13 +48,8 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     override fun getPluginName() = "gast-video"
 
-    override fun onMainCreate(activity: Activity): View? {
-        gastManager.registerGastInputListener(this)
-        return null
-    }
-
     override fun onMainDestroy() {
-        gastManager.unregisterGastInputListener(this)
+        super.onMainDestroy()
         player.release()
         gastNode?.release()
     }
@@ -187,28 +173,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
     }
 
-    override fun onMainInputAction(action: String, pressState: GastInputListener.InputPressState, strength: Float) {
-
-    }
-
-    override fun onMainInputHover(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float
-    ) {
-
-    }
-
-    override fun onMainInputPress(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float
-    ) {
-
-    }
-
+    // TODO: Move this logic to the game script by detecting input event on the parent node.
     override fun onMainInputRelease(
         nodePath: String,
         pointerId: String,
@@ -221,19 +186,6 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
             } else {
                 play()
             }
-        }
-    }
-
-    override fun onMainInputScroll(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float,
-        horizontalDelta: Float,
-        verticalDelta: Float
-    ) {
-        if (nodePath == gastNode?.nodePath) {
-
         }
     }
 
