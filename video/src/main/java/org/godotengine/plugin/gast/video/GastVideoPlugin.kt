@@ -1,10 +1,8 @@
 package org.godotengine.plugin.gast.video
 
 import android.app.Activity
-import android.graphics.SurfaceTexture
 import android.text.TextUtils
 import android.util.Log
-import android.view.Surface
 import android.view.View
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
@@ -18,10 +16,9 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.plugin.gast.GastManager
-import org.godotengine.plugin.gast.GastRenderListener
+import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.input.GastInputListener
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * GAST video plugin
@@ -30,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * It's powered by Exoplayer and thus support a wide range of codecs.
  */
 class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
-    SurfaceTexture.OnFrameAvailableListener, GastRenderListener, GastInputListener {
+    GastInputListener {
 
     companion object {
         private val TAG = GastVideoPlugin::class.java.simpleName
@@ -40,13 +37,8 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         GodotPluginRegistry.getPluginRegistry().getPlugin("gast-core") as GastManager
     }
     private val player = SimpleExoPlayer.Builder(activity!!).build()
-
-    private val updateTextureImageCounter = AtomicInteger()
     private val playing = AtomicBoolean(false)
-
-    private var parentNodePath = ""
-    private var videoNodePath = ""
-    private var surfaceTexture: SurfaceTexture? = null
+    private var gastNode: GastNode? = null
 
     init {
         player.addListener(this)
@@ -66,16 +58,14 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
     override fun getPluginName() = "gast-video"
 
     override fun onMainCreate(activity: Activity): View? {
-        gastManager.registerGastRenderListener(this)
         gastManager.registerGastInputListener(this)
         return null
     }
 
     override fun onMainDestroy() {
-        gastManager.unregisterGastRenderListener(this)
         gastManager.unregisterGastInputListener(this)
         player.release()
-        surfaceTexture?.release()
+        gastNode?.release()
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -84,18 +74,6 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     override fun onPlayerError(error: ExoPlaybackException) {
         Log.e(TAG, error.message, error)
-    }
-
-    override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
-        updateTextureImageCounter.incrementAndGet()
-    }
-
-    override fun onRenderDrawFrame() {
-        var counter = updateTextureImageCounter.get()
-        while (counter > 0) {
-            surfaceTexture?.updateTexImage()
-            counter = updateTextureImageCounter.decrementAndGet()
-        }
     }
 
     override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
@@ -109,7 +87,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         }
     }
 
-    private fun isInitialized() = !TextUtils.isEmpty(videoNodePath)
+    private fun isInitialized() = gastNode != null && !gastNode!!.isReleased()
 
     private fun setVideoNodePath(parentNodePath: String) {
         if (TextUtils.isEmpty(parentNodePath)) {
@@ -117,32 +95,15 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
             return
         }
 
-        if (parentNodePath == this.parentNodePath) {
-            // Nothing to do since it's the same parent node.
-            return
-        }
-
         runOnRenderThread {
-            // Reset the current node.
-            if (!TextUtils.isEmpty(videoNodePath)) {
-                gastManager.unbindAndReleaseGastNode(videoNodePath)
-                runOnUiThread {
-                    player.clearVideoSurface()
-                    surfaceTexture?.release()
-                    surfaceTexture = null
-                }
+            if (isInitialized()) {
+                gastNode?.updateParent(parentNodePath)
+            } else {
+                gastNode = GastNode(gastManager, parentNodePath)
             }
 
-            // Setup the new node
-            videoNodePath = gastManager.acquireAndBindGastNode(parentNodePath)
-            val texId = gastManager.getExternalTextureId(videoNodePath)
-            this.parentNodePath = parentNodePath
-
             runOnUiThread {
-                surfaceTexture = SurfaceTexture(texId)
-                surfaceTexture?.setOnFrameAvailableListener(this)
-                val surface = Surface(surfaceTexture)
-                player.setVideoSurface(surface)
+                player.setVideoSurface(gastNode?.surface)
             }
         }
     }
@@ -189,7 +150,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
 
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
-            gastManager.updateGastNodeSize(videoNodePath, width, height)
+            gastNode?.updateSize(width, height)
         }
     }
 
@@ -254,7 +215,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         xPercent: Float,
         yPercent: Float
     ) {
-        if (nodePath == videoNodePath) {
+        if (nodePath == gastNode?.nodePath) {
             if (isPlaying()) {
                 pause()
             } else {
@@ -271,7 +232,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
         horizontalDelta: Float,
         verticalDelta: Float
     ) {
-        if (nodePath == videoNodePath) {
+        if (nodePath == gastNode?.nodePath) {
 
         }
     }
