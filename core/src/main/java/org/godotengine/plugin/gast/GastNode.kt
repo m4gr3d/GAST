@@ -18,30 +18,10 @@ class GastNode @JvmOverloads constructor(
 ) : SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
 
     private val updateTextureImageCounter = AtomicInteger()
+    private var surfaceTexture: SurfaceTexture? = null
+    private var surface: Surface? = null
     var nodePath: String
         private set
-    var surfaceTexture: SurfaceTexture? = null
-        private set
-        get() {
-            if (field == null) {
-                val texId = getTextureId()
-                if (texId == INVALID_TEX_ID) {
-                    throw IllegalStateException("Unable to initialize node texture.")
-                }
-
-                field = SurfaceTexture(texId)
-                field?.setOnFrameAvailableListener(this)
-            }
-            return field
-        }
-    var surface: Surface? = null
-        private set
-        get() {
-            if (field == null) {
-                field = Surface(surfaceTexture)
-            }
-            return field
-        }
 
     init {
         if (TextUtils.isEmpty(parentNodePath)) {
@@ -93,6 +73,45 @@ class GastNode @JvmOverloads constructor(
         if (isReleased()) {
             throw java.lang.IllegalStateException("GastNode is already released")
         }
+    }
+
+    private fun initSurfaceTextureIfNeeded() {
+        if (surfaceTexture == null) {
+            val texId = getTextureId()
+            if (texId == INVALID_TEX_ID) {
+                throw IllegalStateException("Unable to initialize node texture.")
+            }
+
+            surfaceTexture = SurfaceTexture(texId)
+            surfaceTexture?.setOnFrameAvailableListener(this)
+        }
+    }
+
+    private fun initSurfaceIfNeeded() {
+        if (surface == null) {
+            initSurfaceTextureIfNeeded()
+            surface = Surface(surfaceTexture)
+        }
+    }
+
+    /**
+     * Retrieve the [Surface] bound to this [GastNode] node.
+     *
+     * The [Surface] is lazily initialized.
+     */
+    fun getSurface() : Surface? {
+        initSurfaceIfNeeded()
+        return surface
+    }
+
+    /**
+     * Update the surface texture size for this [GastNode] node.
+     *
+     * The [SurfaceTexture] is lazily initialized.
+     */
+    fun setSurfaceTextureSize(width: Int, height: Int) {
+        initSurfaceTextureIfNeeded()
+        surfaceTexture?.setDefaultBufferSize(width, height)
     }
 
     private external fun acquireAndBindGastNode(parentNodePath: String, emptyParent: Boolean): String

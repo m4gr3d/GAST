@@ -103,7 +103,7 @@ class GastVideoPlugin(godot: Godot) : GodotPlugin(godot), Player.EventListener,
             }
 
             runOnUiThread {
-                player.setVideoSurface(gastNode?.surface)
+                player.setVideoSurface(gastNode?.getSurface())
             }
         }
     }
