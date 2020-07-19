@@ -33,17 +33,4 @@ JNI_METHOD(setInputActionsToMonitor)(JNIEnv *env, jobject, jobjectArray input_ac
     }
 }
 
-JNIEXPORT jstring JNICALL
-JNI_METHOD(acquireAndBindGastNode)(JNIEnv *env, jobject, jstring parent_node_path,
-                                   jboolean empty_parent) {
-    return string_to_jstring(env, GastManager::get_singleton_instance()->acquire_and_bind_gast_node(
-        jstring_to_string(env, parent_node_path), empty_parent));
-}
-
-JNIEXPORT void JNICALL
-JNI_METHOD(unbindAndReleaseGastNode)(JNIEnv *env, jobject, jstring node_path) {
-    GastManager::get_singleton_instance()->unbind_and_release_gast_node(
-        jstring_to_string(env, node_path));
-}
-
 }

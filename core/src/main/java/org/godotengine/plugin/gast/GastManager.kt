@@ -147,10 +147,6 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
-    internal external fun acquireAndBindGastNode(parentNodePath: String, emptyParent: Boolean): String
-
-    internal external fun unbindAndReleaseGastNode(nodePath: String)
-
     private inline fun dispatchInputEvent(
         listeners: Queue<GastInputListener>?,
         eventDataProvider : () -> InputEventData

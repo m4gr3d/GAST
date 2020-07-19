@@ -18,17 +18,37 @@ class GastNode @JvmOverloads constructor(
 ) : SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
 
     private val updateTextureImageCounter = AtomicInteger()
-    val surfaceTexture: SurfaceTexture
-    val surface: Surface
     var nodePath: String
         private set
+    var surfaceTexture: SurfaceTexture? = null
+        private set
+        get() {
+            if (field == null) {
+                val texId = getTextureId()
+                if (texId == INVALID_TEX_ID) {
+                    throw IllegalStateException("Unable to initialize node texture.")
+                }
+
+                field = SurfaceTexture(texId)
+                field?.setOnFrameAvailableListener(this)
+            }
+            return field
+        }
+    var surface: Surface? = null
+        private set
+        get() {
+            if (field == null) {
+                field = Surface(surfaceTexture)
+            }
+            return field
+        }
 
     init {
         if (TextUtils.isEmpty(parentNodePath)) {
             throw IllegalArgumentException("Invalid parent node path value: $parentNodePath")
         }
 
-        nodePath = gastManager.acquireAndBindGastNode(parentNodePath, emptyParent)
+        nodePath = acquireAndBindGastNode(parentNodePath, emptyParent)
         if (nodePath == RELEASED_PATH) {
             throw IllegalStateException("Unable to initialize node")
         }
@@ -37,10 +57,6 @@ class GastNode @JvmOverloads constructor(
         if (texId == INVALID_TEX_ID) {
             throw IllegalStateException("Unable to initialize node texture.")
         }
-
-        surfaceTexture = SurfaceTexture(texId)
-        surfaceTexture.setOnFrameAvailableListener(this)
-        surface = Surface(surfaceTexture)
 
         gastManager.registerGastRenderListener(this)
     }
@@ -64,9 +80,9 @@ class GastNode @JvmOverloads constructor(
 
         gastManager.unregisterGastRenderListener(this)
 
-        surface.release()
-        surfaceTexture.release()
-        gastManager.unbindAndReleaseGastNode(nodePath)
+        surface?.release()
+        surfaceTexture?.release()
+        unbindAndReleaseGastNode(nodePath)
 
         nodePath = RELEASED_PATH
     }
@@ -78,6 +94,10 @@ class GastNode @JvmOverloads constructor(
             throw java.lang.IllegalStateException("GastNode is already released")
         }
     }
+
+    private external fun acquireAndBindGastNode(parentNodePath: String, emptyParent: Boolean): String
+
+    private external fun unbindAndReleaseGastNode(nodePath: String)
 
     /**
      * Get the texture id for the Gast node with the given path.
@@ -217,7 +237,7 @@ class GastNode @JvmOverloads constructor(
     override fun onRenderDrawFrame() {
         var counter = updateTextureImageCounter.get()
         while (counter > 0) {
-            surfaceTexture.updateTexImage()
+            surfaceTexture?.updateTexImage()
             counter = updateTextureImageCounter.decrementAndGet()
         }
     }
