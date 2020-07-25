@@ -71,6 +71,10 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    public override fun runOnRenderThread(action: Runnable) {
+        super.runOnRenderThread(action)
+    }
+
     override fun onGLDrawFrame(gl: GL10) {
         for (listener in gastRenderListeners) {
             listener.onRenderDrawFrame()

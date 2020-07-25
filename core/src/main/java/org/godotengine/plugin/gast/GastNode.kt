@@ -1,5 +1,8 @@
 package org.godotengine.plugin.gast
 
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.SurfaceTexture
 import android.text.TextUtils
 import android.view.Surface
@@ -18,8 +21,12 @@ class GastNode @JvmOverloads constructor(
 ) : SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
 
     private val updateTextureImageCounter = AtomicInteger()
+
     private var surfaceTexture: SurfaceTexture? = null
     private var surface: Surface? = null
+    private var surfaceCanvas: Canvas? = null
+    private var surfaceCanvasRefCount = 0
+
     var nodePath: String
         private set
 
@@ -60,11 +67,48 @@ class GastNode @JvmOverloads constructor(
 
         gastManager.unregisterGastRenderListener(this)
 
-        surface?.release()
-        surfaceTexture?.release()
+        unbindSurface()
         unbindAndReleaseGastNode(nodePath)
 
         nodePath = RELEASED_PATH
+    }
+
+    /**
+     * Initialize and bind a [Surface] to this [GastNode] node.
+     *
+     * If the [Surface] is already bound, this method just returns it.
+     */
+    fun bindSurface(): Surface {
+        if (surfaceTexture == null) {
+            val texId = getTextureId()
+            if (texId == INVALID_TEX_ID) {
+                throw IllegalStateException("Unable to initialize node texture.")
+            }
+
+            surfaceTexture = SurfaceTexture(texId)
+            surfaceTexture?.setOnFrameAvailableListener(this)
+        }
+
+        if (surface == null) {
+            surface = Surface(surfaceTexture)
+        }
+
+        return surface!!
+    }
+
+    /**
+     * Unbind the [Surface] bound to  this [GastNode] node.
+     */
+    fun unbindSurface() {
+        if (surface != null) {
+            surface?.release()
+            surface = null
+        }
+
+        if (surfaceTexture != null) {
+            surfaceTexture?.release()
+            surfaceTexture = null
+        }
     }
 
     fun isReleased() = nodePath == RELEASED_PATH
@@ -75,46 +119,72 @@ class GastNode @JvmOverloads constructor(
         }
     }
 
-    private fun initSurfaceTextureIfNeeded() {
-        if (surfaceTexture == null) {
-            val texId = getTextureId()
-            if (texId == INVALID_TEX_ID) {
-                throw IllegalStateException("Unable to initialize node texture.")
-            }
-
-            surfaceTexture = SurfaceTexture(texId)
-            surfaceTexture?.setOnFrameAvailableListener(this)
-        }
-    }
-
-    private fun initSurfaceIfNeeded() {
-        if (surface == null) {
-            initSurfaceTextureIfNeeded()
-            surface = Surface(surfaceTexture)
-        }
-    }
-
-    /**
-     * Retrieve the [Surface] bound to this [GastNode] node.
-     *
-     * The [Surface] is lazily initialized.
-     */
-    fun getSurface() : Surface? {
-        initSurfaceIfNeeded()
-        return surface
-    }
-
     /**
      * Update the surface texture size for this [GastNode] node.
      *
-     * The [SurfaceTexture] is lazily initialized.
+     * [bindSurface] must have been invoked at least once prior to invoking this method.
+     * @throws IllegalStateException if a [Surface] is not bound to this [GastNode] node.
      */
     fun setSurfaceTextureSize(width: Int, height: Int) {
-        initSurfaceTextureIfNeeded()
         surfaceTexture?.setDefaultBufferSize(width, height)
+            ?: throw IllegalStateException("No Surface object bound to this node.")
     }
 
-    private external fun acquireAndBindGastNode(parentNodePath: String, emptyParent: Boolean): String
+    /**
+     * Gets a [Canvas] for drawing into the [Surface] bound to this node.
+     *
+     * After drawing into the provided [Canvas], the caller must invoke [unlockSurfaceCanvas] to
+     * post the new contents.
+     *
+     * [bindSurface] must have been invoked at least once prior to invoking this method.
+     * @throws IllegalStateException if a [Surface] is not bound to this [GastNode] node.
+     */
+    fun lockSurfaceCanvas(scaleX: Float = 1F, scaleY: Float = 1F): Canvas? {
+        val boundSurface =
+            surface ?: throw IllegalStateException("No Surface object bound to this node.")
+
+        if (!boundSurface.isValid) {
+            return null
+        }
+
+        if (surfaceCanvas == null) {
+            if (surfaceCanvasRefCount != 0) {
+                throw IllegalStateException("Invalid surface canvas state.")
+            }
+
+            surfaceCanvas = boundSurface.lockCanvas(null)
+            surfaceCanvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+            surfaceCanvas?.scale(scaleX, scaleY)
+        }
+        surfaceCanvasRefCount++
+        return surfaceCanvas
+    }
+
+    /**
+     * Post the new contents and release the [Canvas].
+     *
+     * [bindSurface] must have been invoked at least once prior to invoking this method.
+     * @throws IllegalStateException if a [Surface] is not bound to this [GastNode] node.
+     */
+    fun unlockSurfaceCanvas() {
+        val boundSurface =
+            surface ?: throw IllegalStateException("No Surface object bound to this node.")
+
+        if (surfaceCanvas == null || surfaceCanvasRefCount == 0) {
+            throw IllegalStateException("Invalid surface canvas state.")
+        }
+
+        surfaceCanvasRefCount--
+        if (surfaceCanvasRefCount == 0) {
+            boundSurface.unlockCanvasAndPost(surfaceCanvas)
+            surfaceCanvas = null
+        }
+    }
+
+    private external fun acquireAndBindGastNode(
+        parentNodePath: String,
+        emptyParent: Boolean
+    ): String
 
     private external fun unbindAndReleaseGastNode(nodePath: String)
 
