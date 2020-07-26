@@ -9,14 +9,15 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
-import org.godotengine.plugin.gast.input.GastInputListener
 
 class GastFrameLayout(
     context: Context,
     attrs: AttributeSet?,
     @AttrRes defStyleAttr: Int,
     @StyleRes defStyleRes: Int
-) : FrameLayout(context, attrs, defStyleAttr, defStyleRes), GastInputListener {
+) : FrameLayout(context, attrs, defStyleAttr, defStyleRes) {
+
+    private val inputHandler: GastViewInputHandler = GastViewInputHandler(this)
 
     constructor(
         context: Context,
@@ -36,13 +37,18 @@ class GastFrameLayout(
     }
 
     private var gastManager: GastManager? = null
-    private var gastNode: GastNode? = null
+    internal var gastNode: GastNode? = null
 
     fun initialize(gastManager: GastManager, gastNode: GastNode) {
         this.gastNode = gastNode
         gastNode.bindSurface()
 
-        gastManager.registerGastInputListener(this)
+        gastManager.registerGastInputListener(inputHandler)
+    }
+
+    fun shutdown() {
+        gastManager?.unregisterGastInputListener(inputHandler)
+        this.gastNode = null
     }
 
     override fun draw(canvas: Canvas) {
@@ -68,52 +74,6 @@ class GastFrameLayout(
         gastManager?.runOnRenderThread {
             gastNode?.updateVisibility(false, visibility == View.VISIBLE)
         }
-    }
-
-    override fun onMainInputAction(
-        action: String,
-        pressState: GastInputListener.InputPressState,
-        strength: Float
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onMainInputHover(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onMainInputPress(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onMainInputRelease(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onMainInputScroll(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float,
-        horizontalDelta: Float,
-        verticalDelta: Float
-    ) {
-        TODO("Not yet implemented")
     }
 }
 
