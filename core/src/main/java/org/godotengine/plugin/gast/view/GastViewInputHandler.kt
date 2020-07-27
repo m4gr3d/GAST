@@ -3,6 +3,7 @@ package org.godotengine.plugin.gast.view
 import android.os.SystemClock
 import android.view.InputDevice
 import android.view.MotionEvent
+import androidx.collection.ArraySet
 import org.godotengine.plugin.gast.input.GastInputListener
 import kotlin.math.max
 import kotlin.math.min
@@ -39,6 +40,8 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
      */
     private val onDownSet = HashSet<String>()
 
+    private val pointerIdsTracker = ArraySet<String>(5)
+
     private fun getScrollByDelta(delta: Float) =
         max(-SCROLL_SPEED_LIMIT, min(SCROLL_SPEED_LIMIT, SCROLL_SENSITIVITY * delta))
 
@@ -51,7 +54,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         yCoord: Float = 0F
     ): MotionEvent {
         val pointerProperties = arrayOf(MotionEvent.PointerProperties().apply {
-            this.id = pointerId.hashCode()
+            this.id = getMotionEventPointerId(pointerId)
         })
         val pointerCoords = arrayOf(MotionEvent.PointerCoords().apply {
             this.x = xCoord
@@ -86,7 +89,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         scrollByY: Float
     ): MotionEvent {
         val pointerProperties = arrayOf(MotionEvent.PointerProperties().apply {
-            this.id = pointerId.hashCode()
+            this.id = getMotionEventPointerId(pointerId)
         })
         val pointerCoords = arrayOf(MotionEvent.PointerCoords().apply {
             this.setAxisValue(MotionEvent.AXIS_X, xCoord)
@@ -289,5 +292,10 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
             obtainScrollEvent(pointerId, eventTime, xCoord, yCoord, scrollByX, scrollByY)
         gastView.dispatchGenericMotionEvent(motionEvent)
         motionEvent.recycle()
+    }
+
+    private fun getMotionEventPointerId(godotPointerId: String): Int {
+        pointerIdsTracker.add(godotPointerId)
+        return pointerIdsTracker.indexOf(godotPointerId)
     }
 }
