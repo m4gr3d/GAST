@@ -129,17 +129,20 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         }
     }
 
+    @Suppress("unused")
     fun preparePlayer(parentNodePath: String, videoRawNames: Array<String>) {
         setVideoNodePath(parentNodePath)
         setVideoSource(videoRawNames)
     }
 
+    @Suppress("unused")
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
             gastNode?.updateSize(width, height)
         }
     }
 
+    @Suppress("unused")
     fun play() {
         runOnUiThread {
             player.playWhenReady = true
@@ -147,26 +150,31 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
 
     }
 
+    @Suppress("unused")
     fun isPlaying() = isInitialized() && playing.get()
 
+    @Suppress("unused")
     fun pause() {
         runOnUiThread {
             player.playWhenReady = false
         }
     }
 
+    @Suppress("unused")
     fun setRepeatMode(repeatMode: Int) {
         runOnUiThread {
             player.repeatMode = repeatMode
         }
     }
 
+    @Suppress("unused")
     fun seekTo(positionInMsec: Int) {
         runOnUiThread {
             player.seekTo(positionInMsec.toLong())
         }
     }
 
+    @Suppress("unused")
     fun stop() {
         runOnUiThread {
             player.stop()
