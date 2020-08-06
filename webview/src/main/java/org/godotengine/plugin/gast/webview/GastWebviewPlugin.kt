@@ -1,6 +1,8 @@
 package org.godotengine.plugin.gast.webview
 
 import android.app.Activity
+import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import org.godotengine.godot.Godot
@@ -22,19 +24,33 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
         private const val INVALID_WEBVIEW_ID = -1
     }
 
+    private val webPanelTextureWidth = AtomicInteger(1)
+    private val webPanelTextureHeight = AtomicInteger(1)
+
     private val webPanelsCounter = AtomicInteger(0)
-    private val webPanelsList = ConcurrentHashMap<Int, WebPanel>()
+    private val webPanelsById = ConcurrentHashMap<Int, WebPanel>()
     private lateinit var webPanelsContainerView: ViewGroup
 
     override fun getPluginName() = "gast-webview"
 
-    override fun getPluginMethods() = mutableListOf(
+    override fun getPluginMethods() = listOf(
         "initializeWebView",
-        "shutdownWebView"
+        "loadUrl",
+        "setWebViewSize",
+        "setWebViewDensity",
+        "shutdownWebView",
+        "updateTextureSize"
     )
 
     override fun onMainCreate(activity: Activity): View? {
         super.onMainCreate(activity)
+
+        val displayMetrics = activity.resources.displayMetrics
+        updateTextureSize(
+            (displayMetrics.widthPixels / 2f).toInt(),
+            (displayMetrics.heightPixels / 2f).toInt()
+        )
+
         webPanelsContainerView =
             activity.layoutInflater.inflate(R.layout.web_panels_container, null) as ViewGroup
         return webPanelsContainerView
@@ -42,29 +58,45 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
 
     override fun onMainResume() {
         super.onMainResume()
-        for (webPanel in webPanelsList.values) {
+        for (webPanel in webPanelsById.values) {
             webPanel.onResume()
         }
     }
 
     override fun onMainPause() {
         super.onMainPause()
-        for (webPanel in webPanelsList.values) {
+        for (webPanel in webPanelsById.values) {
             webPanel.onPause()
         }
     }
 
     override fun onMainDestroy() {
         super.onMainDestroy()
-        for (webPanel in webPanelsList.values) {
+        for (webPanel in webPanelsById.values) {
             webPanel.onDestroy()
         }
 
-        webPanelsList.clear()
+        webPanelsById.clear()
+    }
+
+    private fun updateTextureSize(width: Int, height: Int) {
+        Log.d(TAG, "Updating texture size to $width, $height")
+
+        webPanelTextureWidth.set(width)
+        webPanelTextureHeight.set(height)
+
+        for (webPanel in webPanelsById.values) {
+            webPanel.setTextureSize(width, height)
+        }
     }
 
     @Suppress("unused")
-    fun initializeWebView(parentNodePath: String): Int {
+    private fun initializeWebView(parentNodePath: String): Int {
+        if (TextUtils.isEmpty(parentNodePath)) {
+            Log.e(TAG, "Invalid parent node path value: $parentNodePath")
+            return INVALID_WEBVIEW_ID
+        }
+
         val parentActivity = activity ?: return INVALID_WEBVIEW_ID
 
         // Create a gast node in the given parent node.
@@ -72,16 +104,35 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
 
         // Generate the web panel
         val webPanel = WebPanel(parentActivity, webPanelsContainerView, gastManager, gastNode)
+        webPanel.setTextureSize(webPanelTextureWidth.get(), webPanelTextureHeight.get())
         val webPanelId = webPanelsCounter.getAndIncrement()
 
-        webPanelsList[webPanelId] = webPanel
+        webPanelsById[webPanelId] = webPanel
 
         return webPanelId
     }
 
     @Suppress("unused")
-    fun shutdownWebView(webViewId: Int) {
-        val webPanel = webPanelsList.remove(webViewId) ?: return
+    private fun loadUrl(webViewId: Int, url: String) {
+        val webPanel = webPanelsById[webViewId] ?: return
+        webPanel.loadUrl(url)
+    }
+
+    @Suppress("unused")
+    private fun setWebViewSize(webViewId: Int, width: Float, height: Float) {
+        val webPanel = webPanelsById[webViewId] ?: return
+        webPanel.setSize(width, height)
+    }
+
+    @Suppress("unused")
+    private fun setWebViewDensity(webViewId: Int, density: Float) {
+        val webPanel = webPanelsById[webViewId] ?: return
+        webPanel.setDensity(density)
+    }
+
+    @Suppress("unused")
+    private fun shutdownWebView(webViewId: Int) {
+        val webPanel = webPanelsById.remove(webViewId) ?: return
         webPanel.onDestroy()
     }
 }

@@ -1,4 +1,4 @@
-# GAST-Webview Plugin
+# GAST-WebView Plugin
 
 **IN CONSTRUCTION...**
 

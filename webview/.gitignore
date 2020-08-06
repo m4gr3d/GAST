@@ -1,3 +1,4 @@
 /build
 *.import
 /samples/webview_demo/android/
+/samples/webview_vr_demo/android/

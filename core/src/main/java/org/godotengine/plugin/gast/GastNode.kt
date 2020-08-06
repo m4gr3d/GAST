@@ -171,7 +171,7 @@ class GastNode @JvmOverloads constructor(
             surface ?: throw IllegalStateException("No Surface object bound to this node.")
 
         if (surfaceCanvas == null || surfaceCanvasRefCount == 0) {
-            throw IllegalStateException("Invalid surface canvas state.")
+            return
         }
 
         surfaceCanvasRefCount--

@@ -45,8 +45,7 @@ GastManager::~GastManager() {
 }
 
 GastManager *GastManager::get_singleton_instance() {
-    ALOG_ASSERT(gdn_initialized_ && jni_initialized_,
-                "GastManager is not properly initialized.");
+    ALOG_ASSERT(gdn_initialized_, "GastManager is not properly initialized.");
     if (singleton_instance_ == nullptr) {
         singleton_instance_ = new GastManager();
     }
