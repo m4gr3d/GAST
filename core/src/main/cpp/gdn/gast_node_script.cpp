@@ -84,17 +84,21 @@ void GastNodeScript::_physics_process(const real_t delta) {
         }
 
         // Check if the ray cast collides with this node.
-        if (!ray_cast->is_colliding()) {
-            continue;
+        if (ray_cast->is_colliding()) {
+            Node *collider = Object::cast_to<Node>(ray_cast->get_collider());
+            if (collider != nullptr && node_path == collider->get_path()) {
+                handle_ray_cast_input(*ray_cast);
+                continue;
+            }
         }
 
-        Node *collider = Object::cast_to<Node>(ray_cast->get_collider());
-        if (!collider) {
-            continue;
-        }
-
-        if (node_path == collider->get_path()) {
-            handle_ray_cast_input(*ray_cast);
+        // Fall through and fire a hover exit event if this raycast was previously colliding with
+        // this node.
+        if (colliding_raycast_paths.erase(ray_cast->get_path()) > 0) {
+            GastManager::get_singleton_instance()->on_render_input_hover(node_path,
+                                                                         ray_cast->get_path(),
+                                                                         kInvalidCoordinate.x,
+                                                                         kInvalidCoordinate.y);
         }
     }
 }
@@ -103,6 +107,9 @@ void GastNodeScript::handle_ray_cast_input(const RayCast &ray_cast) {
     Input *input = Input::get_singleton();
     String node_path = get_path();
     String ray_cast_path = ray_cast.get_path();
+
+    // Add the raycast to the list of colliding raycasts
+    colliding_raycast_paths.insert(ray_cast_path);
 
     // Calculate the 2D collision point of the raycast on the Gast node.
     Vector2 relative_collision_point = get_relative_collision_point(ray_cast.get_collision_point());

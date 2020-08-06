@@ -10,6 +10,7 @@
 #include <gen/RayCast.hpp>
 #include <gen/StaticBody.hpp>
 
+#include <set>
 #include "utils.h"
 
 namespace gast {
@@ -103,6 +104,8 @@ private:
     }
 
     void handle_ray_cast_input(const RayCast &ray_cast);
+
+    std::set<String> colliding_raycast_paths;
 };
 }  // namespace gast
 
