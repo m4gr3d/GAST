@@ -14,15 +14,17 @@ var ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new();
 
 var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
 var gast = null
+var gast_video_plugin = null
 
 func _ready():
 	_initialize_ovr_mobile_arvr_interface()
 	gast = gast_loader.new()
 	gast.initialize()
+	gast.connect("release_input_event", self, "_on_gast_release_input_event")
 
 	if Engine.has_singleton("gast-video"):
 		print("Setting video player...")
-		var gast_video_plugin = Engine.get_singleton("gast-video")
+		gast_video_plugin = Engine.get_singleton("gast-video")
 		gast_video_plugin.preparePlayer("/root/Main/VideoContainer", ["flight"])
 		gast_video_plugin.play()
 		gast_video_plugin.setRepeatMode(2)
@@ -32,10 +34,17 @@ func _ready():
 
 
 func _process(delta_t):
+	gast.on_process()
 	_check_and_perform_runtime_config()
 
-func _unhandled_input(event):
-	gast.on_unhandled_input(event)
+
+func _on_gast_release_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
+	if gast_video_plugin.isPlaying():
+		print("Pausing playback for " + node_path)
+		gast_video_plugin.pause()
+	else:
+		print("Resuming playback for " + node_path)
+		gast_video_plugin.play()
 
 
 # this code check for the OVRMobile inteface; and if successful also initializes the
@@ -62,10 +71,8 @@ func _initialize_ovr_mobile_arvr_interface():
 			if (ovr_performance): ovr_performance = ovr_performance.new()
 
 			print("Loaded OVRMobile")
-			return true
 		else:
 			print("Failed to enable OVRMobile")
-			return false
 
 
 # many settings should only be applied once when running; this variable

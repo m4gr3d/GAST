@@ -28,6 +28,7 @@ const char *kGastNodeGroupName = "gast_node_group";
 } // namespace
 
 GastManager *GastManager::singleton_instance_ = nullptr;
+GastLoader *GastManager::gast_loader_ = nullptr;
 bool GastManager::gdn_initialized_ = false;
 bool GastManager::jni_initialized_ = false;
 
@@ -45,8 +46,7 @@ GastManager::~GastManager() {
 }
 
 GastManager *GastManager::get_singleton_instance() {
-    ALOG_ASSERT(gdn_initialized_ && jni_initialized_,
-                "GastManager is not properly initialized.");
+    ALOG_ASSERT(gdn_initialized_, "Gast is not properly initialized.");
     if (singleton_instance_ == nullptr) {
         singleton_instance_ = new GastManager();
     }
@@ -60,12 +60,15 @@ void GastManager::delete_singleton_instance() {
     }
 }
 
-void GastManager::gdn_initialize() {
+void GastManager::gdn_initialize(GastLoader *gast_loader) {
+    ALOG_ASSERT(gast_loader_ == nullptr, "Gast is already initialized.");
     gdn_initialized_ = true;
+    gast_loader_ = gast_loader;
 }
 
 void GastManager::gdn_shutdown() {
     gdn_initialized_ = false;
+    gast_loader_ = nullptr;
     delete_singleton_instance();
 }
 
@@ -386,6 +389,10 @@ void GastManager::on_render_input_action(const String &action, InputPressState p
 void GastManager::on_render_input_hover(const String &node_path, const String &pointer_id,
                                         float x_percent,
                                         float y_percent) {
+    if (gast_loader_) {
+        gast_loader_->emitHoverEvent(node_path, pointer_id, x_percent, y_percent);
+    }
+
     if (callback_instance_ && on_render_input_hover_) {
         JNIEnv *env = godot::android_api->godot_android_get_env();
         env->CallVoidMethod(callback_instance_, on_render_input_hover_,
@@ -397,6 +404,10 @@ void GastManager::on_render_input_hover(const String &node_path, const String &p
 void GastManager::on_render_input_press(const String &node_path, const String &pointer_id,
                                         float x_percent,
                                         float y_percent) {
+    if (gast_loader_) {
+        gast_loader_->emitPressEvent(node_path, pointer_id, x_percent, y_percent);
+    }
+
     if (callback_instance_ && on_render_input_press_) {
         JNIEnv *env = godot::android_api->godot_android_get_env();
         env->CallVoidMethod(callback_instance_, on_render_input_press_,
@@ -408,6 +419,10 @@ void GastManager::on_render_input_press(const String &node_path, const String &p
 void GastManager::on_render_input_release(const String &node_path, const String &pointer_id,
                                           float x_percent,
                                           float y_percent) {
+    if (gast_loader_) {
+        gast_loader_->emitReleaseEvent(node_path, pointer_id, x_percent, y_percent);
+    }
+
     if (callback_instance_ && on_render_input_release_) {
         JNIEnv *env = godot::android_api->godot_android_get_env();
         env->CallVoidMethod(callback_instance_, on_render_input_release_,
@@ -420,6 +435,11 @@ void GastManager::on_render_input_scroll(const godot::String &node_path,
                                          const godot::String &pointer_id, float x_percent,
                                          float y_percent, float horizontal_delta,
                                          float vertical_delta) {
+    if (gast_loader_) {
+        gast_loader_->emitScrollEvent(node_path, pointer_id, x_percent, y_percent, horizontal_delta,
+                                      vertical_delta);
+    }
+
     if (callback_instance_ && on_render_input_scroll_) {
         JNIEnv *env = godot::android_api->godot_android_get_env();
         env->CallVoidMethod(callback_instance_, on_render_input_scroll_,

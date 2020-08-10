@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.godotengine.plugin.gast.view.GastFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/web_panel"
+    android:layout_width="@dimen/web_panel_width"
+    android:layout_height="@dimen/web_panel_height"
+    android:layout_gravity="center">
+
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ProgressBar
+        android:id="@+id/load_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
+</org.godotengine.plugin.gast.view.GastFrameLayout>

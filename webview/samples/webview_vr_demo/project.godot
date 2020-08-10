@@ -1,0 +1,83 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[  ]
+_global_script_class_icons={
+
+}
+
+[application]
+
+config/name="Gast Webview VR Demo"
+run/main_scene="res://main.tscn"
+config/icon="res://icon.png"
+
+[input]
+
+_root_Main_ARVROrigin_LeftTouchController_MeshInstance_RayCast_click={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":7,"pressure":0.0,"pressed":false,"script":null)
+, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":15,"pressure":0.0,"pressed":false,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_RightTouchController_MeshInstance_RayCast_click={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":1,"button_index":7,"pressure":0.0,"pressed":false,"script":null)
+, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":1,"button_index":15,"pressure":0.0,"pressed":false,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_LeftTouchController_MeshInstance_RayCast_left_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":0,"axis_value":-1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_LeftTouchController_MeshInstance_RayCast_up_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":1,"axis_value":-1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_RightTouchController_MeshInstance_RayCast_left_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":0,"axis_value":-1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_RightTouchController_MeshInstance_RayCast_up_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":1,"axis_value":-1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_LeftTouchController_MeshInstance_RayCast_right_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":0,"axis_value":1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_LeftTouchController_MeshInstance_RayCast_down_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":1,"axis_value":1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_RightTouchController_MeshInstance_RayCast_right_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":0,"axis_value":1.0,"script":null)
+ ]
+}
+_root_Main_ARVROrigin_RightTouchController_MeshInstance_RayCast_down_scroll={
+"deadzone": 0.0,
+"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":1,"axis_value":1.0,"script":null)
+ ]
+}
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+vram_compression/import_etc2=false
+quality/filters/msaa=6
+environment/default_environment="res://default_env.tres"

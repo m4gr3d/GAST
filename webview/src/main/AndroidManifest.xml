@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.godotengine.plugin.gast.webview">
+
+    <application>
+
+        <meta-data
+            android:name="org.godotengine.plugin.v1.gast-webview"
+            android:value="org.godotengine.plugin.gast.webview.GastWebviewPlugin" />
+
+    </application>
+
+</manifest>

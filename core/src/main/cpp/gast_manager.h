@@ -15,6 +15,7 @@
 #include <jni.h>
 #include <list>
 
+#include "gdn/gast_loader.h"
 #include "utils.h"
 
 namespace gast {
@@ -39,7 +40,7 @@ class GastManager {
 public:
     static GastManager *get_singleton_instance();
 
-    static void gdn_initialize();
+    static void gdn_initialize(GastLoader *gast_loader);
 
     static void gdn_shutdown();
 
@@ -170,6 +171,7 @@ private:
     std::list<String> input_actions_to_monitor_;
 
     static GastManager *singleton_instance_;
+    static GastLoader *gast_loader_;
     static bool gdn_initialized_;
     static bool jni_initialized_;
 
