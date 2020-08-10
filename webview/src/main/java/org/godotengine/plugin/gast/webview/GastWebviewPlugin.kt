@@ -24,9 +24,6 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
         private const val INVALID_WEBVIEW_ID = -1
     }
 
-    private val webPanelTextureWidth = AtomicInteger(1)
-    private val webPanelTextureHeight = AtomicInteger(1)
-
     private val webPanelsCounter = AtomicInteger(0)
     private val webPanelsById = ConcurrentHashMap<Int, WebPanel>()
     private lateinit var webPanelsContainerView: ViewGroup
@@ -38,18 +35,11 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
         "loadUrl",
         "setWebViewSize",
         "setWebViewDensity",
-        "shutdownWebView",
-        "updateTextureSize"
+        "shutdownWebView"
     )
 
     override fun onMainCreate(activity: Activity): View? {
         super.onMainCreate(activity)
-
-        val displayMetrics = activity.resources.displayMetrics
-        updateTextureSize(
-            (displayMetrics.widthPixels / 2f).toInt(),
-            (displayMetrics.heightPixels / 2f).toInt()
-        )
 
         webPanelsContainerView =
             activity.layoutInflater.inflate(R.layout.web_panels_container, null) as ViewGroup
@@ -79,17 +69,6 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
         webPanelsById.clear()
     }
 
-    private fun updateTextureSize(width: Int, height: Int) {
-        Log.d(TAG, "Updating texture size to $width, $height")
-
-        webPanelTextureWidth.set(width)
-        webPanelTextureHeight.set(height)
-
-        for (webPanel in webPanelsById.values) {
-            webPanel.setTextureSize(width, height)
-        }
-    }
-
     @Suppress("unused")
     private fun initializeWebView(parentNodePath: String): Int {
         if (TextUtils.isEmpty(parentNodePath)) {
@@ -104,7 +83,6 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
 
         // Generate the web panel
         val webPanel = WebPanel(parentActivity, webPanelsContainerView, gastManager, gastNode)
-        webPanel.setTextureSize(webPanelTextureWidth.get(), webPanelTextureHeight.get())
         val webPanelId = webPanelsCounter.getAndIncrement()
 
         webPanelsById[webPanelId] = webPanel

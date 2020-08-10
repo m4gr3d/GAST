@@ -12,17 +12,17 @@ material = SubResource( 1 )
 radius = 0.004
 mid_height = 0.5
 
-[sub_resource type="SpatialMaterial" id=5]
-
-[sub_resource type="SphereMesh" id=6]
-material = SubResource( 5 )
-radius = 0.01
-height = 0.02
-
 [sub_resource type="SpatialMaterial" id=3]
 
 [sub_resource type="SphereMesh" id=4]
 material = SubResource( 3 )
+radius = 0.01
+height = 0.02
+
+[sub_resource type="SpatialMaterial" id=5]
+
+[sub_resource type="SphereMesh" id=6]
+material = SubResource( 5 )
 radius = 0.01
 height = 0.02
 
@@ -53,7 +53,7 @@ cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
 [node name="RayReticle" type="MeshInstance" parent="ARVROrigin/LeftTouchController/MeshInstance/RayCast"]
-mesh = SubResource( 6 )
+mesh = SubResource( 4 )
 material/0 = null
 
 [node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
@@ -76,7 +76,7 @@ cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
 [node name="RayReticle" type="MeshInstance" parent="ARVROrigin/RightTouchController/MeshInstance/RayCast"]
-mesh = SubResource( 4 )
+mesh = SubResource( 6 )
 material/0 = null
 
 [node name="WebViewContainer" type="Position3D" parent="."]

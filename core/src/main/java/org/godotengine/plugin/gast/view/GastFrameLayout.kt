@@ -11,6 +11,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
+import kotlin.math.roundToInt
 
 class GastFrameLayout(
     context: Context,
@@ -70,11 +71,13 @@ class GastFrameLayout(
         this.gastNode = null
     }
 
-    fun setTextureSize(width: Int, height: Int) {
-        textureWidth = width
-        textureHeight = height
+    private fun setTextureSize(width: Int, height: Int) {
+        val density = resources.displayMetrics.scaledDensity
+        textureWidth = (width / density).roundToInt()
+        textureHeight = (height / density).roundToInt()
         gastNode?.setSurfaceTextureSize(textureWidth, textureHeight)
 
+        Log.d(TAG, "Updating texture size for density $density: $textureWidth, $textureHeight")
         invalidate()
     }
 
@@ -99,6 +102,9 @@ class GastFrameLayout(
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
         super.onSizeChanged(width, height, oldWidth, oldHeight)
         Log.d(TAG, "On size changed: $width, $height, $oldWidth, $oldHeight")
+        if (width > 0 && height > 0) {
+            setTextureSize(width, height)
+        }
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {

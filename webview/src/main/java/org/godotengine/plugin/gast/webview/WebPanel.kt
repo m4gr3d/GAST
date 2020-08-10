@@ -26,8 +26,8 @@ internal class WebPanel(
     private lateinit var panelView: GastFrameLayout
     private lateinit var webView: WebView
 
-    private var defaultPanelWidth = 0f
-    private var defaultPanelHeight = 0f
+    private var defaultPanelWidth = 1
+    private var defaultPanelHeight = 1
     private var panelDensity = DEFAULT_PANEL_DENSITY
 
     init {
@@ -37,8 +37,8 @@ internal class WebPanel(
 
     private fun initializeViews() {
         activity.runOnUiThread {
-            defaultPanelWidth = activity.resources.getDimension(R.dimen.web_panel_width)
-            defaultPanelHeight = activity.resources.getDimension(R.dimen.web_panel_height)
+            defaultPanelWidth = activity.resources.getDimensionPixelSize(R.dimen.web_panel_width)
+            defaultPanelHeight = activity.resources.getDimensionPixelSize(R.dimen.web_panel_height)
 
             activity.layoutInflater.inflate(R.layout.web_panel, containerView)
 
@@ -96,12 +96,6 @@ internal class WebPanel(
             panelView.layoutParams.width = (updatedWebViewWidth * panelDensity).toInt()
             panelView.layoutParams.height = (updatedWebViewHeight * panelDensity).toInt()
             panelView.requestLayout()
-        }
-    }
-
-    fun setTextureSize(width: Int, height: Int) {
-        activity.runOnUiThread {
-            panelView.setTextureSize(width, height)
         }
     }
 
