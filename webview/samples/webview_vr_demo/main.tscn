@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://main.gd" type="Script" id=1]
 [ext_resource path="res://touch_controller.tscn" type="PackedScene" id=2]
+[ext_resource path="res://ray_cast_with_reticle.gd" type="Script" id=3]
 
 [sub_resource type="SpatialMaterial" id=1]
 albedo_color = Color( 0.929412, 0.858824, 0.858824, 1 )
@@ -10,6 +11,20 @@ albedo_color = Color( 0.929412, 0.858824, 0.858824, 1 )
 material = SubResource( 1 )
 radius = 0.004
 mid_height = 0.5
+
+[sub_resource type="SpatialMaterial" id=5]
+
+[sub_resource type="SphereMesh" id=6]
+material = SubResource( 5 )
+radius = 0.01
+height = 0.02
+
+[sub_resource type="SpatialMaterial" id=3]
+
+[sub_resource type="SphereMesh" id=4]
+material = SubResource( 3 )
+radius = 0.01
+height = 0.02
 
 [node name="Main" type="Spatial"]
 script = ExtResource( 1 )
@@ -35,6 +50,11 @@ material/0 = null
 ]]
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
+script = ExtResource( 3 )
+
+[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/LeftTouchController/MeshInstance/RayCast"]
+mesh = SubResource( 6 )
+material/0 = null
 
 [node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.727, -0.4 )
@@ -53,6 +73,11 @@ material/0 = null
 ]]
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
+script = ExtResource( 3 )
+
+[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/RightTouchController/MeshInstance/RayCast"]
+mesh = SubResource( 4 )
+material/0 = null
 
 [node name="WebViewContainer" type="Position3D" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27298, -2.02735 )
