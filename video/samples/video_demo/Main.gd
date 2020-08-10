@@ -8,6 +8,7 @@ var gast_video_plugin = null
 func _ready():
 	gast = gast_loader.new()
 	gast.initialize()
+	gast.connect("release_input_event", self, "_on_gast_release_input_event")
 
 	if Engine.has_singleton("gast-video"):
 		print("Setting video player...")
@@ -24,12 +25,11 @@ func _process(delta):
 	gast.on_process()
 
 
-func _physics_process(_delta):
-	if Input.is_action_just_released("play_pause_player") && gast_video_plugin != null:
-		if gast_video_plugin.isPlaying():
-			print("Pausing playback")
-			gast_video_plugin.pause()
-		else:
-			print("Resuming playback")
-			gast_video_plugin.play()
+func _on_gast_release_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
+	if gast_video_plugin.isPlaying():
+		print("Pausing playback for " + node_path)
+		gast_video_plugin.pause()
+	else:
+		print("Resuming playback for " + node_path)
+		gast_video_plugin.play()
 
