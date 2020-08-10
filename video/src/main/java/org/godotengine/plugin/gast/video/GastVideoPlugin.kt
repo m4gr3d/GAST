@@ -180,21 +180,4 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
             player.stop()
         }
     }
-
-    // TODO: Move this logic to the game script by detecting input event on the parent node.
-    override fun onMainInputRelease(
-        nodePath: String,
-        pointerId: String,
-        xPercent: Float,
-        yPercent: Float
-    ) {
-        if (nodePath == gastNode?.nodePath) {
-            if (isPlaying()) {
-                pause()
-            } else {
-                play()
-            }
-        }
-    }
-
 }
