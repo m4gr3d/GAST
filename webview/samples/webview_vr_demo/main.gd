@@ -25,16 +25,10 @@ func _ready():
 	if Engine.has_singleton("gast-webview"):
 		print("Setting webview...")
 		gast_webview_plugin = Engine.get_singleton("gast-webview")
-		webview_id = gast_webview_plugin.initializeWebView("/root/Spatial/WebViewContainer")
+		webview_id = gast_webview_plugin.initializeWebView("/root/Main/WebViewContainer")
 		print("Initialized webview " + str(webview_id))
 
 		gast_webview_plugin.loadUrl(webview_id, "https://news.ycombinator.com/")
-
-		yield(get_tree().create_timer(10.0), "timeout")
-		gast_webview_plugin.setWebViewDensity(webview_id, 0.75)
-
-		yield(get_tree().create_timer(10.0), "timeout")
-		gast_webview_plugin.setWebViewDensity(webview_id, 0.5)
 	else:
 		print("Unable to load gast-webview singleton.")
 
