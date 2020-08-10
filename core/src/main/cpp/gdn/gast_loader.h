@@ -32,6 +32,20 @@ public:
     void shutdown();
 
     void on_process();
+
+    void emitHoverEvent(const String &node_path, const String &event_origin_id, float x_percent,
+                        float y_percent);
+
+    void emitPressEvent(const String &node_path, const String &event_origin_id, float x_percent,
+                        float y_percent);
+
+    void
+    emitReleaseEvent(const String &node_path, const String &event_origin_id, float x_percent,
+                     float y_percent);
+
+    void emitScrollEvent(const String &node_path, const String &event_origin_id, float x_percent,
+                         float y_percent,
+                         float horizontal_delta, float vertical_delta);
 };
 }  // namespace gast
 
