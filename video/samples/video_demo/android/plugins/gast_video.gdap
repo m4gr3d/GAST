@@ -1,0 +1,10 @@
+[config]
+
+name="gast-video"
+binary_type="local"
+binary="gast-video.0.2.0-release.aar"
+
+[dependencies]
+
+local=["gast-core.0.2.0-release.aar"]
+remote=["com.google.android.exoplayer:exoplayer:2.11.3"]
