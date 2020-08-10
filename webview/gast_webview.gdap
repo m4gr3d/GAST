@@ -2,8 +2,8 @@
 
 name = "gast-webview"
 binary_type="local"
-binary="gast-webview.0.1.0-release.aar"
+binary="gast-webview.0.2.0-release.aar"
 
 [dependencies]
 
-local=["gast-core.0.1.0-release.aar"]
+local=["gast-core.0.2.0-release.aar"]

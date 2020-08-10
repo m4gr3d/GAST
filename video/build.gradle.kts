@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion(minSdk)
         targetSdkVersion(targetSdk)
-        versionName = "0.1.0"
-        versionCode = 1
+        versionName = "0.2.0"
+        versionCode = 2
         setProperty("archivesBaseName", "gast-video.${versionName}")
     }
 
