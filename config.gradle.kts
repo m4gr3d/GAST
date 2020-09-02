@@ -1,4 +1,4 @@
-val kotlinVersion by extra("1.3.72")
+val kotlinVersion by extra("1.4.0")
 val gradlePluginVersion by extra("4.0.0")
 
 val compileSdk by extra(29)
