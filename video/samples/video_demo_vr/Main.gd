@@ -28,7 +28,7 @@ func _ready():
 		gast_video_plugin.preparePlayer("/root/Main/VideoContainer", ["flight"])
 		gast_video_plugin.play()
 		gast_video_plugin.setRepeatMode(2)
-		gast_video_plugin.setVideoScreenSize(3, 2)
+		gast_video_plugin.setVideoScreenSize(3.54, 2)
 	else:
 		print("Unable to load gast-video singleton.")
 
