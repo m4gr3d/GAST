@@ -5,6 +5,13 @@ code = "shader_type spatial;
 render_mode unshaded;
 
 uniform samplerExternalOES gast_texture;
+uniform bool curve_flag;
+
+void vertex() {
+	if (curve_flag) {
+
+	}
+}
 
 void fragment() {
 	ALBEDO = texture(gast_texture, UV).rgb;

@@ -4,25 +4,19 @@
 #include <core/String.hpp>
 #include <core/Vector2.hpp>
 #include <core/Vector3.hpp>
-#include <gen/CollisionShape.hpp>
-#include <gen/ExternalTexture.hpp>
-#include <gen/Mesh.hpp>
-#include <gen/MeshInstance.hpp>
 #include <gen/Node.hpp>
-#include <gen/Shape.hpp>
 #include <gen/Spatial.hpp>
-#include <gen/StaticBody.hpp>
 #include <jni.h>
 #include <list>
 
 #include "gdn/gast_loader.h"
+#include "gdn/gast_node.h"
 #include "utils.h"
 
 namespace gast {
 
 namespace {
 using namespace godot;
-constexpr int kInvalidSurfaceIndex = -1;
 
 // Name of the group containing the RayCast nodes that interact with the Gast nodes.
 const char *kGastRayCasterGroupName = "gast_ray_caster";
@@ -125,49 +119,17 @@ private:
         }
     }
 
-    static inline MeshInstance *get_mesh_instance_from_gast_node(StaticBody &static_body) {
-        CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);
-        if (!collision_shape) {
-            return nullptr;
-        }
-
-        Node *node = collision_shape->get_child(0);
-        if (!node || !node->is_class("MeshInstance")) {
-            return nullptr;
-        }
-        MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(node);
-        return mesh_instance;
-    }
-
-    static inline CollisionShape *get_collision_shape_from_gast_node(StaticBody &static_body) {
-        Node *node = static_body.get_child(0);
-        if (!node || !node->is_class("CollisionShape")) {
-            return nullptr;
-        }
-
-        CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
-        return collision_shape;
-    }
-
     void on_render_input_action(const String &action, InputPressState press_state, float strength);
 
-    ExternalTexture *get_external_texture(const String &node_path, int surface_index);
-
-    ExternalTexture *get_external_texture(Ref<Mesh> mesh, int surface_index);
-
-    StaticBody *get_gast_node(const String &node_path);
+    GastNode *get_gast_node(const String &node_path);
 
     Node *get_node(const String &node_path);
-
-    bool bind_gast_node(StaticBody &static_body);
-
-    void unbind_gast_node(StaticBody &static_body);
 
     GastManager();
 
     ~GastManager();
 
-    std::list<StaticBody *> reusable_pool_;
+    std::list<GastNode *> reusable_pool_;
     std::list<String> input_actions_to_monitor_;
 
     static GastManager *singleton_instance_;

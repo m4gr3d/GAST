@@ -1,0 +1,9 @@
+[gd_resource type="PlaneMesh" load_steps=2 format=2]
+
+[ext_resource path="res://godot/plugin/v1/gast/gast_shader_material.tres" type="Material" id=1]
+
+[resource]
+material = ExtResource( 1 )
+size = Vector2( 2.0, 1.0 )
+subdivide_width = 32
+subdivide_depth = 32

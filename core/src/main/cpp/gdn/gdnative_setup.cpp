@@ -2,7 +2,7 @@
 #include <utils.h>
 #include "gdnative_setup.h"
 #include "gast_loader.h"
-#include "gast_node_script.h"
+#include "gast_node.h"
 
 void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *options) {
     godot::Godot::gdnative_init(options);
@@ -14,7 +14,7 @@ void GDN_EXPORT godot_nativescript_init(void *handle) {
     godot::Godot::nativescript_init(handle);
 
     godot::register_class<gast::GastLoader>();
-    godot::register_class<gast::GastNodeScript>();
+    godot::register_class<gast::GastNode>();
 }
 
 void GDN_EXPORT godot_nativescript_terminate(void *handle) {
