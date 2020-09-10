@@ -59,6 +59,7 @@ void GastNode::_init() {
 
     // Add a mesh instance to the collision shape node
     MeshInstance *mesh_instance = MeshInstance::_new();
+    mesh_instance->set_rotation_degrees(Vector3(90, 0, 0));
     collision_shape->add_child(mesh_instance);
 }
 
