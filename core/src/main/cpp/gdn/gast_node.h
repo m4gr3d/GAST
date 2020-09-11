@@ -79,10 +79,6 @@ private:
 
     inline CollisionShape *get_collision_shape() {
         Node *node = get_child(0);
-        if (!node || !node->is_class(CollisionShape::___get_class_name())) {
-            return nullptr;
-        }
-
         CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
         return collision_shape;
     }
@@ -94,9 +90,6 @@ private:
         }
 
         Node *node = collision_shape->get_child(0);
-        if (!node || !node->is_class(MeshInstance::___get_class_name())) {
-            return nullptr;
-        }
         MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(node);
         return mesh_instance;
     }
@@ -107,7 +100,7 @@ private:
         MeshInstance *mesh_instance = get_mesh_instance();
         if (mesh_instance) {
             Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-            if (mesh_ref.is_valid() && mesh_ref->is_class(PlaneMesh::___get_class_name())) {
+            if (mesh_ref.is_valid()) {
                 plane_mesh = Object::cast_to<PlaneMesh>(*mesh_ref);
             }
         }
@@ -115,11 +108,6 @@ private:
     }
 
     static inline RayCast *get_ray_cast_from_variant(Variant variant) {
-        Node *node = get_node_from_variant(variant);
-        if (!node || !node->is_class(RayCast::___get_class_name())) {
-            return nullptr;
-        }
-
         RayCast *ray_cast = Object::cast_to<RayCast>(variant);
         return ray_cast;
     }

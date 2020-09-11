@@ -97,11 +97,6 @@ static inline Node *get_node_from_variant(Variant variant) {
         return nullptr;
     }
 
-    Object *object = get_wrapper<Object>(variant.operator godot_object *());
-    if (!object || !object->is_class("Node")) {
-        return nullptr;
-    }
-
     Node *node = Object::cast_to<Node>(variant);
     return node;
 }

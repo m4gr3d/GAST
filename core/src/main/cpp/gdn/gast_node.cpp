@@ -64,22 +64,13 @@ void GastNode::_init() {
 }
 
 void GastNode::_enter_tree() {
-    ALOGV("Entering tree.");
-
-//    // Load the script resource.
-//    ALOGV("Loading script resource.");
-//    Ref<Resource> script_res = ResourceLoader::get_singleton()->load(
-//            "res://godot/plugin/v1/gast/GastNode.gdns", "", true);
-//    if (script_res.is_null() || !script_res->is_class("NativeScript")) {
-//        ALOGE("Unable to load native script resource.");
-//        return;
-//    }
+    ALOGV("Entering tree for %s.", get_path_as_string());
 
     // Load the gast mesh resource.
     ALOGV("Loading GAST mesh resource.");
     Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
             "res://godot/plugin/v1/gast/gast_plane_mesh.tres");
-    if (gast_mesh_res.is_null() || !gast_mesh_res->is_class(PlaneMesh::___get_class_name())) {
+    if (gast_mesh_res.is_null()) {
         ALOGE("Unable to load mesh resource.");
         return;
     }
@@ -93,7 +84,7 @@ void GastNode::_enter_tree() {
     ALOGV("Loading GAST shape resource.");
     Ref<Resource> gast_shape_res = ResourceLoader::get_singleton()->load(
             "res://godot/plugin/v1/gast/gast_concave_polygon_shape.tres");
-    if (gast_shape_res.is_null() || !gast_shape_res->is_class(ConcavePolygonShape::___get_class_name())) {
+    if (gast_shape_res.is_null()) {
         ALOGE("Unable to load shape resource.");
         return;
     }
@@ -102,9 +93,6 @@ void GastNode::_enter_tree() {
         ALOGE("Failed cast to %s.", ConcavePolygonShape::___get_class_name());
         return;
     }
-
-//    ALOGV("Setting up native script resource.");
-//    static_body.set_script(*script_res);
 
     ALOGV("Setting up GAST mesh resource.");
     MeshInstance *mesh_instance = get_mesh_instance();
@@ -136,9 +124,6 @@ void GastNode::_exit_tree() {
     if (collision_shape) {
         collision_shape->set_shape(Ref<Resource>());
     }
-
-    // Unset the native script resource
-//    static_body.set_script(nullptr);
 }
 
 Vector2 GastNode::get_size() {
@@ -146,7 +131,7 @@ Vector2 GastNode::get_size() {
     MeshInstance *mesh_instance = get_mesh_instance();
     if (mesh_instance) {
         Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-        if (mesh_ref.is_valid() && mesh_ref->is_class(PlaneMesh::___get_class_name())) {
+        if (mesh_ref.is_valid()) {
             auto *mesh = Object::cast_to<PlaneMesh>(*mesh_ref);
             if (mesh) {
                 size = mesh->get_size();
@@ -167,14 +152,14 @@ void GastNode::set_size(Vector2 size) {
 
     // Retrieve the shape
     Ref<Shape> shape_ref = collision_shape->get_shape();
-    if (shape_ref.is_null() || !shape_ref->is_class(ConcavePolygonShape::___get_class_name())) {
+    if (shape_ref.is_null()) {
         ALOGE("Unable to access shape resource for %s", get_path_as_string());
         return;
     }
 
     // Retrieve the mesh.
     Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-    if (mesh_ref.is_null() || !mesh_ref->is_class(PlaneMesh::___get_class_name())) {
+    if (mesh_ref.is_null()) {
         ALOGE("Unable to access mesh resource for %s", get_path_as_string());
         return;
     }
@@ -313,7 +298,7 @@ ExternalTexture *GastNode::get_external_texture(int surface_index) {
 
     ExternalTexture *external_texture = nullptr;
     Ref<Texture> texture = shader_material->get_shader_param(kGastTextureParamName);
-    if (texture.is_valid() && texture->is_class(ExternalTexture::___get_class_name())) {
+    if (texture.is_valid()) {
         external_texture = Object::cast_to<ExternalTexture>(*texture);
     }
 
@@ -333,7 +318,7 @@ ShaderMaterial *GastNode::get_shader_material(int surface_index) {
 
     if (surface_index < plane_mesh->get_surface_count()) {
         Ref<Material> material = plane_mesh->surface_get_material(surface_index);
-        if (material.is_valid() && material->is_class(ShaderMaterial::___get_class_name())) {
+        if (material.is_valid()) {
             shader_material = Object::cast_to<ShaderMaterial>(*material);
         }
     }

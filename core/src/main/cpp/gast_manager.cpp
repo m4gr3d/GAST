@@ -125,14 +125,9 @@ int GastManager::get_external_texture_id(const String &node_path, int surface_in
 }
 
 GastNode *GastManager::get_gast_node(const godot::String &node_path) {
-    Node *node = get_node(node_path);
-    if (!node || !node->is_class(GastNode::___get_type_name())) {
-        ALOGW("Unable to find a GastNode node with path %s", node_path.utf8().get_data());
-        return nullptr;
-    }
-
-    auto *gast_node = Object::cast_to<GastNode>(node);
+    auto *gast_node = Object::cast_to<GastNode>(get_node(node_path));
     if (!gast_node || !gast_node->is_in_group(kGastNodeGroupName)) {
+        ALOGW("Unable to find a GastNode node with path %s", node_path.utf8().get_data());
         return nullptr;
     }
 
@@ -145,14 +140,14 @@ Node *GastManager::get_node(const godot::String &node_path) {
         return nullptr;
     }
 
-    NodePath node_path_obj(node_path);
     MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
-    if (!main_loop || !main_loop->is_class("SceneTree")) {
-        ALOGW("Unable to retrieve main loop.");
+    auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
+    if (!scene_tree) {
+        ALOGW("Unable to retrieve scene tree.");
         return nullptr;
     }
 
-    auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
+    NodePath node_path_obj(node_path);
     Node *node = scene_tree->get_root()->get_node_or_null(node_path_obj);
     return node;
 }
