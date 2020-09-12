@@ -26,7 +26,6 @@ namespace {
 using namespace godot;
 constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
-static const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 }  // namespace
 
 /// Script for a GAST node. Enables GAST specific logic and processing.
@@ -55,11 +54,12 @@ public:
     int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
 
     inline void set_collidable(bool collidable) {
-        set_ray_pickable(collidable);
+        this->collidable = collidable;
+        update_collision_shape();
     }
 
     inline bool is_collidable() {
-        return is_ray_pickable();
+        return collidable;
     }
 
     void set_curved(bool curved);
@@ -70,13 +70,7 @@ public:
 
     void set_size(Vector2 size);
 
-
-
 private:
-    inline const char *get_path_as_string() {
-        return ((String)get_path()).utf8().get_data();
-    }
-
     inline CollisionShape *get_collision_shape() {
         Node *node = get_child(0);
         CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
@@ -145,6 +139,9 @@ private:
 
     void handle_ray_cast_input(const RayCast &ray_cast);
 
+    void update_collision_shape();
+
+    bool collidable;
     std::set<String> colliding_raycast_paths;
 };
 }  // namespace gast

@@ -20,14 +20,16 @@ namespace gast {
 namespace {
 const Vector2 kDefaultSize = Vector2(2.0, 1.0);
 const int kDefaultSurfaceIndex = 0;
+const bool kDefaultCollidable = true;
 const bool kDefaultCurveValue = false;
 const char *kGastCurvedParamName = "curve_flag";
 const char *kGastTextureParamName = "gast_texture";
+const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 }
 
-GastNode::GastNode() {}
+GastNode::GastNode() : collidable(kDefaultCollidable) {}
 
-GastNode::~GastNode() {}
+GastNode::~GastNode() = default;
 
 void GastNode::_register_methods() {
     register_method("_enter_tree", &GastNode::_enter_tree);
@@ -44,7 +46,7 @@ void GastNode::_register_methods() {
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
 
     register_property<GastNode, bool>("collidable", &GastNode::set_collidable,
-                                      &GastNode::is_collidable, true);
+                                      &GastNode::is_collidable, kDefaultCollidable);
     register_property<GastNode, bool>("curved", &GastNode::set_curved, &GastNode::is_curved, kDefaultCurveValue);
     register_property<GastNode, Vector2>("size", &GastNode::set_size, &GastNode::get_size,
                                          kDefaultSize);
@@ -55,16 +57,16 @@ void GastNode::_init() {
 
     // Add a CollisionShape to the static body node
     CollisionShape *collision_shape = CollisionShape::_new();
+    collision_shape->set_rotation_degrees(Vector3(90, 0, 0));
     add_child(collision_shape);
 
     // Add a mesh instance to the collision shape node
     MeshInstance *mesh_instance = MeshInstance::_new();
-    mesh_instance->set_rotation_degrees(Vector3(90, 0, 0));
     collision_shape->add_child(mesh_instance);
 }
 
 void GastNode::_enter_tree() {
-    ALOGV("Entering tree for %s.", get_path_as_string());
+    ALOGV("Entering tree for %s.", get_node_tag(*this));
 
     // Load the gast mesh resource.
     ALOGV("Loading GAST mesh resource.");
@@ -80,20 +82,6 @@ void GastNode::_enter_tree() {
         return;
     }
 
-    // Load the box shape resource.
-    ALOGV("Loading GAST shape resource.");
-    Ref<Resource> gast_shape_res = ResourceLoader::get_singleton()->load(
-            "res://godot/plugin/v1/gast/gast_concave_polygon_shape.tres");
-    if (gast_shape_res.is_null()) {
-        ALOGE("Unable to load shape resource.");
-        return;
-    }
-    auto *shape = Object::cast_to<ConcavePolygonShape>(*gast_shape_res);
-    if (!shape) {
-        ALOGE("Failed cast to %s.", ConcavePolygonShape::___get_class_name());
-        return;
-    }
-
     ALOGV("Setting up GAST mesh resource.");
     MeshInstance *mesh_instance = get_mesh_instance();
     if (!mesh_instance) {
@@ -102,12 +90,7 @@ void GastNode::_enter_tree() {
     mesh_instance->set_mesh(mesh);
 
     ALOGV("Setting up GAST shape resource.");
-    CollisionShape *collision_shape = get_collision_shape();
-    if (!collision_shape) {
-        return;
-    }
-    shape->set_faces(mesh->get_faces());
-    collision_shape->set_shape(shape);
+    update_collision_shape();
 }
 
 void GastNode::_exit_tree() {
@@ -120,64 +103,42 @@ void GastNode::_exit_tree() {
     }
 
     // Unset the box shape resource
-    CollisionShape *collision_shape = get_collision_shape();
-    if (collision_shape) {
-        collision_shape->set_shape(Ref<Resource>());
-    }
+    update_collision_shape();
 }
 
 Vector2 GastNode::get_size() {
     Vector2 size;
-    MeshInstance *mesh_instance = get_mesh_instance();
-    if (mesh_instance) {
-        Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-        if (mesh_ref.is_valid()) {
-            auto *mesh = Object::cast_to<PlaneMesh>(*mesh_ref);
-            if (mesh) {
-                size = mesh->get_size();
-            }
-        }
+    PlaneMesh *mesh = get_plane_mesh();
+    if (mesh) {
+        size = mesh->get_size();
     }
     return size;
 }
 
 void GastNode::set_size(Vector2 size) {
-    // We need to update both the size of the box shape and the size of the quad mesh resources.
-    CollisionShape *collision_shape = get_collision_shape();
-    MeshInstance *mesh_instance = get_mesh_instance();
-    if (!collision_shape || !mesh_instance) {
-        ALOGW("Invalid GastNode %s. Aborting...", get_path_as_string());
-        return;
-    }
-
-    // Retrieve the shape
-    Ref<Shape> shape_ref = collision_shape->get_shape();
-    if (shape_ref.is_null()) {
-        ALOGE("Unable to access shape resource for %s", get_path_as_string());
-        return;
-    }
-
-    // Retrieve the mesh.
-    Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-    if (mesh_ref.is_null()) {
-        ALOGE("Unable to access mesh resource for %s", get_path_as_string());
-        return;
-    }
-
-    auto *shape = Object::cast_to<ConcavePolygonShape>(*shape_ref);
-    if (!shape) {
-        ALOGE("Failed cast to %s.", ConcavePolygonShape::___get_class_name());
-        return;
-    }
-
-    auto *mesh = Object::cast_to<PlaneMesh>(*mesh_ref);
+    auto *mesh = get_plane_mesh();
     if (!mesh) {
-        ALOGE("Failed cast to %s.", PlaneMesh::___get_class_name());
+        ALOGE("Unable to access mesh resource for %s", get_node_tag(*this));
         return;
     }
 
     mesh->set_size(size);
-    shape->set_faces(mesh->get_faces());
+    update_collision_shape();
+}
+
+void GastNode::update_collision_shape() {
+    CollisionShape *collision_shape = get_collision_shape();
+    if (!collision_shape) {
+        ALOGW("Unable to retrieve collision shape for %s. Aborting...", get_node_tag(*this));
+        return;
+    }
+
+    PlaneMesh *mesh = get_plane_mesh();
+    if (!collidable || !mesh) {
+       collision_shape->set_shape(Ref<Resource>());
+    } else {
+        collision_shape->set_shape(mesh->create_convex_shape());
+    }
 }
 
 int GastNode::get_external_texture_id(int surface_index) {
@@ -239,6 +200,10 @@ void GastNode::_input_event(const godot::Object *camera,
 }
 
 void GastNode::_physics_process(const real_t delta) {
+    if (!is_collidable()) {
+        return;
+    }
+
     // Get the list of ray casts in the group
     Array gast_ray_casts = get_tree()->get_nodes_in_group(kGastRayCasterGroupName);
     if (gast_ray_casts.empty()) {
@@ -279,6 +244,7 @@ void GastNode::set_curved(bool curved) {
     }
 
     shader_material->set_shader_param(kGastCurvedParamName, curved);
+    update_collision_shape();
 }
 
 bool GastNode::is_curved() {
@@ -303,7 +269,7 @@ ExternalTexture *GastNode::get_external_texture(int surface_index) {
     }
 
     if (external_texture) {
-        ALOGV("Found external GastNode texture for node %s", get_path_as_string());
+        ALOGV("Found external GastNode texture for node %s", get_node_tag(*this));
     }
     return external_texture;
 }

@@ -117,7 +117,7 @@ void GastManager::unregister_callback(JNIEnv *env) {
 int GastManager::get_external_texture_id(const String &node_path, int surface_index) {
     GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return kInvalidTexId;
     }
 
@@ -127,7 +127,7 @@ int GastManager::get_external_texture_id(const String &node_path, int surface_in
 GastNode *GastManager::get_gast_node(const godot::String &node_path) {
     auto *gast_node = Object::cast_to<GastNode>(get_node(node_path));
     if (!gast_node || !gast_node->is_in_group(kGastNodeGroupName)) {
-        ALOGW("Unable to find a GastNode node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to find a GastNode node with path %s", get_node_tag(node_path));
         return nullptr;
     }
 
@@ -136,7 +136,7 @@ GastNode *GastManager::get_gast_node(const godot::String &node_path) {
 
 Node *GastManager::get_node(const godot::String &node_path) {
     if (node_path.empty()) {
-        ALOGE("Invalid node path argument: %s", node_path.utf8().get_data());
+        ALOGE("Invalid node path argument: %s", get_node_tag(node_path));
         return nullptr;
     }
 
@@ -154,11 +154,11 @@ Node *GastManager::get_node(const godot::String &node_path) {
 
 String
 GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
-    ALOGV("Retrieving node's parent with path %s", parent_node_path.utf8().get_data());
+    ALOGV("Retrieving node's parent with path %s", get_node_tag(parent_node_path));
     Node *parent_node = get_node(parent_node_path);
     if (!parent_node) {
         ALOGE("Unable to retrieve parent node with path %s",
-              parent_node_path.utf8().get_data());
+              get_node_tag(parent_node_path));
         return "";
     }
 
@@ -308,7 +308,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
                                             const String &new_parent_node_path, bool empty_parent) {
     Node *node = get_gast_node(node_path);
     if (!node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return node_path;
     }
 
@@ -325,7 +325,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
     Node *new_parent = get_node(new_parent_node_path);
     if (!new_parent) {
         ALOGW("Unable to retrieve new parent node with path %s",
-              new_parent_node_path.utf8().get_data());
+              get_node_tag(new_parent_node_path));
         return node_path;
     }
 
@@ -348,7 +348,7 @@ void GastManager::update_gast_node_visibility(const godot::String &node_path,
                                               bool visible) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -362,7 +362,7 @@ void GastManager::update_gast_node_visibility(const godot::String &node_path,
 void GastManager::set_gast_node_collidable(const godot::String &node_path, bool collidable) {
     GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -372,7 +372,7 @@ void GastManager::set_gast_node_collidable(const godot::String &node_path, bool 
 bool GastManager::is_gast_node_collidable(const godot::String &node_path) {
     GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return false;
     }
 
@@ -392,7 +392,7 @@ void GastManager::update_gast_node_size(const godot::String &node_path, float wi
                                         float height) {
     GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -405,7 +405,7 @@ void GastManager::update_gast_node_local_translation(const godot::String &node_p
                                                      float z_translation) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -416,7 +416,7 @@ void GastManager::update_gast_node_local_scale(const godot::String &node_path, f
                                                float y_scale) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -428,7 +428,7 @@ void GastManager::update_gast_node_local_rotation(const godot::String &node_path
                                                   float z_rotation) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 

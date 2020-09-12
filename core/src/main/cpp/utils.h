@@ -61,6 +61,14 @@ namespace gast {
 
 using namespace godot;
 
+static inline const char *get_node_tag(const String &node_path) {
+    return node_path.utf8().get_data();
+}
+
+static inline const char *get_node_tag(const Node& node) {
+    return get_node_tag(node.get_path());
+}
+
 /**
 * Converts JNI jstring to Godot String.
 * @param source Source JNI string. If null an empty string is returned.
