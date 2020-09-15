@@ -76,6 +76,10 @@ public:
 
     bool is_gast_node_collidable(const String &node_path);
 
+    void set_gast_node_curved(const String &node_path, bool curved);
+
+    bool is_gast_node_curved(const String &node_path);
+
     Vector2 get_gast_node_size(const String &node_path);
 
     void update_gast_node_size(const String &node_path, float width, float height);

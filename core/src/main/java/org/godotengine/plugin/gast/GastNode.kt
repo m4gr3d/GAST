@@ -261,6 +261,20 @@ class GastNode @JvmOverloads constructor(
 
     private external fun isGastNodeCollidable(nodePath: String): Boolean
 
+    fun isCurved(): Boolean {
+        checkIfReleased()
+        return isGastNodeCurved(nodePath)
+    }
+
+    private external fun isGastNodeCurved(nodePath: String): Boolean
+
+    fun setCurved(curved: Boolean) {
+        checkIfReleased()
+        setGastNodeCurved(nodePath, curved)
+    }
+
+    private external fun setGastNodeCurved(nodePath: String, curved: Boolean)
+
     /**
      * Update the size of the Gast node.
      */

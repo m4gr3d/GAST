@@ -379,6 +379,25 @@ bool GastManager::is_gast_node_collidable(const godot::String &node_path) {
     return gast_node->is_collidable();
 }
 
+void GastManager::set_gast_node_curved(const String &node_path, bool curved) {
+    GastNode *gast_node = get_gast_node(node_path);
+    if (!gast_node) {
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
+        return;
+    }
+
+    gast_node->set_curved(curved);
+}
+
+bool GastManager::is_gast_node_curved(const godot::String &node_path) {
+    GastNode* gast_node = get_gast_node(node_path);
+    if (!gast_node) {
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
+        return false;
+    }
+    return gast_node->is_curved();
+}
+
 Vector2 GastManager::get_gast_node_size(const godot::String &node_path) {
     Vector2 size;
     GastNode *gast_node = get_gast_node(node_path);
