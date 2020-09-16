@@ -62,9 +62,15 @@ public:
         return collidable;
     }
 
-    void set_curved(bool curved);
+    inline void set_curved(bool curved) {
+        this->curved = curved;
+        update_shader_params();
+        update_collision_shape();
+    }
 
-    bool is_curved();
+    inline bool is_curved() {
+        return curved;
+    }
 
     Vector2 get_size();
 
@@ -141,7 +147,10 @@ private:
 
     void update_collision_shape();
 
+    void update_shader_params();
+
     bool collidable;
+    bool curved;
     std::set<String> colliding_raycast_paths;
 };
 }  // namespace gast

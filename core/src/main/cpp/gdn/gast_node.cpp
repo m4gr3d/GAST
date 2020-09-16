@@ -23,11 +23,12 @@ const int kDefaultSurfaceIndex = 0;
 const bool kDefaultCollidable = true;
 const bool kDefaultCurveValue = false;
 const char *kGastCurvedParamName = "curve_flag";
+const char *kGastWidthParamName = "gast_width";
 const char *kGastTextureParamName = "gast_texture";
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 }
 
-GastNode::GastNode() : collidable(kDefaultCollidable) {}
+GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue) {}
 
 GastNode::~GastNode() = default;
 
@@ -123,6 +124,7 @@ void GastNode::set_size(Vector2 size) {
     }
 
     mesh->set_size(size);
+    update_shader_params();
     update_collision_shape();
 }
 
@@ -139,6 +141,16 @@ void GastNode::update_collision_shape() {
     } else {
         collision_shape->set_shape(mesh->create_convex_shape());
     }
+}
+
+void GastNode::update_shader_params() {
+    ShaderMaterial *shader_material = get_shader_material(kDefaultSurfaceIndex);
+    if (!shader_material) {
+        return;
+    }
+
+    shader_material->set_shader_param(kGastCurvedParamName, curved);
+    shader_material->set_shader_param(kGastWidthParamName, get_size().width);
 }
 
 int GastNode::get_external_texture_id(int surface_index) {
@@ -235,25 +247,6 @@ void GastNode::_physics_process(const real_t delta) {
                                                                          kInvalidCoordinate.y);
         }
     }
-}
-
-void GastNode::set_curved(bool curved) {
-    ShaderMaterial *shader_material = get_shader_material(kDefaultSurfaceIndex);
-    if (!shader_material) {
-        return;
-    }
-
-    shader_material->set_shader_param(kGastCurvedParamName, curved);
-    update_collision_shape();
-}
-
-bool GastNode::is_curved() {
-    ShaderMaterial *shader_material = get_shader_material(kDefaultSurfaceIndex);
-    if (!shader_material) {
-        return kDefaultCurveValue;
-    }
-
-    return shader_material->get_shader_param(kGastCurvedParamName);
 }
 
 ExternalTexture *GastNode::get_external_texture(int surface_index) {

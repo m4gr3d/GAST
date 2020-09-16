@@ -6,10 +6,12 @@ render_mode unshaded;
 
 uniform samplerExternalOES gast_texture;
 uniform bool curve_flag;
+uniform float gast_width;
 
 void vertex() {
 	if (curve_flag) {
-
+		float angle = 2.0 * VERTEX.x / gast_width;
+		VERTEX.y = -cos(angle) + cos(1.0);
 	}
 }
 
