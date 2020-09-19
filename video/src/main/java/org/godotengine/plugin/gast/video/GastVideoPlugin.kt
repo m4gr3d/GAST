@@ -42,6 +42,8 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         "pause",
         "seekTo",
         "stop",
+        "setVideoScreenCollidable",
+        "setVideoScreenCurved",
         "setVideoScreenSize",
         "setRepeatMode"
     )
@@ -133,6 +135,20 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     fun preparePlayer(parentNodePath: String, videoRawNames: Array<String>) {
         setVideoNodePath(parentNodePath)
         setVideoSource(videoRawNames)
+    }
+
+    @Suppress("unused")
+    fun setVideoScreenCollidable(collidable: Boolean) {
+        runOnRenderThread {
+            gastNode?.setCollidable(collidable)
+        }
+    }
+
+    @Suppress("unused")
+    fun setVideoScreenCurved(curved: Boolean) {
+        runOnRenderThread {
+            gastNode?.setCurved(curved)
+        }
     }
 
     @Suppress("unused")

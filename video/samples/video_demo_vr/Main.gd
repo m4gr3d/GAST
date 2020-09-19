@@ -16,6 +16,8 @@ var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
 var gast = null
 var gast_video_plugin = null
 
+var curved = false
+
 func _ready():
 	_initialize_ovr_mobile_arvr_interface()
 	gast = gast_loader.new()
@@ -35,16 +37,23 @@ func _ready():
 
 func _process(delta_t):
 	gast.on_process()
+	_check_inputs()
 	_check_and_perform_runtime_config()
 
 
+func _check_inputs():
+	if Input.is_action_pressed("ui_cancel"):
+		if gast_video_plugin.isPlaying():
+			print("Pausing playback")
+			gast_video_plugin.pause()
+		else:
+			print("Resuming playback")
+			gast_video_plugin.play()
+
+
 func _on_gast_release_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
-	if gast_video_plugin.isPlaying():
-		print("Pausing playback for " + node_path)
-		gast_video_plugin.pause()
-	else:
-		print("Resuming playback for " + node_path)
-		gast_video_plugin.play()
+	curved = !curved
+	gast_video_plugin.setVideoScreenCurved(curved)
 
 
 # this code check for the OVRMobile inteface; and if successful also initializes the
