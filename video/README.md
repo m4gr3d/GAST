@@ -8,7 +8,7 @@ This is a Godot Android plugin which enables video playback for all codecs suppo
 
 ## Getting the plugin
 
-Plugin binaries and dependencies can be found in the [project releases section]().
+Plugin binaries and dependencies can be found in the [project releases section](https://github.com/m4gr3d/GAST/releases).
 
 ### Installation
 
