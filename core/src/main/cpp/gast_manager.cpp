@@ -1,29 +1,20 @@
-#include <gen/BoxShape.hpp>
-#include <gen/Engine.hpp>
-#include <gen/Input.hpp>
-#include <gen/InputEventAction.hpp>
-#include <gen/MainLoop.hpp>
-#include <gen/Material.hpp>
-#include <gen/SceneTree.hpp>
-#include <gen/ShaderMaterial.hpp>
-#include <gen/Object.hpp>
+#include "gast_manager.h"
+
 #include <core/Godot.hpp>
 #include <core/NodePath.hpp>
 #include <core/Vector2.hpp>
 #include <core/Vector3.hpp>
-#include <gen/Texture.hpp>
+#include <gen/Engine.hpp>
+#include <gen/Input.hpp>
+#include <gen/InputEventAction.hpp>
+#include <gen/MainLoop.hpp>
+#include <gen/SceneTree.hpp>
+#include <gen/Object.hpp>
 #include <gen/Viewport.hpp>
-#include <gen/Resource.hpp>
-#include <gen/ResourceLoader.hpp>
-#include <gen/QuadMesh.hpp>
-#include "gast_manager.h"
 
 namespace gast {
 
 namespace {
-constexpr float kBoxShapeZExtent = 0.01;
-constexpr int kInvalidTexId = -1;
-const char *kDefaultTextureParamName = "gast_texture";
 const char *kGastNodeGroupName = "gast_node_group";
 } // namespace
 
@@ -124,225 +115,90 @@ void GastManager::unregister_callback(JNIEnv *env) {
 }
 
 int GastManager::get_external_texture_id(const String &node_path, int surface_index) {
-    ExternalTexture *external_texture = get_external_texture(node_path, surface_index);
-    int tex_id = external_texture == nullptr ? kInvalidTexId
-                                             : external_texture->get_external_texture_id();
-    return tex_id;
-}
-
-ExternalTexture *GastManager::get_external_texture(const String &node_path, int surface_index) {
-    StaticBody *gast_node = get_gast_node(node_path);
+    GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        return nullptr;
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
+        return kInvalidTexId;
     }
 
-    // Go through the mesh instance surface material and look for the default external texture param.
-    MeshInstance *mesh_instance = get_mesh_instance_from_gast_node(*gast_node);
-    if (!mesh_instance) {
-        return nullptr;
-    }
-
-    // Retrieve the mesh resource
-    Ref<Mesh> mesh = mesh_instance->get_mesh();
-    if (mesh.is_null()) {
-        return nullptr;
-    }
-
-    ExternalTexture *external_texture = nullptr;
-
-    if (surface_index == kInvalidSurfaceIndex) {
-        // Look through all the mesh's surfaces.
-        for (int i = 0; i < mesh->get_surface_count(); i++) {
-            external_texture = get_external_texture(mesh, i);
-        }
-    } else {
-        if (surface_index < mesh->get_surface_count()) {
-            // Look through the surface with the given index.
-            external_texture = get_external_texture(mesh, surface_index);
-        }
-    }
-    if (external_texture) {
-        ALOGV("Found external Gast texture for node %s", node_path.utf8().get_data());
-    }
-    return external_texture;
+    return gast_node->get_external_texture_id(surface_index);
 }
 
-ExternalTexture *GastManager::get_external_texture(godot::Ref<godot::Mesh> mesh,
-                                                   int surface_index) {
-    ExternalTexture *external_texture = nullptr;
-
-    Ref<Material> material = mesh->surface_get_material(surface_index);
-    if (material.is_valid() && material->is_class("ShaderMaterial")) {
-        auto *shader_material = Object::cast_to<ShaderMaterial>(*material);
-        Ref<Texture> texture = shader_material->get_shader_param(kDefaultTextureParamName);
-        if (texture.is_valid() && texture->is_class("ExternalTexture")) {
-            external_texture = Object::cast_to<ExternalTexture>(*texture);
-        }
-    }
-
-    return external_texture;
-}
-
-StaticBody *GastManager::get_gast_node(const godot::String &node_path) {
-    Node *node = get_node(node_path);
-    if (!node || !node->is_class("StaticBody")) {
-        ALOGW("Unable to find a StaticBody node with path %s", node_path.utf8().get_data());
+GastNode *GastManager::get_gast_node(const godot::String &node_path) {
+    auto *gast_node = Object::cast_to<GastNode>(get_node(node_path));
+    if (!gast_node || !gast_node->is_in_group(kGastNodeGroupName)) {
+        ALOGW("Unable to find a GastNode node with path %s", get_node_tag(node_path));
         return nullptr;
     }
 
-    auto *static_body = Object::cast_to<StaticBody>(node);
-    if (!static_body || !static_body->is_in_group(kGastNodeGroupName)) {
-        return nullptr;
-    }
-
-    return static_body;
+    return gast_node;
 }
 
 Node *GastManager::get_node(const godot::String &node_path) {
     if (node_path.empty()) {
-        ALOGE("Invalid node path argument: %s", node_path.utf8().get_data());
+        ALOGE("Invalid node path argument: %s", get_node_tag(node_path));
+        return nullptr;
+    }
+
+    MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
+    auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
+    if (!scene_tree) {
+        ALOGW("Unable to retrieve scene tree.");
         return nullptr;
     }
 
     NodePath node_path_obj(node_path);
-    MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
-    if (!main_loop || !main_loop->is_class("SceneTree")) {
-        ALOGW("Unable to retrieve main loop.");
-        return nullptr;
-    }
-
-    auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
     Node *node = scene_tree->get_root()->get_node_or_null(node_path_obj);
     return node;
 }
 
 String
 GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
-    ALOGV("Retrieving node's parent with path %s", parent_node_path.utf8().get_data());
+    ALOGV("Retrieving node's parent with path %s", get_node_tag(parent_node_path));
     Node *parent_node = get_node(parent_node_path);
     if (!parent_node) {
         ALOGE("Unable to retrieve parent node with path %s",
-              parent_node_path.utf8().get_data());
+              get_node_tag(parent_node_path));
         return "";
     }
 
-    StaticBody *static_body;
+    GastNode *gast_node;
 
     // Check if we have one already setup in the reusable pool, otherwise create a new one.
     if (reusable_pool_.empty()) {
         ALOGV("Creating a new Gast node.");
         // Creating a new static body node
-        static_body = StaticBody::_new();
+        gast_node = GastNode::_new();
 
-        // Add a CollisionShape to the static body node
-        CollisionShape *collision_shape = CollisionShape::_new();
-        static_body->add_child(collision_shape);
-
-        // Add a mesh instance to the collision shape node
-        MeshInstance *mesh_instance = MeshInstance::_new();
-        collision_shape->add_child(mesh_instance);
-
-        // Add the new node to the Gast node group. This is how we keep track of the nodes
+        // Add the new node to the GastNode group. This is how we keep track of the nodes
         // that are created and managed by this plugin.
-        static_body->add_to_group(kGastNodeGroupName);
+        gast_node->add_to_group(kGastNodeGroupName);
     } else {
-        static_body = reusable_pool_.back();
+        gast_node = reusable_pool_.back();
         reusable_pool_.pop_back();
     }
 
-    if (!bind_gast_node(*static_body)) {
-        ALOGE("Unable to setup Gast node.");
-        return "";
-    }
-
-    if (static_body->get_parent() != nullptr) {
+    if (gast_node->get_parent() != nullptr) {
         ALOGV("Removing Gast node parent.");
-        static_body->get_parent()->remove_child(static_body);
+        gast_node->get_parent()->remove_child(gast_node);
     }
 
     ALOGV("Adding the Gast node to the parent node.");
     if (empty_parent) {
         remove_all_children_from_node(parent_node);
     }
-    parent_node->add_child(static_body);
-    static_body->set_owner(parent_node);
+    parent_node->add_child(gast_node);
+    gast_node->set_owner(parent_node);
 
-    return (String) static_body->get_path();
-}
-
-bool GastManager::bind_gast_node(godot::StaticBody &static_body) {
-    // Load the script resource.
-    ALOGV("Loading script resource.");
-    Ref<Resource> script_res = ResourceLoader::get_singleton()->load(
-        "res://godot/plugin/v1/gast/GastNodeScript.gdns", "", true);
-    if (script_res.is_null() || !script_res->is_class("NativeScript")) {
-        ALOGE("Unable to load native script resource.");
-        return false;
-    }
-
-    // Load the box shape resource.
-    ALOGV("Loading GAST box shape resource.");
-    Ref<Resource> gast_box_shape_res = ResourceLoader::get_singleton()->load(
-        "res://godot/plugin/v1/gast/gast_box_shape.tres");
-    if (gast_box_shape_res.is_null() || !gast_box_shape_res->is_class("BoxShape")) {
-        ALOGE("Unable to load box shape resource.");
-        return false;
-    }
-
-    // Load the gast mesh resource.
-    ALOGV("Loading GAST mesh resource.");
-    Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
-        "res://godot/plugin/v1/gast/gast_quad_mesh.tres");
-    if (gast_mesh_res.is_null() || !gast_mesh_res->is_class("QuadMesh")) {
-        ALOGE("Unable to load quad mesh resource.");
-        return false;
-    }
-
-    ALOGV("Setting up native script resource.");
-    static_body.set_script(*script_res);
-
-    ALOGV("Setting up GAST box shape resource.");
-    CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);
-    if (!collision_shape) {
-        return false;
-    }
-    collision_shape->set_shape(gast_box_shape_res);
-
-    ALOGV("Setting up GAST mesh resource.");
-    MeshInstance *mesh_instance = get_mesh_instance_from_gast_node(static_body);
-    if (!mesh_instance) {
-        return false;
-    }
-    mesh_instance->set_mesh(gast_mesh_res);
-
-    return true;
-}
-
-void GastManager::unbind_gast_node(godot::StaticBody &static_body) {
-    // Unset the GAST mesh resource
-    MeshInstance *mesh_instance = get_mesh_instance_from_gast_node(static_body);
-    if (mesh_instance) {
-        mesh_instance->set_mesh(Ref<Resource>());
-    }
-
-    // Unset the box shape resource
-    CollisionShape *collision_shape = get_collision_shape_from_gast_node(static_body);
-    if (collision_shape) {
-        collision_shape->set_shape(Ref<Resource>());
-    }
-
-    // Unset the native script resource
-    static_body.set_script(nullptr);
+    return (String) gast_node->get_path();
 }
 
 void GastManager::unbind_and_release_gast_node(const godot::String &node_path) {
     // Remove the Gast node from its parent and move it to the reusable pool.
-    StaticBody *gast_node = get_gast_node(node_path);
+    GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
         return;
     }
-
-    unbind_gast_node(*gast_node);
 
     // Remove the Gast node from its parent.
     if (gast_node->get_parent() != nullptr) {
@@ -452,7 +308,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
                                             const String &new_parent_node_path, bool empty_parent) {
     Node *node = get_gast_node(node_path);
     if (!node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return node_path;
     }
 
@@ -469,7 +325,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
     Node *new_parent = get_node(new_parent_node_path);
     if (!new_parent) {
         ALOGW("Unable to retrieve new parent node with path %s",
-              new_parent_node_path.utf8().get_data());
+              get_node_tag(new_parent_node_path));
         return node_path;
     }
 
@@ -492,7 +348,7 @@ void GastManager::update_gast_node_visibility(const godot::String &node_path,
                                               bool visible) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -504,88 +360,62 @@ void GastManager::update_gast_node_visibility(const godot::String &node_path,
 }
 
 void GastManager::set_gast_node_collidable(const godot::String &node_path, bool collidable) {
-    StaticBody *gast_node = get_gast_node(node_path);
+    GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return;
     }
 
-    gast_node->set_ray_pickable(collidable);
+    gast_node->set_collidable(collidable);
 }
 
 bool GastManager::is_gast_node_collidable(const godot::String &node_path) {
-    StaticBody *gast_node = get_gast_node(node_path);
+    GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return false;
     }
 
-    return gast_node->is_ray_pickable();
+    return gast_node->is_collidable();
+}
+
+void GastManager::set_gast_node_curved(const String &node_path, bool curved) {
+    GastNode *gast_node = get_gast_node(node_path);
+    if (!gast_node) {
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
+        return;
+    }
+
+    gast_node->set_curved(curved);
+}
+
+bool GastManager::is_gast_node_curved(const godot::String &node_path) {
+    GastNode* gast_node = get_gast_node(node_path);
+    if (!gast_node) {
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
+        return false;
+    }
+    return gast_node->is_curved();
 }
 
 Vector2 GastManager::get_gast_node_size(const godot::String &node_path) {
     Vector2 size;
-    StaticBody *gast_node = get_gast_node(node_path);
+    GastNode *gast_node = get_gast_node(node_path);
     if (gast_node) {
-        MeshInstance *mesh_instance = get_mesh_instance_from_gast_node(*gast_node);
-        if (mesh_instance) {
-            Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-            if (mesh_ref.is_valid() && mesh_ref->is_class(QuadMesh::___get_class_name())) {
-                auto *quad_mesh = Object::cast_to<QuadMesh>(*mesh_ref);
-                if (quad_mesh) {
-                    size = quad_mesh->get_size();
-                }
-            }
-        }
+        size = gast_node->get_size();
     }
     return size;
 }
 
 void GastManager::update_gast_node_size(const godot::String &node_path, float width,
                                         float height) {
-    // We need to update both the size of the box shape and the size of the quad mesh resources.
-    StaticBody *gast_node = get_gast_node(node_path);
+    GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
         return;
     }
 
-    CollisionShape *collision_shape = get_collision_shape_from_gast_node(*gast_node);
-    MeshInstance *mesh_instance = get_mesh_instance_from_gast_node(*gast_node);
-    if (!collision_shape || !mesh_instance) {
-        ALOGW("Invalid Gast node %s. Aborting...", node_path.utf8().get_data());
-        return;
-    }
-
-    // Retrieve the box shape
-    Ref<Shape> shape_ref = collision_shape->get_shape();
-    if (shape_ref.is_null() || !shape_ref->is_class("BoxShape")) {
-        ALOGE("Unable to access box shape resource for %s", node_path.utf8().get_data());
-        return;
-    }
-
-    // Retrieve the quad mesh.
-    Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-    if (mesh_ref.is_null() || !mesh_ref->is_class("QuadMesh")) {
-        ALOGE("Unable to access mesh resource for %s", node_path.utf8().get_data());
-        return;
-    }
-
-    auto *box_shape = Object::cast_to<BoxShape>(*shape_ref);
-    if (!box_shape) {
-        ALOGE("Failed cast to BoxShape.");
-        return;
-    }
-
-    auto *quad_mesh = Object::cast_to<QuadMesh>(*mesh_ref);
-    if (!quad_mesh) {
-        ALOGE("Failed cast to QuadMesh.");
-        return;
-    }
-
-    quad_mesh->set_size(Vector2(width, height));
-    // The X & Y extends are half of the regular with and height, and the Z extent is fixed.
-    box_shape->set_extents(Vector3(width / 2.0f, height / 2.0f, kBoxShapeZExtent));
+    gast_node->set_size(Vector2(width, height));
 }
 
 void GastManager::update_gast_node_local_translation(const godot::String &node_path,
@@ -594,7 +424,7 @@ void GastManager::update_gast_node_local_translation(const godot::String &node_p
                                                      float z_translation) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -605,7 +435,7 @@ void GastManager::update_gast_node_local_scale(const godot::String &node_path, f
                                                float y_scale) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 
@@ -617,7 +447,7 @@ void GastManager::update_gast_node_local_rotation(const godot::String &node_path
                                                   float z_rotation) {
     Spatial *gast_node = get_gast_node(node_path);
     if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", node_path.utf8().get_data());
+        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
         return;
     }
 

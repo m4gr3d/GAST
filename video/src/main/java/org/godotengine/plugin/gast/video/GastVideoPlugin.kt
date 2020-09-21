@@ -42,6 +42,8 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         "pause",
         "seekTo",
         "stop",
+        "setVideoScreenCollidable",
+        "setVideoScreenCurved",
         "setVideoScreenSize",
         "setRepeatMode"
     )
@@ -101,7 +103,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         }
 
         runOnUiThread {
-            val activity = activity?: return@runOnUiThread
+            val activity = activity ?: return@runOnUiThread
             val resources = activity.resources
             val packageName = activity.packageName
             val dataSourceFactory =
@@ -129,12 +131,51 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         }
     }
 
+    /**
+     * Setup the player to use for media playback. Invoking this method is required prior to using
+     * the player for media playback.
+     *
+     * @param[parentNodePath] Node path for the node that should contain the player.
+     * @param[videoRawNames] Names of the media files used for playback.
+     * For now, the media files should be lower case with no spaces, be located in the project's
+     * raw resources directory and the file extension should be omitted (e.g: `res/raw/flight.mp4` -> ["flight"]).
+     */
     @Suppress("unused")
     fun preparePlayer(parentNodePath: String, videoRawNames: Array<String>) {
         setVideoNodePath(parentNodePath)
         setVideoSource(videoRawNames)
     }
 
+    /**
+     * Enable / disable collision with the player screen.
+     *
+     * @param[collidable] True to enable collision, false otherwise.
+     */
+    @Suppress("unused")
+    fun setVideoScreenCollidable(collidable: Boolean) {
+        runOnRenderThread {
+            gastNode?.setCollidable(collidable)
+        }
+    }
+
+    /**
+     * Enable / disable curving of the player screen.
+     *
+     * @param[curved] True to curve the player screen, false otherwise.
+     */
+    @Suppress("unused")
+    fun setVideoScreenCurved(curved: Boolean) {
+        runOnRenderThread {
+            gastNode?.setCurved(curved)
+        }
+    }
+
+    /**
+     * Update the player screen size.
+     *
+     * @param[width] Width of the player screen.
+     * @param[height] Height of the player screen.
+     */
     @Suppress("unused")
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
@@ -142,6 +183,9 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         }
     }
 
+    /**
+     * Resume media playback if paused or stopped.
+     */
     @Suppress("unused")
     fun play() {
         runOnUiThread {
@@ -150,9 +194,15 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
 
     }
 
+    /**
+     * @return True if the player is setup and media is playing, false otherwise.
+     */
     @Suppress("unused")
     fun isPlaying() = isInitialized() && playing.get()
 
+    /**
+     * Pause media playback.
+     */
     @Suppress("unused")
     fun pause() {
         runOnUiThread {
@@ -160,13 +210,26 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         }
     }
 
+    /**
+     * Repeat mode for media playback.
+     *
+     * @param[repeatMode] Should be one of:
+     * - REPEAT_MODE_OFF = 0; Normal playback without repetition.
+     * - REPEAT_MODE_ONE = 1; "Repeat One" mode to repeat the currently playing media infinitely.
+     * - REPEAT_MODE_ALL = 2; "Repeat All" mode to repeat the entire timeline infinitely.
+     */
     @Suppress("unused")
-    fun setRepeatMode(repeatMode: Int) {
+    fun setRepeatMode(@Player.RepeatMode repeatMode: Int) {
         runOnUiThread {
             player.repeatMode = repeatMode
         }
     }
 
+    /**
+     * Seeks to a position specified in milliseconds.
+     *
+     * @param[positionInMsec] The seek position to target.
+     */
     @Suppress("unused")
     fun seekTo(positionInMsec: Int) {
         runOnUiThread {
@@ -174,6 +237,9 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         }
     }
 
+    /**
+     * Stop playback.
+     */
     @Suppress("unused")
     fun stop() {
         runOnUiThread {

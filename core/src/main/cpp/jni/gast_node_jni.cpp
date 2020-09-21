@@ -63,6 +63,16 @@ JNI_METHOD(isGastNodeCollidable)(JNIEnv *env, jobject, jstring node_path) {
 }
 
 JNIEXPORT void JNICALL
+JNI_METHOD(setGastNodeCurved)(JNIEnv *env, jobject, jstring node_path, jboolean curved) {
+    GastManager::get_singleton_instance()->set_gast_node_curved(jstring_to_string(env, node_path), curved);
+}
+
+JNIEXPORT jboolean JNICALL
+JNI_METHOD(isGastNodeCurved)(JNIEnv *env, jobject, jstring node_path) {
+    return GastManager::get_singleton_instance()->is_gast_node_curved(jstring_to_string(env, node_path));
+}
+
+JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeSize)(JNIEnv *env, jobject, jstring node_path, jfloat width,
                                jfloat height) {
     GastManager::get_singleton_instance()->update_gast_node_size(jstring_to_string(env, node_path),

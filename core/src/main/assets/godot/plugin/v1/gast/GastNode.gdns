@@ -1,0 +1,8 @@
+[gd_resource type="NativeScript" load_steps=2 format=2]
+
+[ext_resource path="res://godot/plugin/v1/gast/gastlib.gdnlib" type="GDNativeLibrary" id=1]
+
+[resource]
+resource_name = "GastNode"
+class_name = "GastNode"
+library = ExtResource( 1 )
