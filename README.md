@@ -6,7 +6,34 @@ to enable rendering and interaction with Android views in a Godot project's scen
 
 **Note:** The plugins are only supported on the Godot **3.2.x** branch, starting with **version 3.2.2**.
 
-## Plugins
+## License
+
+This project is released under the MIT license.
+
+## Contributions
+
+The project is in **alpha** state (base functionality is available but API is subject to change).
+Contributions are welcomed!
+
+### Setup
+
+Clone the repository and **initialize the submodules** with `git submodule update --init --recursive`.
+- **Note**: When you've pulled a newer version, make sure to run `git submodule update --init --recursive`.
+
+#### Godot CPP library
+
+- The `git submodule update --init --recursive` command should have checked out the
+[godot-cpp repo](https://github.com/GodotNativeTools/godot-cpp) under the `core/libs/godot-cpp` directory.
+- Navigate to the `core/libs/godot-cpp` directory and follow [these steps](https://github.com/GodotNativeTools/godot-cpp/tree/master#compiling-the-cpp-bindings-library)
+to generate the Godot Cpp bindings.
+
+### IDE
+
+The project uses [Android Studio](https://developer.android.com/studio/intro) for development.
+Make sure you have [Android Studio version 4.0 or higher](https://developer.android.com/studio) and
+open the project within Android Studio.
+
+## GAST Plugins
 
 - [GAST-Video](video/README.md)
 - [GAST-WebView](webview/README.md)
@@ -38,11 +65,9 @@ A GastNode is made of the following Godot nodes and resources:
 root node, which allows the GastNode to detect collision events (if enabled by the user).
 2. A StaticBody node [requires](https://docs.godotengine.org/en/stable/tutorials/physics/physics_introduction.html#collision-shapes)
 a [Shape resource](https://docs.godotengine.org/en/stable/classes/class_shape.html) to define the
-object’s collision bounds. For the GastNode, we’re using a [BoxShape resource](https://docs.godotengine.org/en/stable/classes/class_boxshape.html)
-(within a [CollisionShape node](https://docs.godotengine.org/en/stable/classes/class_collisionshape.html))
-since we’re setting the collision bounds for a quad in 3D space.
-3. Since our GastNode is ultimately a quad in 3D space, we make use of Godot’s [QuadMesh resource](https://docs.godotengine.org/en/stable/classes/class_quadmesh.html)
-(within a [MeshInstance node](https://docs.godotengine.org/en/stable/classes/class_meshinstance.html))
+object’s collision bounds. For the GastNode, we’re using a [CollisionShape node](https://docs.godotengine.org/en/stable/classes/class_collisionshape.html)
+who's shape is set whenever the child's mesh is updated.
+3. Since our GastNode is ultimately a mesh in 3D space, we make use of Godot’s [MeshInstance node](https://docs.godotengine.org/en/stable/classes/class_meshinstance.html)
 to render the GastNode.
 
 Once a GastNode is created, the client gains the ability to retrieve a [Surface](https://developer.android.com/reference/android/view/Surface)
@@ -78,17 +103,50 @@ is used in order to detect collision events between the GastNode and a [ray cast
 from the input pointer (in VR the input pointer consists of a tracked controller/hand).
 This is used to provide support for detecting *click*, *hover* and *scroll* events targeted at the GastNode.
 
-The client is then notified using the corresponding method:
+These events are dispatched to the **GDScript** code via the following signals:
+
+- `hover_input_event` for hover events
+- `press_input_event` for click press events
+- `release_input_event` for click release events
+- `scroll_input_event` for scroll events
+
+Similarly, the Android code can listen to these events using the corresponding methods:
 
 - [GastInputListener#onMainInputHover(...)](core/src/main/java/org/godotengine/plugin/gast/input/GastInputListener.kt#L64) for hover events
 - [GastInputListener#onMainInputPress(...)](core/src/main/java/org/godotengine/plugin/gast/input/GastInputListener.kt#L71) for click press events
 - [GastInputListener#onMainInputRelease(...)](core/src/main/java/org/godotengine/plugin/gast/input/GastInputListener.kt#L78) for click release events
 - [GastInputListener#onMainInputScroll(...)](core/src/main/java/org/godotengine/plugin/gast/input/GastInputListener.kt#L85) for scroll events
 
-The notification includes the [nodepath](https://docs.godotengine.org/en/stable/classes/class_nodepath.html)
+The dispatched events include the [nodepath](https://docs.godotengine.org/en/stable/classes/class_nodepath.html)
 of the targeted Gast node, the [nodepath](https://docs.godotengine.org/en/stable/classes/class_nodepath.html)
 of the colliding ray cast and information specific to the type of the event (e.g: hover location for
 a hover event).
+
+Example code:
+
+```
+func _ready():
+    ...
+    var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns").new()
+    gast_loader.initialize()
+    gast_loader.connect("hover_input_event", self, "_on_gast_hover_input_event")
+    gast_loader.connect("press_input_event", self, "_on_gast_press_input_event")
+    gast_loader.connect("release_input_event", self, "_on_gast_release_input_event")
+    gast_loader.connect("scroll_input_event", self, "_on_gast_scroll_input_event")
+    ...
+
+func _on_gast_hover_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
+    pass
+
+func _on_gast_press_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
+    pass
+
+func _on_gast_release_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
+    pass
+
+func _on_gast_scroll_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float, horizontal_delta: float, vertical_delta: float):
+    pass
+```
 
 ###### Collision Events Setup
 
