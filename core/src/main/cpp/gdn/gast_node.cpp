@@ -20,15 +20,15 @@ namespace gast {
 namespace {
 const Vector2 kDefaultSize = Vector2(2.0, 1.0);
 const int kDefaultSurfaceIndex = 0;
-const bool kDefaultCollidable = true;
-const bool kDefaultCurveValue = false;
 const char *kGastCurvedParamName = "curve_flag";
 const char *kGastWidthParamName = "gast_width";
 const char *kGastTextureParamName = "gast_texture";
+const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 }
 
-GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue) {}
+GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue),
+                       gradient_height_ratio(kDefaultGradientHeightRatio) {}
 
 GastNode::~GastNode() = default;
 
@@ -44,13 +44,20 @@ void GastNode::_register_methods() {
     register_method("is_collidable", &GastNode::is_collidable);
     register_method("set_curved", &GastNode::set_curved);
     register_method("is_curved", &GastNode::is_curved);
+    register_method("set_gradient_height_ratio", &GastNode::set_gradient_height_ratio);
+    register_method("get_gradient_height_ratio", &GastNode::get_gradient_height_ratio);
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
 
     register_property<GastNode, bool>("collidable", &GastNode::set_collidable,
                                       &GastNode::is_collidable, kDefaultCollidable);
-    register_property<GastNode, bool>("curved", &GastNode::set_curved, &GastNode::is_curved, kDefaultCurveValue);
+    register_property<GastNode, bool>("curved", &GastNode::set_curved, &GastNode::is_curved,
+                                      kDefaultCurveValue);
     register_property<GastNode, Vector2>("size", &GastNode::set_size, &GastNode::get_size,
                                          kDefaultSize);
+    register_property<GastNode, float>("gradient_height_ratio",
+                                       &GastNode::set_gradient_height_ratio,
+                                       &GastNode::get_gradient_height_ratio,
+                                       kDefaultGradientHeightRatio);
 }
 
 void GastNode::_init() {
@@ -151,6 +158,7 @@ void GastNode::update_shader_params() {
 
     shader_material->set_shader_param(kGastCurvedParamName, curved);
     shader_material->set_shader_param(kGastWidthParamName, get_size().width);
+    shader_material->set_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
 }
 
 int GastNode::get_external_texture_id(int surface_index) {
@@ -360,7 +368,7 @@ Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point)
 
     // Normalize the collision point. A Gast node is a flat quad so we only worry about
     // the x,y coordinates
-    Vector2 node_size = GastManager::get_singleton_instance()->get_gast_node_size(get_path());
+    Vector2 node_size = get_size();
     if (node_size.width > 0 && node_size.height > 0) {
         float max_x = node_size.width / 2;
         float min_x = -max_x;

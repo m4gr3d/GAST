@@ -275,6 +275,20 @@ class GastNode @JvmOverloads constructor(
 
     private external fun setGastNodeCurved(nodePath: String, curved: Boolean)
 
+    fun getGradientHeightRatio(): Float {
+        checkIfReleased()
+        return getGastNodeGradientHeightRatio(nodePath)
+    }
+
+    private external fun getGastNodeGradientHeightRatio(nodePath: String): Float
+
+    fun setGradientHeightRatio(ratio: Float) {
+        checkIfReleased()
+        setGastNodeGradientHeightRatio(nodePath, ratio)
+    }
+
+    private external fun setGastNodeGradientHeightRatio(nodePath: String, ratio: Float)
+
     /**
      * Update the size of the Gast node.
      */

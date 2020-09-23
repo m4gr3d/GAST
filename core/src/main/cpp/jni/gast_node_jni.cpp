@@ -1,4 +1,9 @@
 #include <jni.h>
+#include <core/Defs.hpp>
+#include <core/String.hpp>
+#include <core/Vector2.hpp>
+#include <core/Vector3.hpp>
+#include "gdn/gast_node.h"
 #include "gast_manager.h"
 #include "utils.h"
 
@@ -9,7 +14,15 @@
 #undef JNI_CLASS_NAME
 #define JNI_CLASS_NAME GastNode
 
+namespace {
 using namespace gast;
+using namespace godot;
+
+inline GastNode *get_gast_node(JNIEnv *env, jstring node_path) {
+    return GastManager::get_singleton_instance()->get_gast_node(jstring_to_string(env, node_path));
+}
+
+}  // namespace
 
 extern "C" {
 
@@ -26,13 +39,6 @@ JNI_METHOD(unbindAndReleaseGastNode)(JNIEnv *env, jobject, jstring node_path) {
             jstring_to_string(env, node_path));
 }
 
-
-JNIEXPORT jint JNICALL
-JNI_METHOD(getTextureId)(JNIEnv *env, jobject, jstring node_path, jint surface_index) {
-    return GastManager::get_singleton_instance()->get_external_texture_id(
-            jstring_to_string(env, node_path), surface_index);
-}
-
 JNIEXPORT jstring JNICALL
 JNI_METHOD(updateGastNodeParent)(JNIEnv *env, jobject, jstring node_path,
                                  jstring new_parent_node_path, jboolean empty_parent) {
@@ -42,63 +48,99 @@ JNI_METHOD(updateGastNodeParent)(JNIEnv *env, jobject, jstring node_path,
                                      jstring_to_string(env, new_parent_node_path), empty_parent));
 }
 
+JNIEXPORT jint JNICALL
+JNI_METHOD(getTextureId)(JNIEnv *env, jobject, jstring node_path, jint surface_index) {
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL_V(gast_node, kInvalidTexId);
+    return gast_node->get_external_texture_id(surface_index);
+}
+
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeVisibility)(JNIEnv *env, jobject, jstring node_path,
                                      jboolean should_duplicate_parent_visibility,
                                      jboolean visible) {
-    GastManager::get_singleton_instance()->update_gast_node_visibility(
-            jstring_to_string(env, node_path), should_duplicate_parent_visibility, visible);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    bool is_visible = should_duplicate_parent_visibility ? gast_node->is_visible_in_tree()
+                                                         : gast_node->is_visible();
+    if (is_visible != visible) {
+        gast_node->set_visible(visible);
+    }
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(setGastNodeCollidable)(JNIEnv *env, jobject, jstring node_path, jboolean collidable) {
-    GastManager::get_singleton_instance()->set_gast_node_collidable(
-            jstring_to_string(env, node_path), collidable);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_collidable(collidable);
 }
 
 JNIEXPORT jboolean JNICALL
 JNI_METHOD(isGastNodeCollidable)(JNIEnv *env, jobject, jstring node_path) {
-    return GastManager::get_singleton_instance()->is_gast_node_collidable(
-            jstring_to_string(env, node_path));
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL_V(gast_node, kDefaultCollidable);
+    return gast_node->is_collidable();
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(setGastNodeCurved)(JNIEnv *env, jobject, jstring node_path, jboolean curved) {
-    GastManager::get_singleton_instance()->set_gast_node_curved(jstring_to_string(env, node_path), curved);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_curved(curved);
 }
 
 JNIEXPORT jboolean JNICALL
 JNI_METHOD(isGastNodeCurved)(JNIEnv *env, jobject, jstring node_path) {
-    return GastManager::get_singleton_instance()->is_gast_node_curved(jstring_to_string(env, node_path));
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL_V(gast_node, kDefaultCurveValue);
+    return gast_node->is_curved();
+}
+
+JNIEXPORT jfloat JNICALL
+JNI_METHOD(getGastNodeGradientHeightRatio)(JNIEnv *env, jobject, jstring node_path) {
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL_V(gast_node, kDefaultGradientHeightRatio);
+    return gast_node->get_gradient_height_ratio();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setGastNodeGradientHeightRatio)(JNIEnv *env, jobject, jstring node_path, jfloat ratio) {
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_gradient_height_ratio(ratio);
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeSize)(JNIEnv *env, jobject, jstring node_path, jfloat width,
                                jfloat height) {
-    GastManager::get_singleton_instance()->update_gast_node_size(jstring_to_string(env, node_path),
-                                                                 width, height);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_size(Vector2(width, height));
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeLocalTranslation)(JNIEnv *env, jobject, jstring node_path,
                                            jfloat x_translation, jfloat y_translation,
                                            jfloat z_translation) {
-    GastManager::get_singleton_instance()->update_gast_node_local_translation(
-            jstring_to_string(env, node_path), x_translation, y_translation, z_translation);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_translation(Vector3(x_translation, y_translation, z_translation));
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeLocalScale)(JNIEnv *env, jobject, jstring node_path, jfloat x_scale,
                                      jfloat y_scale) {
-    GastManager::get_singleton_instance()->update_gast_node_local_scale(
-            jstring_to_string(env, node_path), x_scale, y_scale);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_scale(Vector3(x_scale, y_scale, 1));
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeLocalRotation)(JNIEnv *env, jobject, jstring node_path,
                                         jfloat x_rotation, jfloat y_rotation, jfloat z_rotation) {
-    GastManager::get_singleton_instance()->update_gast_node_local_rotation(
-            jstring_to_string(env, node_path), x_rotation, y_rotation, z_rotation);
+    GastNode *gast_node = get_gast_node(env, node_path);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_rotation_degrees(Vector3(x_rotation, y_rotation, z_rotation));
 }
 
 }

@@ -114,16 +114,6 @@ void GastManager::unregister_callback(JNIEnv *env) {
     }
 }
 
-int GastManager::get_external_texture_id(const String &node_path, int surface_index) {
-    GastNode *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
-        return kInvalidTexId;
-    }
-
-    return gast_node->get_external_texture_id(surface_index);
-}
-
 GastNode *GastManager::get_gast_node(const godot::String &node_path) {
     auto *gast_node = Object::cast_to<GastNode>(get_node(node_path));
     if (!gast_node || !gast_node->is_in_group(kGastNodeGroupName)) {
@@ -341,117 +331,6 @@ String GastManager::update_gast_node_parent(const String &node_path,
     node->set_owner(new_parent);
 
     return (String) node->get_path();
-}
-
-void GastManager::update_gast_node_visibility(const godot::String &node_path,
-                                              bool should_duplicate_parent_visibility,
-                                              bool visible) {
-    Spatial *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    bool is_visible = should_duplicate_parent_visibility ? gast_node->is_visible_in_tree()
-                                                         : gast_node->is_visible();
-    if (is_visible != visible) {
-        gast_node->set_visible(visible);
-    }
-}
-
-void GastManager::set_gast_node_collidable(const godot::String &node_path, bool collidable) {
-    GastNode *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    gast_node->set_collidable(collidable);
-}
-
-bool GastManager::is_gast_node_collidable(const godot::String &node_path) {
-    GastNode *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
-        return false;
-    }
-
-    return gast_node->is_collidable();
-}
-
-void GastManager::set_gast_node_curved(const String &node_path, bool curved) {
-    GastNode *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    gast_node->set_curved(curved);
-}
-
-bool GastManager::is_gast_node_curved(const godot::String &node_path) {
-    GastNode* gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
-        return false;
-    }
-    return gast_node->is_curved();
-}
-
-Vector2 GastManager::get_gast_node_size(const godot::String &node_path) {
-    Vector2 size;
-    GastNode *gast_node = get_gast_node(node_path);
-    if (gast_node) {
-        size = gast_node->get_size();
-    }
-    return size;
-}
-
-void GastManager::update_gast_node_size(const godot::String &node_path, float width,
-                                        float height) {
-    GastNode *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve GastNode with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    gast_node->set_size(Vector2(width, height));
-}
-
-void GastManager::update_gast_node_local_translation(const godot::String &node_path,
-                                                     float x_translation,
-                                                     float y_translation,
-                                                     float z_translation) {
-    Spatial *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    gast_node->set_translation(Vector3(x_translation, y_translation, z_translation));
-}
-
-void GastManager::update_gast_node_local_scale(const godot::String &node_path, float x_scale,
-                                               float y_scale) {
-    Spatial *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    gast_node->set_scale(Vector3(x_scale, y_scale, 1));
-}
-
-void GastManager::update_gast_node_local_rotation(const godot::String &node_path,
-                                                  float x_rotation, float y_rotation,
-                                                  float z_rotation) {
-    Spatial *gast_node = get_gast_node(node_path);
-    if (!gast_node) {
-        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
-        return;
-    }
-
-    gast_node->set_rotation_degrees(Vector3(x_rotation, y_rotation, z_rotation));
 }
 
 }  // namespace gast

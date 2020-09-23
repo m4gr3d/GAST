@@ -26,6 +26,9 @@ namespace {
 using namespace godot;
 constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
+const bool kDefaultCollidable = true;
+const bool kDefaultCurveValue = false;
+const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
 /// Script for a GAST node. Enables GAST specific logic and processing.
@@ -54,6 +57,9 @@ public:
     int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
 
     inline void set_collidable(bool collidable) {
+        if (this->collidable == collidable) {
+            return;
+        }
         this->collidable = collidable;
         update_collision_shape();
     }
@@ -63,6 +69,9 @@ public:
     }
 
     inline void set_curved(bool curved) {
+        if (this->curved == curved) {
+            return;
+        }
         this->curved = curved;
         update_shader_params();
         update_collision_shape();
@@ -75,6 +84,18 @@ public:
     Vector2 get_size();
 
     void set_size(Vector2 size);
+
+    inline float get_gradient_height_ratio() {
+        return gradient_height_ratio;
+    }
+
+    inline void set_gradient_height_ratio(float ratio) {
+        if (this->gradient_height_ratio == ratio) {
+            return;
+        }
+        this->gradient_height_ratio = std::min(1.0f, std::max(0.0f, ratio));
+        update_shader_params();
+    }
 
 private:
     inline CollisionShape *get_collision_shape() {
@@ -151,6 +172,7 @@ private:
 
     bool collidable;
     bool curved;
+    float gradient_height_ratio;
     std::set<String> colliding_raycast_paths;
 };
 }  // namespace gast

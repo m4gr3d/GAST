@@ -42,8 +42,6 @@ public:
 
     static void jni_shutdown(JNIEnv *env);
 
-    int get_external_texture_id(const String &node_path, int surface_index = kInvalidSurfaceIndex);
-
     void on_process();
 
     void on_render_input_hover(const String &node_path, const String &pointer_id, float x_percent,
@@ -69,31 +67,6 @@ public:
     String update_gast_node_parent(const String &node_path, const String &new_parent_node_path,
                                    bool empty_parent);
 
-    void update_gast_node_visibility(const String &node_path,
-                                     bool should_duplicate_parent_visibility, bool visible);
-
-    void set_gast_node_collidable(const String &node_path, bool collidable);
-
-    bool is_gast_node_collidable(const String &node_path);
-
-    void set_gast_node_curved(const String &node_path, bool curved);
-
-    bool is_gast_node_curved(const String &node_path);
-
-    Vector2 get_gast_node_size(const String &node_path);
-
-    void update_gast_node_size(const String &node_path, float width, float height);
-
-    void update_gast_node_local_translation(const String &node_path, float x_translation,
-                                            float y_translation,
-                                            float z_translation);
-
-    void update_gast_node_local_scale(const String &node_path, float x_scale, float y_scale);
-
-    void update_gast_node_local_rotation(const String &node_path, float x_rotation,
-                                         float y_rotation,
-                                         float z_rotation);
-
     void reset_monitored_input_actions() {
         input_actions_to_monitor_.clear();
     }
@@ -101,6 +74,8 @@ public:
     void add_input_actions_to_monitor(String input_action) {
         input_actions_to_monitor_.push_back(input_action);
     }
+
+    GastNode *get_gast_node(const String &node_path);
 
 private:
     static void delete_singleton_instance();
@@ -124,8 +99,6 @@ private:
     }
 
     void on_render_input_action(const String &action, InputPressState press_state, float strength);
-
-    GastNode *get_gast_node(const String &node_path);
 
     Node *get_node(const String &node_path);
 
