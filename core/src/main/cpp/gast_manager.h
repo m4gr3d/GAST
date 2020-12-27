@@ -75,6 +75,8 @@ public:
         input_actions_to_monitor_.push_back(input_action);
     }
 
+    void update_node_visibility(const String &node_path, bool visible);
+
     GastNode *get_gast_node(const String &node_path);
 
 private:

@@ -114,6 +114,16 @@ void GastManager::unregister_callback(JNIEnv *env) {
     }
 }
 
+void GastManager::update_node_visibility(const String &node_path, bool visible) {
+    auto *node = Object::cast_to<Spatial>(get_node(node_path));
+    if (!node) {
+        ALOGE("Unable to find target node with path %s", get_node_tag(node_path));
+        return;
+    }
+
+    node->set_visible(visible);
+}
+
 GastNode *GastManager::get_gast_node(const godot::String &node_path) {
     auto *gast_node = Object::cast_to<GastNode>(get_node(node_path));
     if (!gast_node || !gast_node->is_in_group(kGastNodeGroupName)) {

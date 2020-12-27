@@ -33,4 +33,10 @@ JNI_METHOD(setInputActionsToMonitor)(JNIEnv *env, jobject, jobjectArray input_ac
     }
 }
 
+JNIEXPORT void JNICALL
+JNI_METHOD(nativeUpdateNodeVisibility)(JNIEnv *env, jobject, jstring node_path, jboolean visible) {
+    GastManager::get_singleton_instance()->update_node_visibility(jstring_to_string(env, node_path),
+                                                                  visible);
+}
+
 }
