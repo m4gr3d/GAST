@@ -135,6 +135,7 @@ GastNode *GastManager::get_gast_node(const godot::String &node_path) {
 }
 
 Node *GastManager::get_node(const godot::String &node_path) {
+    // First search by treating the given argument as a node path since it's more efficient.
     if (node_path.empty()) {
         ALOGE("Invalid node path argument: %s", get_node_tag(node_path));
         return nullptr;
@@ -147,8 +148,14 @@ Node *GastManager::get_node(const godot::String &node_path) {
         return nullptr;
     }
 
+    const Viewport *viewport = scene_tree->get_root();
     NodePath node_path_obj(node_path);
-    Node *node = scene_tree->get_root()->get_node_or_null(node_path_obj);
+    Node *node = viewport->get_node_or_null(node_path_obj);
+    if (!node) {
+        // Treat the parameter as the node's name and give it another try.
+        node = viewport->find_node(node_path, true, false);
+    }
+
     return node;
 }
 
