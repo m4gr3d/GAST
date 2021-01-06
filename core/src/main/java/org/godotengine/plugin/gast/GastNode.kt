@@ -139,7 +139,7 @@ class GastNode @JvmOverloads constructor(
      * [bindSurface] must have been invoked at least once prior to invoking this method.
      * @throws IllegalStateException if a [Surface] is not bound to this [GastNode] node.
      */
-    fun lockSurfaceCanvas(scaleX: Float = 1F, scaleY: Float = 1F): Canvas? {
+    fun lockSurfaceCanvas(): Canvas? {
         val boundSurface =
             surface ?: throw IllegalStateException("No Surface object bound to this node.")
 
@@ -154,7 +154,6 @@ class GastNode @JvmOverloads constructor(
 
             surfaceCanvas = boundSurface.lockCanvas(null)
             surfaceCanvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-            surfaceCanvas?.scale(scaleX, scaleY)
         }
         surfaceCanvasRefCount++
         return surfaceCanvas
