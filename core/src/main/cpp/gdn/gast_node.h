@@ -16,7 +16,7 @@
 #include <gen/RayCast.hpp>
 #include <gen/ShaderMaterial.hpp>
 #include <gen/StaticBody.hpp>
-#include <set>
+#include <map>
 
 #include "utils.h"
 
@@ -98,6 +98,16 @@ public:
     }
 
 private:
+
+    // Tracks raycast collision info.
+    struct CollisionInfo {
+        // Tracks whether a press is in progress. If so, collision is faked via simulation
+        // when the raycast no longer collides with the node.
+        bool press_in_progress;
+        Vector3 collision_point;
+        Vector3 collision_normal;
+    };
+
     inline CollisionShape *get_collision_shape() {
         Node *node = get_child(0);
         CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
@@ -164,16 +174,29 @@ private:
 
     ShaderMaterial *get_shader_material(int surface_index);
 
-    void handle_ray_cast_input(const RayCast &ray_cast);
+    // Calculate whether a collision occurs between the given `RayCast` and `Plane`.
+    // Return True if they collide, with `collision_point` filled appropriately.
+    bool calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
+                                           Vector3 *collision_point);
+
+    // Handle the raycast input. Returns true if a press is in progress.
+    bool handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point);
 
     void update_collision_shape();
 
     void update_shader_params();
 
+    bool has_captured_raycast(const RayCast &ray_cast) {
+        return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
+    }
+
     bool collidable;
     bool curved;
     float gradient_height_ratio;
-    std::set<String> colliding_raycast_paths;
+
+    // Map used to keep track of the raycasts colliding with this node.
+    // The boolean specifies whether a `press` is currently in progress.
+    std::map<String, std::shared_ptr<CollisionInfo>> colliding_raycast_paths;
 };
 }  // namespace gast
 

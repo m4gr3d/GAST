@@ -6,5 +6,5 @@ binary="gast-video.0.3.0-release.aar"
 
 [dependencies]
 
-local=["gast-core.0.3.0-release.aar"]
+local=["gast-core.0.5.0-release.aar"]
 remote=["com.google.android.exoplayer:exoplayer:2.11.3"]

@@ -11,7 +11,6 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
-import kotlin.math.roundToInt
 
 class GastFrameLayout(
     context: Context,
@@ -28,8 +27,8 @@ class GastFrameLayout(
         return@OnPreDrawListener true
     }
 
-    private var textureWidth = DEFAULT_TEXTURE_DIMENSION
-    private var textureHeight = DEFAULT_TEXTURE_DIMENSION
+    private var textureWidth = MIN_TEXTURE_DIMENSION
+    private var textureHeight = MIN_TEXTURE_DIMENSION
 
     constructor(
         context: Context,
@@ -46,7 +45,7 @@ class GastFrameLayout(
 
     companion object {
         private val TAG = GastFrameLayout::class.java.simpleName
-        private const val DEFAULT_TEXTURE_DIMENSION = 512
+        private const val MIN_TEXTURE_DIMENSION = 1
     }
 
     private var gastManager: GastManager? = null
@@ -56,11 +55,11 @@ class GastFrameLayout(
         Log.d(TAG, "Initializing GastFrameLayout...")
         this.gastNode = gastNode
         gastNode.bindSurface()
-        gastNode.setSurfaceTextureSize(textureWidth, textureHeight)
 
         gastManager.registerGastInputListener(inputHandler)
         viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
 
+        updateTextureSizeIfNeeded()
         invalidate()
     }
 
@@ -71,30 +70,30 @@ class GastFrameLayout(
         this.gastNode = null
     }
 
-    private fun setTextureSize(width: Int, height: Int) {
-        val density = resources.displayMetrics.scaledDensity
-        textureWidth = (width / density).roundToInt()
-        textureHeight = (height / density).roundToInt()
-        gastNode?.setSurfaceTextureSize(textureWidth, textureHeight)
-
-        Log.d(TAG, "Updating texture size for density $density: $textureWidth, $textureHeight")
-        invalidate()
+    private fun updateTextureSizeIfNeeded() {
+        // Update the texture size
+        val widthInPixels = width
+        val heightInPixels = height
+        if ((textureWidth != widthInPixels || textureHeight != heightInPixels)
+            && widthInPixels >= MIN_TEXTURE_DIMENSION && heightInPixels >= MIN_TEXTURE_DIMENSION
+        ) {
+            Log.d(TAG, "Updating texture size to X - $widthInPixels, Y - $heightInPixels")
+            textureWidth = widthInPixels
+            textureHeight = heightInPixels
+            gastNode?.setSurfaceTextureSize(textureWidth, textureHeight)
+            invalidate()
+        }
     }
 
     override fun draw(canvas: Canvas) {
-        val surfaceCanvas = gastNode?.lockSurfaceCanvas(
-            textureWidth / width.toFloat(),
-            textureHeight / height.toFloat()
-        ) ?: canvas
+        updateTextureSizeIfNeeded()
+        val surfaceCanvas = gastNode?.lockSurfaceCanvas() ?: canvas
         super.draw(surfaceCanvas)
         gastNode?.unlockSurfaceCanvas()
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        val surfaceCanvas = gastNode?.lockSurfaceCanvas(
-            textureWidth / width.toFloat(),
-            textureHeight / height.toFloat()
-        ) ?: canvas
+        val surfaceCanvas = gastNode?.lockSurfaceCanvas() ?: canvas
         super.dispatchDraw(surfaceCanvas)
         gastNode?.unlockSurfaceCanvas()
     }
@@ -102,9 +101,7 @@ class GastFrameLayout(
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
         super.onSizeChanged(width, height, oldWidth, oldHeight)
         Log.d(TAG, "On size changed: $width, $height, $oldWidth, $oldHeight")
-        if (width > 0 && height > 0) {
-            setTextureSize(width, height)
-        }
+        updateTextureSizeIfNeeded()
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {

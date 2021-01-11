@@ -114,6 +114,16 @@ void GastManager::unregister_callback(JNIEnv *env) {
     }
 }
 
+void GastManager::update_node_visibility(const String &node_path, bool visible) {
+    auto *node = Object::cast_to<Spatial>(get_node(node_path));
+    if (!node) {
+        ALOGE("Unable to find target node with path %s", get_node_tag(node_path));
+        return;
+    }
+
+    node->set_visible(visible);
+}
+
 GastNode *GastManager::get_gast_node(const godot::String &node_path) {
     auto *gast_node = Object::cast_to<GastNode>(get_node(node_path));
     if (!gast_node || !gast_node->is_in_group(kGastNodeGroupName)) {
@@ -125,6 +135,7 @@ GastNode *GastManager::get_gast_node(const godot::String &node_path) {
 }
 
 Node *GastManager::get_node(const godot::String &node_path) {
+    // First search by treating the given argument as a node path since it's more efficient.
     if (node_path.empty()) {
         ALOGE("Invalid node path argument: %s", get_node_tag(node_path));
         return nullptr;
@@ -137,19 +148,25 @@ Node *GastManager::get_node(const godot::String &node_path) {
         return nullptr;
     }
 
+    const Viewport *viewport = scene_tree->get_root();
     NodePath node_path_obj(node_path);
-    Node *node = scene_tree->get_root()->get_node_or_null(node_path_obj);
+    Node *node = viewport->get_node_or_null(node_path_obj);
+    if (!node) {
+        // Treat the parameter as the node's name and give it another try.
+        node = viewport->find_node(node_path, true, false);
+    }
+
     return node;
 }
 
-String
-GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
+GastNode
+*GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
     ALOGV("Retrieving node's parent with path %s", get_node_tag(parent_node_path));
     Node *parent_node = get_node(parent_node_path);
     if (!parent_node) {
         ALOGE("Unable to retrieve parent node with path %s",
               get_node_tag(parent_node_path));
-        return "";
+        return nullptr;
     }
 
     GastNode *gast_node;
@@ -180,12 +197,11 @@ GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, b
     parent_node->add_child(gast_node);
     gast_node->set_owner(parent_node);
 
-    return (String) gast_node->get_path();
+    return gast_node;
 }
 
-void GastManager::unbind_and_release_gast_node(const godot::String &node_path) {
+void GastManager::unbind_and_release_gast_node(GastNode *gast_node) {
     // Remove the Gast node from its parent and move it to the reusable pool.
-    GastNode *gast_node = get_gast_node(node_path);
     if (!gast_node) {
         return;
     }
@@ -294,12 +310,11 @@ void GastManager::on_render_input_scroll(const godot::String &node_path,
     }
 }
 
-String GastManager::update_gast_node_parent(const String &node_path,
-                                            const String &new_parent_node_path, bool empty_parent) {
-    Node *node = get_gast_node(node_path);
+bool GastManager::update_gast_node_parent(GastNode *node,
+                                          const String &new_parent_node_path, bool empty_parent) {
     if (!node) {
-        ALOGW("Unable to retrieve Gast node with path %s", get_node_tag(node_path));
-        return node_path;
+        ALOGW("Invalid GastNode instance!");
+        return false;
     }
 
     // Check if current parent differs from new one.
@@ -307,7 +322,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
         String parent_node_path = node->get_parent()->get_path();
         if (parent_node_path == new_parent_node_path) {
             ALOGV("Current parent is same as newly proposed one.");
-            return node_path;
+            return false;
         }
     }
 
@@ -316,7 +331,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
     if (!new_parent) {
         ALOGW("Unable to retrieve new parent node with path %s",
               get_node_tag(new_parent_node_path));
-        return node_path;
+        return false;
     }
 
     // Perform the update
@@ -330,7 +345,7 @@ String GastManager::update_gast_node_parent(const String &node_path,
     new_parent->add_child(node);
     node->set_owner(new_parent);
 
-    return (String) node->get_path();
+    return true;
 }
 
 }  // namespace gast

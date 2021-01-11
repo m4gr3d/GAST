@@ -57,14 +57,14 @@ public:
                                 float y_percent, float horizontal_delta, float vertical_delta);
 
     /// Create a Gast node with the given parent node and set it up.
-    /// @return The node path to the newly created Gast node
-    String acquire_and_bind_gast_node(const String &parent_node_path, bool empty_parent);
+    /// @return The newly created Gast node
+    GastNode *acquire_and_bind_gast_node(const String &parent_node_path, bool empty_parent);
 
-    /// Unbind and release the Gast node with the given node path. This is the counterpart
+    /// Unbind and release the given Gast node. This is the counterpart
     /// to acquire_and_bind_gast_node.
-    void unbind_and_release_gast_node(const String &node_path);
+    void unbind_and_release_gast_node(GastNode *gast_node);
 
-    String update_gast_node_parent(const String &node_path, const String &new_parent_node_path,
+    bool update_gast_node_parent(GastNode *gast_node, const String &new_parent_node_path,
                                    bool empty_parent);
 
     void reset_monitored_input_actions() {
@@ -74,6 +74,8 @@ public:
     void add_input_actions_to_monitor(String input_action) {
         input_actions_to_monitor_.push_back(input_action);
     }
+
+    void update_node_visibility(const String &node_path, bool visible);
 
     GastNode *get_gast_node(const String &node_path);
 

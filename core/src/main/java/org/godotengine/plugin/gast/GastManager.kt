@@ -144,6 +144,15 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    /**
+     * Update the visibility for the given node.
+     */
+    fun updateVisibility(nodePath: String, visible: Boolean) {
+        if (initialized.get()) {
+            nativeUpdateNodeVisibility(nodePath, visible)
+        }
+    }
+
     private fun updateMonitoredInputActions() {
         if (initialized.get()) {
             // Update the list of input actions to monitor for the native code
@@ -167,6 +176,8 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     }
 
     private external fun initialize()
+
+    private external fun nativeUpdateNodeVisibility(nodePath: String, visible: Boolean)
 
     private external fun shutdown()
 

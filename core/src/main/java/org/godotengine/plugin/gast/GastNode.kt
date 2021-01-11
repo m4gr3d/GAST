@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class GastNode @JvmOverloads constructor(
     private val gastManager: GastManager,
-    private val parentNodePath: String,
+    private var parentNodePath: String,
     emptyParent: Boolean = false
 ) : SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
 
@@ -27,16 +27,16 @@ class GastNode @JvmOverloads constructor(
     private var surfaceCanvas: Canvas? = null
     private var surfaceCanvasRefCount = 0
 
-    var nodePath: String
-        private set
+    private var nodePointer: Long
+    val nodePath get() = nativeGetNodePath(nodePointer)
 
     init {
         if (TextUtils.isEmpty(parentNodePath)) {
             throw IllegalArgumentException("Invalid parent node path value: $parentNodePath")
         }
 
-        nodePath = acquireAndBindGastNode(parentNodePath, emptyParent)
-        if (nodePath == RELEASED_PATH) {
+        nodePointer = acquireAndBindGastNode(parentNodePath, emptyParent)
+        if (nodePointer == INVALID_NODE_POINTER) {
             throw IllegalStateException("Unable to initialize node")
         }
 
@@ -52,6 +52,7 @@ class GastNode @JvmOverloads constructor(
         private val TAG = GastNode::class.java.simpleName
         private const val INVALID_SURFACE_INDEX = -1
         private const val INVALID_TEX_ID = 0
+        private const val INVALID_NODE_POINTER = 0L;
         private const val RELEASED_PATH = ""
     }
 
@@ -68,9 +69,8 @@ class GastNode @JvmOverloads constructor(
         gastManager.unregisterGastRenderListener(this)
 
         unbindSurface()
-        unbindAndReleaseGastNode(nodePath)
-
-        nodePath = RELEASED_PATH
+        unbindAndReleaseGastNode(nodePointer)
+        nodePointer = INVALID_NODE_POINTER
     }
 
     /**
@@ -111,7 +111,7 @@ class GastNode @JvmOverloads constructor(
         }
     }
 
-    fun isReleased() = nodePath == RELEASED_PATH
+    fun isReleased() = nodePointer == INVALID_NODE_POINTER
 
     private fun checkIfReleased() {
         if (isReleased()) {
@@ -139,7 +139,7 @@ class GastNode @JvmOverloads constructor(
      * [bindSurface] must have been invoked at least once prior to invoking this method.
      * @throws IllegalStateException if a [Surface] is not bound to this [GastNode] node.
      */
-    fun lockSurfaceCanvas(scaleX: Float = 1F, scaleY: Float = 1F): Canvas? {
+    fun lockSurfaceCanvas(): Canvas? {
         val boundSurface =
             surface ?: throw IllegalStateException("No Surface object bound to this node.")
 
@@ -154,7 +154,6 @@ class GastNode @JvmOverloads constructor(
 
             surfaceCanvas = boundSurface.lockCanvas(null)
             surfaceCanvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-            surfaceCanvas?.scale(scaleX, scaleY)
         }
         surfaceCanvasRefCount++
         return surfaceCanvas
@@ -184,9 +183,9 @@ class GastNode @JvmOverloads constructor(
     private external fun acquireAndBindGastNode(
         parentNodePath: String,
         emptyParent: Boolean
-    ): String
+    ): Long
 
-    private external fun unbindAndReleaseGastNode(nodePath: String)
+    private external fun unbindAndReleaseGastNode(nodePointer: Long)
 
     /**
      * Get the texture id for the Gast node with the given path.
@@ -194,11 +193,11 @@ class GastNode @JvmOverloads constructor(
     @JvmOverloads
     fun getTextureId(surfaceIndex: Int = INVALID_SURFACE_INDEX): Int {
         checkIfReleased()
-        return getTextureId(nodePath, surfaceIndex)
+        return getTextureId(nodePointer, surfaceIndex)
     }
 
     private external fun getTextureId(
-        nodePath: String,
+        nodePointer: Long,
         surfaceIndex: Int
     ): Int
 
@@ -211,15 +210,21 @@ class GastNode @JvmOverloads constructor(
     fun updateParent(newParentNodePath: String, emptyParent: Boolean = false) {
         checkIfReleased()
         if (parentNodePath != newParentNodePath) {
-            nodePath = updateGastNodeParent(nodePath, newParentNodePath, emptyParent)
+            if (TextUtils.isEmpty(newParentNodePath)) {
+                throw IllegalArgumentException("Invalid parent node path value: $newParentNodePath")
+            } else {
+                if (updateGastNodeParent(nodePointer, newParentNodePath, emptyParent)) {
+                    parentNodePath = newParentNodePath;
+                }
+            }
         }
     }
 
     private external fun updateGastNodeParent(
-        nodePath: String,
+        nodePointer: Long,
         newParentNodePath: String,
         emptyParent: Boolean
-    ): String
+    ): Boolean
 
     /**
      * Update the visibility of the given Gast node.
@@ -231,11 +236,11 @@ class GastNode @JvmOverloads constructor(
         visible: Boolean
     ) {
         checkIfReleased()
-        updateGastNodeVisibility(nodePath, shouldDuplicateParentVisibility, visible)
+        updateGastNodeVisibility(nodePointer, shouldDuplicateParentVisibility, visible)
     }
 
     private external fun updateGastNodeVisibility(
-        nodePath: String,
+        nodePointer: Long,
         shouldDuplicateParentVisibility: Boolean,
         visible: Boolean
     )
@@ -246,58 +251,58 @@ class GastNode @JvmOverloads constructor(
      */
     fun setCollidable(collidable: Boolean) {
         checkIfReleased()
-        setGastNodeCollidable(nodePath, collidable)
+        setGastNodeCollidable(nodePointer, collidable)
     }
 
-    private external fun setGastNodeCollidable(nodePath: String, collidable: Boolean)
+    private external fun setGastNodeCollidable(nodePointer: Long, collidable: Boolean)
 
     /**
      * Return true if collision is enabled for the node.
      */
     fun isCollidable(): Boolean {
         checkIfReleased()
-        return isGastNodeCollidable(nodePath)
+        return isGastNodeCollidable(nodePointer)
     }
 
-    private external fun isGastNodeCollidable(nodePath: String): Boolean
+    private external fun isGastNodeCollidable(nodePointer: Long): Boolean
 
     fun isCurved(): Boolean {
         checkIfReleased()
-        return isGastNodeCurved(nodePath)
+        return isGastNodeCurved(nodePointer)
     }
 
-    private external fun isGastNodeCurved(nodePath: String): Boolean
+    private external fun isGastNodeCurved(nodePointer: Long): Boolean
 
     fun setCurved(curved: Boolean) {
         checkIfReleased()
-        setGastNodeCurved(nodePath, curved)
+        setGastNodeCurved(nodePointer, curved)
     }
 
-    private external fun setGastNodeCurved(nodePath: String, curved: Boolean)
+    private external fun setGastNodeCurved(nodePointer: Long, curved: Boolean)
 
     fun getGradientHeightRatio(): Float {
         checkIfReleased()
-        return getGastNodeGradientHeightRatio(nodePath)
+        return getGastNodeGradientHeightRatio(nodePointer)
     }
 
-    private external fun getGastNodeGradientHeightRatio(nodePath: String): Float
+    private external fun getGastNodeGradientHeightRatio(nodePointer: Long): Float
 
     fun setGradientHeightRatio(ratio: Float) {
         checkIfReleased()
-        setGastNodeGradientHeightRatio(nodePath, ratio)
+        setGastNodeGradientHeightRatio(nodePointer, ratio)
     }
 
-    private external fun setGastNodeGradientHeightRatio(nodePath: String, ratio: Float)
+    private external fun setGastNodeGradientHeightRatio(nodePointer: Long, ratio: Float)
 
     /**
      * Update the size of the Gast node.
      */
     fun updateSize(width: Float, height: Float) {
         checkIfReleased()
-        updateGastNodeSize(nodePath, width, height)
+        updateGastNodeSize(nodePointer, width, height)
     }
 
-    private external fun updateGastNodeSize(nodePath: String, width: Float, height: Float)
+    private external fun updateGastNodeSize(nodePointer: Long, width: Float, height: Float)
 
     /**
      * Translate the Gast node relative to its parent.
@@ -308,11 +313,11 @@ class GastNode @JvmOverloads constructor(
         zTranslation: Float
     ) {
         checkIfReleased()
-        updateGastNodeLocalTranslation(nodePath, xTranslation, yTranslation, zTranslation)
+        updateGastNodeLocalTranslation(nodePointer, xTranslation, yTranslation, zTranslation)
     }
 
     private external fun updateGastNodeLocalTranslation(
-        nodePath: String,
+        nodePointer: Long,
         xTranslation: Float,
         yTranslation: Float,
         zTranslation: Float
@@ -323,10 +328,10 @@ class GastNode @JvmOverloads constructor(
      */
     fun updateLocalScale(xScale: Float, yScale: Float) {
         checkIfReleased()
-        updateGastNodeLocalScale(nodePath, xScale, yScale)
+        updateGastNodeLocalScale(nodePointer, xScale, yScale)
     }
 
-    private external fun updateGastNodeLocalScale(nodePath: String, xScale: Float, yScale: Float)
+    private external fun updateGastNodeLocalScale(nodePointer: Long, xScale: Float, yScale: Float)
 
     /**
      * Rotate the Gast node relative to its parent.
@@ -337,15 +342,17 @@ class GastNode @JvmOverloads constructor(
         zRotation: Float
     ) {
         checkIfReleased()
-        updateGastNodeLocalRotation(nodePath, xRotation, yRotation, zRotation)
+        updateGastNodeLocalRotation(nodePointer, xRotation, yRotation, zRotation)
     }
 
     private external fun updateGastNodeLocalRotation(
-        nodePath: String,
+        nodePointer: Long,
         xRotation: Float,
         yRotation: Float,
         zRotation: Float
     )
+
+    private external fun nativeGetNodePath(nodePointer: Long): String
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture) {
         updateTextureImageCounter.incrementAndGet()
