@@ -4,40 +4,27 @@ apply plugin: "kotlin-android"
 android {
     buildToolsVersion = versions.buildTools
     compileSdkVersion versions.compileSdk
-    ndkVersion versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
-        versionCode 5
-        versionName '0.5.0'
-        setProperty("archivesBaseName", "gast-core.${versionName}")
-
-        externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++14"
-            }
-        }
-
-        ndk {
-            abiFilters "arm64-v8a"
-        }
-    }
-
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
+        versionName = "0.3.0"
+        versionCode = 3
+        setProperty("archivesBaseName", "gast-video.${versionName}")
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
+
 }
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion")
+    implementation("com.google.android.exoplayer:exoplayer:2.11.3")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
+
+    implementation(project(":gast-core"))
     compileOnly(fileTree(dir: "../libs", include: ["godot-lib*.aar"]))
 }
