@@ -20,7 +20,8 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         private const val HOVER_INPUT_SOURCE = InputDevice.SOURCE_CLASS_POINTER
 
         /**
-         * Multiplier to convert the scrolling speed of controller to the speed in Android scroll event.
+         * Multiplier to convert the scrolling speed of controller to the speed in Android
+         * scroll event.
          */
         private const val SCROLL_SENSITIVITY = 1.6F
 
@@ -135,20 +136,8 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         val eventTime = SystemClock.uptimeMillis()
 
         // xPercent and yPercent being less than 0 indicates this is no longer being looked at.
-        if (xPercent < 0 && yPercent < 0) {
-            if (onDownSet.contains(pointerId)) {
-                // Cancel the gesture.
-                val motionEvent =
-                    obtainMotionEvent(
-                        pointerId,
-                        eventTime,
-                        MotionEvent.ACTION_CANCEL,
-                        InputDevice.SOURCE_TOUCHSCREEN
-                    )
-                gastView.dispatchTouchEvent(motionEvent)
-                onDownSet.remove(pointerId)
-                motionEvent.recycle()
-            } else if (hoverEnteredSet.contains(pointerId)) {
+        if (!onDownSet.contains(pointerId) && xPercent < 0 && yPercent < 0) {
+            if (hoverEnteredSet.contains(pointerId)) {
                 val motionEvent = obtainMotionEvent(
                     pointerId,
                     eventTime,

@@ -25,6 +25,7 @@ const char *kGastWidthParamName = "gast_width";
 const char *kGastTextureParamName = "gast_texture";
 const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
+const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
 }
 
 GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue),
@@ -144,7 +145,7 @@ void GastNode::update_collision_shape() {
 
     PlaneMesh *mesh = get_plane_mesh();
     if (!collidable || !mesh) {
-       collision_shape->set_shape(Ref<Resource>());
+        collision_shape->set_shape(Ref<Resource>());
     } else {
         collision_shape->set_shape(mesh->create_convex_shape());
     }
@@ -233,28 +234,99 @@ void GastNode::_physics_process(const real_t delta) {
     NodePath node_path = get_path();
     for (int i = 0; i < gast_ray_casts.size(); i++) {
         RayCast *ray_cast = get_ray_cast_from_variant(gast_ray_casts[i]);
-        if (!ray_cast) {
+        if (!ray_cast || !ray_cast->is_enabled()) {
+            continue;
+        }
+
+        String ray_cast_path = ray_cast->get_path();
+
+        // Check if the raycast has been captured by another node already.
+        if (ray_cast->is_in_group(kCapturedGastRayCastGroupName) &&
+            !has_captured_raycast(*ray_cast)) {
             continue;
         }
 
         // Check if the ray cast collides with this node.
+        bool collides_with_node = false;
+        Vector3 collision_point;
+        Vector3 collision_normal;
+
         if (ray_cast->is_colliding()) {
             Node *collider = Object::cast_to<Node>(ray_cast->get_collider());
             if (collider != nullptr && node_path == collider->get_path()) {
-                handle_ray_cast_input(*ray_cast);
-                continue;
+                collides_with_node = true;
+
+                collision_point = ray_cast->get_collision_point();
+                collision_normal = ray_cast->get_collision_normal();
             }
+        } else if (has_captured_raycast(*ray_cast) &&
+                   colliding_raycast_paths[ray_cast_path]->press_in_progress) {
+            // A press was in progress when the raycast 'move off' this node. Continue faking the
+            // collision until the press is released.
+            collision_point = colliding_raycast_paths[ray_cast_path]->collision_point;
+            collision_normal = colliding_raycast_paths[ray_cast_path]->collision_normal;
+
+            // Simulate collision and update collision_point accordingly.
+            // Generate the plane defined by the collision normal and the collision point.
+            auto *collision_plane = new Plane(collision_point, collision_normal);
+
+            collides_with_node = calculate_raycast_plane_collision(*ray_cast, *collision_plane,
+                                                                   &collision_point);
         }
 
-        // Fall through and fire a hover exit event if this raycast was previously colliding with
-        // this node.
-        if (colliding_raycast_paths.erase(ray_cast->get_path()) > 0) {
-            GastManager::get_singleton_instance()->on_render_input_hover(node_path,
-                                                                         ray_cast->get_path(),
-                                                                         kInvalidCoordinate.x,
-                                                                         kInvalidCoordinate.y);
+        if (collides_with_node) {
+            std::shared_ptr<CollisionInfo> collision_info =
+                    has_captured_raycast(*ray_cast)
+                    ? colliding_raycast_paths[ray_cast_path] : std::make_shared<CollisionInfo>();
+
+            // Calculate the 2D collision point of the raycast on the Gast node.
+            Vector2 relative_collision_point = get_relative_collision_point(collision_point);
+            collision_info->press_in_progress = handle_ray_cast_input(ray_cast_path,
+                                                                      relative_collision_point);
+            collision_info->collision_normal = collision_normal;
+            collision_info->collision_point = collision_point;
+
+            // Add the raycast to the list of colliding raycasts and update its collision info.
+            colliding_raycast_paths[ray_cast_path] = collision_info;
+
+            // Add the raycast to the captured raycasts group.
+            ray_cast->add_to_group(kCapturedGastRayCastGroupName);
+
+            continue;
+        }
+
+        // Cleanup
+        if (has_captured_raycast(*ray_cast)) {
+            // Grab the last coordinates.
+            Vector2 last_coordinate = get_relative_collision_point(
+                    colliding_raycast_paths[ray_cast_path]->collision_point);
+            if (colliding_raycast_paths[ray_cast_path]->press_in_progress) {
+                // Fire a release event.
+                GastManager::get_singleton_instance()->on_render_input_release(node_path,
+                                                                               ray_cast_path,
+                                                                               last_coordinate.x,
+                                                                               last_coordinate.y);
+            } else {
+                // Fire a hover exit event.
+                GastManager::get_singleton_instance()->on_render_input_hover(node_path,
+                                                                             ray_cast_path,
+                                                                             last_coordinate.x,
+                                                                             last_coordinate.y);
+            }
+
+            // Remove the raycast from this node.
+            colliding_raycast_paths.erase(ray_cast_path);
+
+            // Remove the raycast from the captured raycasts group.
+            ray_cast->remove_from_group(kCapturedGastRayCastGroupName);
         }
     }
+}
+
+bool GastNode::calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
+                                                 Vector3 *collision_point) {
+    return plane.intersects_ray(raycast.to_global(raycast.get_translation()),
+                                raycast.to_global(raycast.get_cast_to()), collision_point);
 }
 
 ExternalTexture *GastNode::get_external_texture(int surface_index) {
@@ -276,7 +348,7 @@ ExternalTexture *GastNode::get_external_texture(int surface_index) {
 }
 
 ShaderMaterial *GastNode::get_shader_material(int surface_index) {
-    PlaneMesh* plane_mesh = get_plane_mesh();
+    PlaneMesh *plane_mesh = get_plane_mesh();
     if (!plane_mesh) {
         return nullptr;
     }
@@ -293,21 +365,17 @@ ShaderMaterial *GastNode::get_shader_material(int surface_index) {
     return shader_material;
 }
 
-void GastNode::handle_ray_cast_input(const RayCast &ray_cast) {
+bool
+GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point) {
     Input *input = Input::get_singleton();
     String node_path = get_path();
-    String ray_cast_path = ray_cast.get_path();
 
-    // Add the raycast to the list of colliding raycasts
-    colliding_raycast_paths.insert(ray_cast_path);
-
-    // Calculate the 2D collision point of the raycast on the Gast node.
-    Vector2 relative_collision_point = get_relative_collision_point(ray_cast.get_collision_point());
     float x_percent = relative_collision_point.x;
     float y_percent = relative_collision_point.y;
 
     // Check for click actions
     String ray_cast_click_action = get_click_action_from_node_path(ray_cast_path);
+    const bool press_in_progress = input->is_action_pressed(ray_cast_click_action);
     if (input->is_action_just_pressed(ray_cast_click_action)) {
         GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_path,
                                                                      x_percent, y_percent);
@@ -326,24 +394,24 @@ void GastNode::handle_ray_cast_input(const RayCast &ray_cast) {
 
     // Horizontal scrolls
     String ray_cast_horizontal_left_scroll_action = get_horizontal_left_scroll_action_from_node_path(
-        ray_cast_path);
+            ray_cast_path);
     String ray_cast_horizontal_right_scroll_action = get_horizontal_right_scroll_action_from_node_path(
-        ray_cast_path);
+            ray_cast_path);
     if (input->is_action_pressed(ray_cast_horizontal_left_scroll_action)) {
         did_scroll = true;
         horizontal_scroll_delta = -input->get_action_strength(
-            ray_cast_horizontal_left_scroll_action);
+                ray_cast_horizontal_left_scroll_action);
     } else if (input->is_action_pressed(ray_cast_horizontal_right_scroll_action)) {
         did_scroll = true;
         horizontal_scroll_delta = input->get_action_strength(
-            ray_cast_horizontal_right_scroll_action);
+                ray_cast_horizontal_right_scroll_action);
     }
 
     // Vertical scrolls
     String ray_cast_vertical_down_scroll_action = get_vertical_down_scroll_action_from_node_path(
-        ray_cast_path);
+            ray_cast_path);
     String ray_cast_vertical_up_scroll_action = get_vertical_up_scroll_action_from_node_path(
-        ray_cast_path);
+            ray_cast_path);
     if (input->is_action_pressed(ray_cast_vertical_down_scroll_action)) {
         did_scroll = true;
         vertical_scroll_delta = -input->get_action_strength(ray_cast_vertical_down_scroll_action);
@@ -358,6 +426,8 @@ void GastNode::handle_ray_cast_input(const RayCast &ray_cast) {
                                                                       horizontal_scroll_delta,
                                                                       vertical_scroll_delta);
     }
+
+    return press_in_progress;
 }
 
 Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point) {
@@ -374,14 +444,11 @@ Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point)
         float min_x = -max_x;
         float max_y = node_size.height / 2;
         float min_y = -max_y;
-        if (local_point.x >= min_x && local_point.x <= max_x && local_point.y >= min_y &&
-            local_point.y <= max_y) {
-            relative_collision_point = Vector2((local_point.x - min_x) / node_size.width,
-                                               (local_point.y - min_y) / node_size.height);
+        relative_collision_point = Vector2((local_point.x - min_x) / node_size.width,
+                                           (local_point.y - min_y) / node_size.height);
 
-            // Adjust the y coordinate to match the Android view coordinates system.
-            relative_collision_point.y = 1 - relative_collision_point.y;
-        }
+        // Adjust the y coordinate to match the Android view coordinates system.
+        relative_collision_point.y = 1 - relative_collision_point.y;
     }
 
     return relative_collision_point;
