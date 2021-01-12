@@ -38,6 +38,7 @@ void GastNode::_register_methods() {
     register_method("_exit_tree", &GastNode::_exit_tree);
     register_method("_input_event", &GastNode::_input_event);
     register_method("_physics_process", &GastNode::_physics_process);
+    register_method("_notification", &GastNode::_notification);
 
     register_method("set_size", &GastNode::set_size);
     register_method("get_size", &GastNode::get_size);
@@ -144,7 +145,7 @@ void GastNode::update_collision_shape() {
     }
 
     PlaneMesh *mesh = get_plane_mesh();
-    if (!collidable || !mesh) {
+    if (!is_visible_in_tree() || !collidable || !mesh) {
         collision_shape->set_shape(Ref<Resource>());
     } else {
         collision_shape->set_shape(mesh->create_convex_shape());
@@ -217,6 +218,14 @@ void GastNode::_input_event(const godot::Object *camera,
                                                                          drag_event_id, x_percent,
                                                                          y_percent);
         }
+    }
+}
+
+void GastNode::_notification(const int64_t what) {
+    switch(what) {
+        case NOTIFICATION_VISIBILITY_CHANGED:
+            update_collision_shape();
+            break;
     }
 }
 

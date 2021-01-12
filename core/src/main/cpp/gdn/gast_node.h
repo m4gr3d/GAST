@@ -54,6 +54,8 @@ public:
 
     void _physics_process(const real_t delta);
 
+    void _notification(const int64_t what);
+
     int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
 
     inline void set_collidable(bool collidable) {
