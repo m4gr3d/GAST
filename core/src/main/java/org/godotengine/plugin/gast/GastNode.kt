@@ -202,6 +202,16 @@ class GastNode @JvmOverloads constructor(
     ): Int
 
     /**
+     * Update the node's name.
+     */
+    fun setName(name: String) {
+        checkIfReleased()
+        nativeSetName(nodePointer, name)
+    }
+
+    private external fun nativeSetName(nodePointer: Long, name: String)
+
+    /**
      * Reparent the given Gast node to the specified parent node.
      * @param newParentNodePath - Path to the new parent
      * @param emptyParent - If true, remove the children of the parent (if any) prior to inserting the Gast node

@@ -52,6 +52,13 @@ JNIEXPORT jstring JNICALL JNI_METHOD(nativeGetNodePath)(JNIEnv *env, jobject, jl
     return string_to_jstring(env, node_path);
 }
 
+JNIEXPORT void JNICALL
+JNI_METHOD(nativeSetName)(JNIEnv *env, jobject, jlong node_pointer, jstring new_name) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_name(jstring_to_string(env, new_name));
+}
+
 JNIEXPORT jboolean JNICALL
 JNI_METHOD(updateGastNodeParent)(JNIEnv *env, jobject, jlong node_pointer,
                                  jstring new_parent_node_path, jboolean empty_parent) {
