@@ -86,6 +86,9 @@ void GastNode::_enter_tree() {
         ALOGE("Unable to load mesh resource.");
         return;
     }
+
+    // Duplicate the mesh so we have a unique instance.
+    gast_mesh_res = gast_mesh_res->duplicate(true);
     auto *mesh = Object::cast_to<PlaneMesh>(*gast_mesh_res);
     if (!mesh) {
         ALOGE("Failed cast to %s.", PlaneMesh::___get_class_name());
@@ -172,6 +175,7 @@ int GastNode::get_external_texture_id(int surface_index) {
     ExternalTexture *external_texture = get_external_texture(surface_index);
     int tex_id = external_texture == nullptr ? kInvalidTexId
                                              : external_texture->get_external_texture_id();
+    ALOGV("Retrieved tex id %d", tex_id);
     return tex_id;
 }
 
