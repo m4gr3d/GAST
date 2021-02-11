@@ -1,14 +1,24 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://main.gd" type="Script" id=1]
 [ext_resource path="res://touch_controller.tscn" type="PackedScene" id=2]
 [ext_resource path="res://ray_cast_with_reticle.gd" type="Script" id=3]
+[ext_resource path="res://test_shader.shader" type="Shader" id=4]
 
-[sub_resource type="SpatialMaterial" id=1]
-albedo_color = Color( 0.929412, 0.858824, 0.858824, 1 )
+[sub_resource type="ShaderMaterial" id=7]
+shader = ExtResource( 4 )
+shader_param/albedo = Color( 0.929412, 0.858824, 0.858824, 1 )
+shader_param/specular = 0.5
+shader_param/metallic = 0.0
+shader_param/roughness = 1.0
+shader_param/point_size = 1.0
+shader_param/uv1_scale = Vector3( 1, 1, 1 )
+shader_param/uv1_offset = Vector3( 0, 0, 0 )
+shader_param/uv2_scale = Vector3( 1, 1, 1 )
+shader_param/uv2_offset = Vector3( 0, 0, 0 )
 
 [sub_resource type="CapsuleMesh" id=2]
-material = SubResource( 1 )
+material = SubResource( 7 )
 radius = 0.004
 mid_height = 0.5
 
@@ -80,4 +90,7 @@ mesh = SubResource( 6 )
 material/0 = null
 
 [node name="WebViewContainer" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27298, -2.02735 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.659186, 1.27298, -2.02735 )
+
+[node name="WebViewContainer2" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.663489, 1.12919, -2.28727 )

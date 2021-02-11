@@ -23,11 +23,19 @@ func _ready():
 	gast.initialize()
 
 	if Engine.has_singleton("gast-webview"):
-		print("Setting webview...")
+		print("Setting webview 1...")
 		gast_webview_plugin = Engine.get_singleton("gast-webview")
 		webview_id = gast_webview_plugin.initializeWebView("/root/Main/WebViewContainer")
 		print("Initialized webview " + str(webview_id))
 
+		gast_webview_plugin.loadUrl(webview_id, "https://news.ycombinator.com/")
+		
+		print("Setting webview 2...")
+		var webview2_id = gast_webview_plugin.initializeWebView("/root/Main/WebViewContainer2")
+		print("Initialized webview 2 " + str(webview2_id))
+		gast_webview_plugin.loadUrl(webview2_id, "https://google.com")
+		gast_webview_plugin.setWebViewSize(webview2_id, 2, 2)
+		
 		gast_webview_plugin.loadUrl(webview_id, "https://news.ycombinator.com/")
 	else:
 		print("Unable to load gast-webview singleton.")
