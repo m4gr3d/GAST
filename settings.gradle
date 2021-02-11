@@ -3,6 +3,8 @@ rootProject.name= "GAST"
 include ":gast-core"
 project(":gast-core").projectDir = file("core")
 
+include ':gast-core:samples:edittextsample'
+
 include ":gast-video"
 project(":gast-video").projectDir = file("video")
 
