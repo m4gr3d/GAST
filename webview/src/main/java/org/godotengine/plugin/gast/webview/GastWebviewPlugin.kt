@@ -34,7 +34,6 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
         "initializeWebView",
         "loadUrl",
         "setWebViewSize",
-        "setWebViewDensity",
         "shutdownWebView"
     )
 
@@ -100,12 +99,6 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
     private fun setWebViewSize(webViewId: Int, width: Float, height: Float) {
         val webPanel = webPanelsById[webViewId] ?: return
         webPanel.setSize(width, height)
-    }
-
-    @Suppress("unused")
-    private fun setWebViewDensity(webViewId: Int, density: Float) {
-        val webPanel = webPanelsById[webViewId] ?: return
-        webPanel.setDensity(density)
     }
 
     @Suppress("unused")

@@ -35,7 +35,7 @@
         <!-- List of Supported Devices. "delmar" is the codename for Quest 2. -->
         <meta-data android:name="com.oculus.supportedDevices" android:value="quest|delmar"/>
 
-        <!-- Enable Android views rendering on Quest 2 (b/170289900). -->
+        <!-- Enable Android views rendering on Quest 2. -->
         <meta-data android:name="com.oculus.always_draw_view_root" android:value="true"/>
 
         <activity android:name=".MainActivity"

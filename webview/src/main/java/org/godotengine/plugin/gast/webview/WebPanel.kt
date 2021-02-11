@@ -17,32 +17,17 @@ internal class WebPanel(
     private val gastNode: GastNode
 ) {
 
-    companion object {
-        private const val DEFAULT_NODE_WIDTH = 3F // in meters
-        private const val DEFAULT_NODE_HEIGHT = 1.5F // in meters
-        private const val DEFAULT_PANEL_DENSITY = 1f
-    }
-
     private lateinit var panelView: GastFrameLayout
     private lateinit var webView: WebView
 
-    private var defaultPanelWidth = 1
-    private var defaultPanelHeight = 1
-    private var panelDensity = DEFAULT_PANEL_DENSITY
-
     init {
         initializeViews()
-        gastNode.updateSize(DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT)
     }
 
     private fun initializeViews() {
         activity.runOnUiThread {
-            defaultPanelWidth = activity.resources.getDimensionPixelSize(R.dimen.web_panel_width)
-            defaultPanelHeight = activity.resources.getDimensionPixelSize(R.dimen.web_panel_height)
-
-            activity.layoutInflater.inflate(R.layout.web_panel, containerView)
-
-            panelView = containerView.findViewById(R.id.web_panel)
+            panelView = activity.layoutInflater.inflate(R.layout.web_panel, containerView, false) as GastFrameLayout
+            containerView.addView(panelView)
             panelView.initialize(gastManager, gastNode)
 
             val loadingProgress: View = panelView.findViewById(R.id.load_progress)
@@ -88,30 +73,13 @@ internal class WebPanel(
     }
 
     fun setSize(width: Float, height: Float) {
-        gastNode.updateSize(width, height)
         activity.runOnUiThread {
-            val updatedWebViewWidth = width * defaultPanelWidth / DEFAULT_NODE_WIDTH
-            val updatedWebViewHeight = height * defaultPanelHeight / DEFAULT_NODE_HEIGHT
+            val updatedWebViewWidth = GastFrameLayout.fromGodotDimensionsToPixels(activity, width)
+            val updatedWebViewHeight = GastFrameLayout.fromGodotDimensionsToPixels(activity, height)
 
-            panelView.layoutParams.width = (updatedWebViewWidth * panelDensity).toInt()
-            panelView.layoutParams.height = (updatedWebViewHeight * panelDensity).toInt()
+            panelView.layoutParams.width = updatedWebViewWidth.toInt()
+            panelView.layoutParams.height = updatedWebViewHeight.toInt()
             panelView.requestLayout()
-        }
-    }
-
-    fun setDensity(density: Float) {
-        activity.runOnUiThread {
-            if (density == 0f || density == panelDensity) {
-                return@runOnUiThread
-            }
-
-            panelView.layoutParams.width =
-                (panelView.layoutParams.width * density / panelDensity).toInt()
-            panelView.layoutParams.height =
-                (panelView.layoutParams.height * density / panelDensity).toInt()
-            panelView.requestLayout()
-
-            panelDensity = density
         }
     }
 }

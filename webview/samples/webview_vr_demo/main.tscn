@@ -5,7 +5,7 @@
 [ext_resource path="res://ray_cast_with_reticle.gd" type="Script" id=3]
 [ext_resource path="res://test_shader.shader" type="Shader" id=4]
 
-[sub_resource type="ShaderMaterial" id=7]
+[sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 4 )
 shader_param/albedo = Color( 0.929412, 0.858824, 0.858824, 1 )
 shader_param/specular = 0.5
@@ -18,7 +18,7 @@ shader_param/uv2_scale = Vector3( 1, 1, 1 )
 shader_param/uv2_offset = Vector3( 0, 0, 0 )
 
 [sub_resource type="CapsuleMesh" id=2]
-material = SubResource( 7 )
+material = SubResource( 1 )
 radius = 0.004
 mid_height = 0.5
 
@@ -90,7 +90,7 @@ mesh = SubResource( 6 )
 material/0 = null
 
 [node name="WebViewContainer" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.659186, 1.27298, -2.02735 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1.129, -2.287 )
 
 [node name="WebViewContainer2" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.663489, 1.12919, -2.28727 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1.129, -2.287 )
