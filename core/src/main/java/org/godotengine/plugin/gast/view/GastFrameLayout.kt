@@ -46,6 +46,27 @@ class GastFrameLayout(
     companion object {
         private val TAG = GastFrameLayout::class.java.simpleName
         private const val MIN_TEXTURE_DIMENSION = 1
+        private const val DP_RATIO = 4f / 1000f
+
+        fun fromPixelsToGodotDimensions(context:Context, dimensionInPixels: Float): Float {
+            val metrics = context.resources.displayMetrics
+
+            // First we convert the dimension back to dp.
+            // dp = 160 * pixels / dpi
+            // dpi = 160 * density
+            // dp = (dpi / density) * (pixels / dpi)
+            // dp = pixels / density
+            val dimensionInDp = dimensionInPixels / metrics.density
+
+            // Then we convert the dp dimension to Godot's dimensions.
+            return dimensionInDp * DP_RATIO
+        }
+
+        fun fromGodotDimensionsToPixels(context: Context, godotDimensions: Float): Float {
+            val dimensionInDp = godotDimensions / DP_RATIO
+            val dimensionInPixels = dimensionInDp * context.resources.displayMetrics.density
+            return dimensionInPixels
+        }
     }
 
     private var gastManager: GastManager? = null
@@ -53,6 +74,7 @@ class GastFrameLayout(
 
     fun initialize(gastManager: GastManager, gastNode: GastNode) {
         Log.d(TAG, "Initializing GastFrameLayout...")
+        this.gastManager = gastManager
         this.gastNode = gastNode
         gastNode.bindSurface()
 
@@ -77,10 +99,17 @@ class GastFrameLayout(
         if ((textureWidth != widthInPixels || textureHeight != heightInPixels)
             && widthInPixels >= MIN_TEXTURE_DIMENSION && heightInPixels >= MIN_TEXTURE_DIMENSION
         ) {
+            gastNode?.setSurfaceTextureSize(widthInPixels, heightInPixels) ?: return
+            gastManager?.runOnRenderThread {
+                gastNode?.updateSize(
+                    fromPixelsToGodotDimensions(context, width.toFloat()),
+                    fromPixelsToGodotDimensions(context, height.toFloat())
+                )
+            } ?: return
+
             Log.d(TAG, "Updating texture size to X - $widthInPixels, Y - $heightInPixels")
             textureWidth = widthInPixels
             textureHeight = heightInPixels
-            gastNode?.setSurfaceTextureSize(textureWidth, textureHeight)
             invalidate()
         }
     }
