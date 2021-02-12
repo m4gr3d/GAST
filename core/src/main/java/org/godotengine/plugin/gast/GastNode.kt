@@ -290,6 +290,20 @@ class GastNode @JvmOverloads constructor(
 
     private external fun setGastNodeCurved(nodePointer: Long, curved: Boolean)
 
+    fun isGazeTracking(): Boolean {
+        checkIfReleased()
+        return isGazeTracking(nodePointer)
+    }
+
+    private external fun isGazeTracking(nodePointer: Long): Boolean
+
+    fun setGazeTracking(gaze_tracking: Boolean) {
+        checkIfReleased()
+        setGazeTracking(nodePointer, gaze_tracking)
+    }
+
+    private external fun setGazeTracking(nodePointer: Long, gaze_tracking: Boolean)
+
     fun getGradientHeightRatio(): Float {
         checkIfReleased()
         return getGastNodeGradientHeightRatio(nodePointer)

@@ -4,6 +4,9 @@
 #include <core/Array.hpp>
 #include <core/String.hpp>
 #include <core/NodePath.hpp>
+#include <core/Rect2.hpp>
+#include <core/Transform.hpp>
+#include <gen/Camera.hpp>
 #include <gen/Input.hpp>
 #include <gen/InputEventScreenDrag.hpp>
 #include <gen/InputEventScreenTouch.hpp>
@@ -14,6 +17,7 @@
 #include <gen/SceneTree.hpp>
 #include <gen/Shape.hpp>
 #include <gen/Texture.hpp>
+#include <gen/Viewport.hpp>
 
 namespace gast {
 
@@ -21,6 +25,7 @@ namespace {
 const Vector2 kDefaultSize = Vector2(2.0, 1.0);
 const int kDefaultSurfaceIndex = 0;
 const char *kGastCurvedParamName = "curve_flag";
+const char *kGastEnableBillBoardParamName = "enable_billboard";
 const char *kGastWidthParamName = "gast_width";
 const char *kGastTextureParamName = "gast_texture";
 const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
@@ -29,6 +34,7 @@ const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
 }
 
 GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue),
+                       gaze_tracking(kDefaultGazeTracking),
                        gradient_height_ratio(kDefaultGradientHeightRatio) {}
 
 GastNode::~GastNode() = default;
@@ -38,6 +44,7 @@ void GastNode::_register_methods() {
     register_method("_exit_tree", &GastNode::_exit_tree);
     register_method("_input_event", &GastNode::_input_event);
     register_method("_physics_process", &GastNode::_physics_process);
+    register_method("_process", &GastNode::_process);
     register_method("_notification", &GastNode::_notification);
 
     register_method("set_size", &GastNode::set_size);
@@ -46,6 +53,8 @@ void GastNode::_register_methods() {
     register_method("is_collidable", &GastNode::is_collidable);
     register_method("set_curved", &GastNode::set_curved);
     register_method("is_curved", &GastNode::is_curved);
+    register_method("set_gaze_tracking", &GastNode::set_gaze_tracking);
+    register_method("is_gaze_tracking", &GastNode::is_gaze_tracking);
     register_method("set_gradient_height_ratio", &GastNode::set_gradient_height_ratio);
     register_method("get_gradient_height_ratio", &GastNode::get_gradient_height_ratio);
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
@@ -54,6 +63,8 @@ void GastNode::_register_methods() {
                                       &GastNode::is_collidable, kDefaultCollidable);
     register_property<GastNode, bool>("curved", &GastNode::set_curved, &GastNode::is_curved,
                                       kDefaultCurveValue);
+    register_property<GastNode, bool>("gaze_tracking", &GastNode::set_gaze_tracking,
+                                      &GastNode::is_gaze_tracking, kDefaultGazeTracking);
     register_property<GastNode, Vector2>("size", &GastNode::set_size, &GastNode::get_size,
                                          kDefaultSize);
     register_property<GastNode, float>("gradient_height_ratio",
@@ -162,6 +173,7 @@ void GastNode::update_shader_params() {
     }
 
     shader_material->set_shader_param(kGastCurvedParamName, curved);
+    shader_material->set_shader_param(kGastEnableBillBoardParamName, gaze_tracking);
     shader_material->set_shader_param(kGastWidthParamName, get_size().width);
     shader_material->set_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
 }
@@ -230,6 +242,24 @@ void GastNode::_notification(const int64_t what) {
         case NOTIFICATION_VISIBILITY_CHANGED:
             update_collision_shape();
             break;
+    }
+}
+
+void GastNode::_process(const real_t delta) {
+    if (is_gaze_tracking()) {
+        Rect2 gaze_area = get_viewport()->get_visible_rect();
+        Vector2 gaze_center_point = Vector2(gaze_area.position.x + gaze_area.size.x / 2.0,
+                                            gaze_area.position.y + gaze_area.size.y / 2.0);
+
+        // Get the distance between the camera and this node.
+        Camera* camera = get_viewport()->get_camera();
+        Transform global_transform = get_global_transform();
+        float distance = camera->get_global_transform().origin.distance_to(global_transform.origin);
+
+        // Update the node's position to match the center of the gaze area.
+        Vector3 updated_position = camera->project_position(gaze_center_point, distance);
+        global_transform.origin = updated_position;
+        set_global_transform(global_transform);
     }
 }
 

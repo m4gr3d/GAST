@@ -28,6 +28,7 @@ constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
 const bool kDefaultCurveValue = false;
+const bool kDefaultGazeTracking = false;
 const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
@@ -53,6 +54,8 @@ public:
                  const Vector3 click_normal, const int64_t shape_idx);
 
     void _physics_process(const real_t delta);
+
+    void _process(const real_t delta);
 
     void _notification(const int64_t what);
 
@@ -81,6 +84,18 @@ public:
 
     inline bool is_curved() {
         return curved;
+    }
+
+    inline void set_gaze_tracking(bool gaze_tracking) {
+        if (this->gaze_tracking == gaze_tracking) {
+            return;
+        }
+        this->gaze_tracking = gaze_tracking;
+        update_shader_params();
+    }
+
+    inline bool is_gaze_tracking() {
+        return gaze_tracking;
     }
 
     Vector2 get_size();
@@ -194,6 +209,7 @@ private:
 
     bool collidable;
     bool curved;
+    bool gaze_tracking;
     float gradient_height_ratio;
 
     // Map used to keep track of the raycasts colliding with this node.
