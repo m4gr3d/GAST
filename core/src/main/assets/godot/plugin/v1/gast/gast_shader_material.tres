@@ -5,17 +5,10 @@ code = "shader_type spatial;
 render_mode unshaded;
 
 uniform samplerExternalOES gast_texture;
-uniform bool curve_flag;
 uniform bool enable_billboard;
-uniform float gast_width;
 uniform float gradient_height_ratio;
 
 void vertex() {
-	if (curve_flag) {
-		float angle = 2.0 * VERTEX.x / gast_width;
-		VERTEX.y = -cos(angle) + cos(1.0);
-	}
-
 	if (enable_billboard) {
 		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
 	}

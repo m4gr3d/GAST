@@ -90,4 +90,7 @@ mesh = SubResource( 6 )
 material/0 = null
 
 [node name="EditTextContainer" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0930207, 1.56077, -3.09933 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -3 )
+
+[node name="MessageContainer" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -3 )

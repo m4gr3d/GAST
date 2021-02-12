@@ -19,6 +19,7 @@ class MainActivity : Godot() {
      * children onto an OpenGL canvas.
      */
     private var editTextWrapperView: GastFrameLayout? = null
+    private var messageWrapperView: GastFrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +31,10 @@ class MainActivity : Godot() {
         // Any view we want to render in VR needs to be added as a child to the containerView in
         // order to be hooked to the view lifecycle events.
         layoutInflater.inflate(R.layout.edittext_layout, containerView)
-        editTextWrapperView = containerView.findViewById(R.id.wrapper_view)
+        editTextWrapperView = containerView.findViewById(R.id.edittext_wrapper_view)
+
+        layoutInflater.inflate(R.layout.message_layout, containerView)
+        messageWrapperView = containerView.findViewById(R.id.message_wrapper_view)
     }
 
     // Signals that the Godot engine render loop has started. This is invoked on the render thread.
@@ -41,9 +45,14 @@ class MainActivity : Godot() {
         // external GLES textures (https://source.android.com/devices/graphics/arch-st#ext_texture).
         // The second argument specifies the parent node the created node should be attached to.
         val gastNode = GastNode(getGastManager(), "EditTextContainer")
+        gastNode.setGazeTracking(true)
+
+        val messageGastNode = GastNode(getGastManager(), "MessageContainer")
+        messageGastNode.setCurved(true)
 
         runOnUiThread {
             editTextWrapperView?.initialize(getGastManager(), gastNode)
+            messageWrapperView?.initialize(getGastManager(), messageGastNode)
         }
     }
 
