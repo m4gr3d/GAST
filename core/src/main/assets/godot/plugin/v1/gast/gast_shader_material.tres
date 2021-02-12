@@ -2,7 +2,7 @@
 
 [sub_resource type="Shader" id=1]
 code = "shader_type spatial;
-render_mode unshaded;
+render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
 
 uniform samplerExternalOES gast_texture;
 uniform bool enable_billboard;
@@ -16,9 +16,13 @@ void vertex() {
 
 void fragment() {
 	vec4 texture_color = texture(gast_texture, UV);
-	float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
-	ALPHA = COLOR.a * texture_color.a * gradient_mask;
-	ALBEDO = texture_color.rgb * ALPHA;
+	float target_alpha = COLOR.a * texture_color.a;
+	if (gradient_height_ratio >= 0.05) {
+		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
+		target_alpha = target_alpha * gradient_mask;
+	}
+	ALPHA = target_alpha;
+	ALBEDO = texture_color.rgb * target_alpha;
 }"
 custom_defines = "#ifdef ANDROID_ENABLED
 #extension GL_OES_EGL_image_external : enable
