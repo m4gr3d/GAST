@@ -14,6 +14,7 @@
 #include <gen/Object.hpp>
 #include <gen/PlaneMesh.hpp>
 #include <gen/RayCast.hpp>
+#include <gen/Shader.hpp>
 #include <gen/ShaderMaterial.hpp>
 #include <gen/StaticBody.hpp>
 #include <map>
@@ -29,6 +30,7 @@ constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
 const bool kDefaultCurveValue = false;
 const bool kDefaultGazeTracking = false;
+const bool kDefaultRenderOnTop = false;
 const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
@@ -91,11 +93,28 @@ public:
             return;
         }
         this->gaze_tracking = gaze_tracking;
+        update_render_priority();
         update_shader_params();
     }
 
     inline bool is_gaze_tracking() {
         return gaze_tracking;
+    }
+
+    inline void set_render_on_top(bool enable) {
+        if (this->render_on_top == enable) {
+            return;
+        }
+        this->render_on_top = enable;
+
+        if (shader_material_ref.is_valid() && shader_material_ref->get_shader().is_valid()) {
+            shader_material_ref->get_shader()->set_code(generate_shader_code());
+        }
+        update_render_priority();
+    }
+
+    inline bool is_render_on_top() {
+        return render_on_top;
     }
 
     Vector2 get_size();
@@ -156,6 +175,8 @@ private:
         return mesh;
     }
 
+    String generate_shader_code() const;
+
     static inline RayCast *get_ray_cast_from_variant(Variant variant) {
         RayCast *ray_cast = Object::cast_to<RayCast>(variant);
         return ray_cast;
@@ -210,6 +231,8 @@ private:
 
     void update_mesh_dimensions_and_collision_shape();
 
+    void update_render_priority();
+
     void update_shader_params();
 
     bool has_captured_raycast(const RayCast &ray_cast) {
@@ -219,6 +242,7 @@ private:
     bool collidable;
     bool curved;
     bool gaze_tracking;
+    bool render_on_top;
     float gradient_height_ratio;
     Vector2 mesh_size;
     Ref<ShaderMaterial> shader_material_ref = Ref<ShaderMaterial>();

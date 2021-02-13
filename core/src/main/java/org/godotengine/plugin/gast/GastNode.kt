@@ -304,6 +304,20 @@ class GastNode @JvmOverloads constructor(
 
     private external fun setGazeTracking(nodePointer: Long, gaze_tracking: Boolean)
 
+    fun isRenderOnTop(): Boolean {
+        checkIfReleased()
+        return isRenderOnTop(nodePointer)
+    }
+
+    private external fun isRenderOnTop(nodePointer: Long): Boolean
+
+    fun setRenderOnTop(enable: Boolean) {
+        checkIfReleased()
+        setRenderOnTop(nodePointer, enable)
+    }
+
+    private external fun setRenderOnTop(nodePointer: Long, enable: Boolean)
+
     fun getGradientHeightRatio(): Float {
         checkIfReleased()
         return getGastNodeGradientHeightRatio(nodePointer)
