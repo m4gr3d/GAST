@@ -115,6 +115,32 @@ JNI_METHOD(isGastNodeCurved)(JNIEnv *, jobject, jlong node_pointer) {
     return gast_node->is_curved();
 }
 
+JNIEXPORT jboolean JNICALL JNI_METHOD(isGazeTracking)(JNIEnv *, jobject, jlong node_pointer) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL_V(gast_node, kDefaultGazeTracking);
+    return gast_node->is_gaze_tracking();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setGazeTracking)(JNIEnv *, jobject, jlong node_pointer, jboolean gaze_tracking) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_gaze_tracking(gaze_tracking);
+}
+
+JNIEXPORT jboolean JNICALL JNI_METHOD(isRenderOnTop)(JNIEnv *, jobject, jlong node_pointer) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL_V(gast_node, kDefaultRenderOnTop);
+    return gast_node->is_render_on_top();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong node_pointer, jboolean render_on_top) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_render_on_top(render_on_top);
+}
+
 JNIEXPORT jfloat JNICALL
 JNI_METHOD(getGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong node_pointer) {
     GastNode *gast_node = from_pointer(node_pointer);

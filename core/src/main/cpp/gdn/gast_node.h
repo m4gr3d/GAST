@@ -14,6 +14,7 @@
 #include <gen/Object.hpp>
 #include <gen/PlaneMesh.hpp>
 #include <gen/RayCast.hpp>
+#include <gen/Shader.hpp>
 #include <gen/ShaderMaterial.hpp>
 #include <gen/StaticBody.hpp>
 #include <map>
@@ -28,6 +29,8 @@ constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
 const bool kDefaultCurveValue = false;
+const bool kDefaultGazeTracking = false;
+const bool kDefaultRenderOnTop = false;
 const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
@@ -54,6 +57,8 @@ public:
 
     void _physics_process(const real_t delta);
 
+    void _process(const real_t delta);
+
     void _notification(const int64_t what);
 
     int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
@@ -75,12 +80,41 @@ public:
             return;
         }
         this->curved = curved;
-        update_shader_params();
-        update_collision_shape();
+        update_mesh_and_collision_shape();
     }
 
     inline bool is_curved() {
-        return curved;
+        return false;
+        // TODO: Fix once fully implemented - return curved;
+    }
+
+    inline void set_gaze_tracking(bool gaze_tracking) {
+        if (this->gaze_tracking == gaze_tracking) {
+            return;
+        }
+        this->gaze_tracking = gaze_tracking;
+        update_render_priority();
+        update_shader_params();
+    }
+
+    inline bool is_gaze_tracking() {
+        return gaze_tracking;
+    }
+
+    inline void set_render_on_top(bool enable) {
+        if (this->render_on_top == enable) {
+            return;
+        }
+        this->render_on_top = enable;
+
+        if (shader_material_ref.is_valid() && shader_material_ref->get_shader().is_valid()) {
+            shader_material_ref->get_shader()->set_code(generate_shader_code());
+        }
+        update_render_priority();
+    }
+
+    inline bool is_render_on_top() {
+        return render_on_top;
     }
 
     Vector2 get_size();
@@ -127,18 +161,21 @@ private:
         return mesh_instance;
     }
 
-    inline PlaneMesh *get_plane_mesh() {
-        PlaneMesh *plane_mesh = nullptr;
+    inline Mesh *get_mesh() {
+        Mesh *mesh = nullptr;
 
         MeshInstance *mesh_instance = get_mesh_instance();
         if (mesh_instance) {
             Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
             if (mesh_ref.is_valid()) {
-                plane_mesh = Object::cast_to<PlaneMesh>(*mesh_ref);
+                mesh = *mesh_ref;
             }
         }
-        return plane_mesh;
+
+        return mesh;
     }
+
+    String generate_shader_code() const;
 
     static inline RayCast *get_ray_cast_from_variant(Variant variant) {
         RayCast *ray_cast = Object::cast_to<RayCast>(variant);
@@ -174,7 +211,9 @@ private:
 
     ExternalTexture *get_external_texture(int surface_index);
 
-    ShaderMaterial *get_shader_material(int surface_index);
+    inline ShaderMaterial *get_shader_material() {
+        return *shader_material_ref;
+    }
 
     // Calculate whether a collision occurs between the given `RayCast` and `Plane`.
     // Return True if they collide, with `collision_point` filled appropriately.
@@ -186,6 +225,14 @@ private:
 
     void update_collision_shape();
 
+    void reset_mesh_and_collision_shape();
+
+    void update_mesh_and_collision_shape();
+
+    void update_mesh_dimensions_and_collision_shape();
+
+    void update_render_priority();
+
     void update_shader_params();
 
     bool has_captured_raycast(const RayCast &ray_cast) {
@@ -194,7 +241,11 @@ private:
 
     bool collidable;
     bool curved;
+    bool gaze_tracking;
+    bool render_on_top;
     float gradient_height_ratio;
+    Vector2 mesh_size;
+    Ref<ShaderMaterial> shader_material_ref = Ref<ShaderMaterial>();
 
     // Map used to keep track of the raycasts colliding with this node.
     // The boolean specifies whether a `press` is currently in progress.

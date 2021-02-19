@@ -4,32 +4,77 @@
 #include <core/Array.hpp>
 #include <core/String.hpp>
 #include <core/NodePath.hpp>
+#include <core/Rect2.hpp>
+#include <core/Transform.hpp>
+#include <gen/Camera.hpp>
 #include <gen/Input.hpp>
 #include <gen/InputEventScreenDrag.hpp>
 #include <gen/InputEventScreenTouch.hpp>
 #include <gen/Material.hpp>
 #include <gen/Node.hpp>
+#include <gen/QuadMesh.hpp>
 #include <gen/Resource.hpp>
 #include <gen/ResourceLoader.hpp>
 #include <gen/SceneTree.hpp>
 #include <gen/Shape.hpp>
 #include <gen/Texture.hpp>
+#include <gen/Viewport.hpp>
 
 namespace gast {
 
 namespace {
-const Vector2 kDefaultSize = Vector2(2.0, 1.0);
+const Vector2 kDefaultSize = Vector2(2.0, 1.125);
 const int kDefaultSurfaceIndex = 0;
-const char *kGastCurvedParamName = "curve_flag";
-const char *kGastWidthParamName = "gast_width";
+const char *kGastEnableBillBoardParamName = "enable_billboard";
 const char *kGastTextureParamName = "gast_texture";
 const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
+
+const char *kShaderCode = R"GAST_SHADER(
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
+
+uniform samplerExternalOES gast_texture;
+uniform bool enable_billboard;
+uniform float gradient_height_ratio;
+
+void vertex() {
+	if (enable_billboard) {
+		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
+	}
+}
+
+void fragment() {
+	vec4 texture_color = texture(gast_texture, UV);
+	float target_alpha = COLOR.a * texture_color.a;
+	if (gradient_height_ratio >= 0.05) {
+		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
+		target_alpha = target_alpha * gradient_mask;
+	}
+	ALPHA = target_alpha;
+	ALBEDO = texture_color.rgb * target_alpha;
+}
+
+)GAST_SHADER";
+
+const char *kDisableDepthTestRenderMode = "render_mode depth_test_disable;";
+
+const char *kShaderCustomDefines = R"GAST_DEFINES(
+#ifdef ANDROID_ENABLED
+#extension GL_OES_EGL_image_external : enable
+#extension GL_OES_EGL_image_external_essl3 : enable
+#else
+#define samplerExternalOES sampler2D
+#endif
+)GAST_DEFINES";
 }
 
 GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue),
-                       gradient_height_ratio(kDefaultGradientHeightRatio) {}
+                       gaze_tracking(kDefaultGazeTracking),
+                       render_on_top(kDefaultRenderOnTop),
+                       gradient_height_ratio(kDefaultGradientHeightRatio),
+                       mesh_size(kDefaultSize){}
 
 GastNode::~GastNode() = default;
 
@@ -38,6 +83,7 @@ void GastNode::_register_methods() {
     register_method("_exit_tree", &GastNode::_exit_tree);
     register_method("_input_event", &GastNode::_input_event);
     register_method("_physics_process", &GastNode::_physics_process);
+    register_method("_process", &GastNode::_process);
     register_method("_notification", &GastNode::_notification);
 
     register_method("set_size", &GastNode::set_size);
@@ -46,6 +92,10 @@ void GastNode::_register_methods() {
     register_method("is_collidable", &GastNode::is_collidable);
     register_method("set_curved", &GastNode::set_curved);
     register_method("is_curved", &GastNode::is_curved);
+    register_method("set_gaze_tracking", &GastNode::set_gaze_tracking);
+    register_method("is_gaze_tracking", &GastNode::is_gaze_tracking);
+    register_method("set_render_on_top", &GastNode::set_render_on_top);
+    register_method("is_render_on_top", &GastNode::is_render_on_top);
     register_method("set_gradient_height_ratio", &GastNode::set_gradient_height_ratio);
     register_method("get_gradient_height_ratio", &GastNode::get_gradient_height_ratio);
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
@@ -54,6 +104,10 @@ void GastNode::_register_methods() {
                                       &GastNode::is_collidable, kDefaultCollidable);
     register_property<GastNode, bool>("curved", &GastNode::set_curved, &GastNode::is_curved,
                                       kDefaultCurveValue);
+    register_property<GastNode, bool>("gaze_tracking", &GastNode::set_gaze_tracking,
+                                      &GastNode::is_gaze_tracking, kDefaultGazeTracking);
+    register_property<GastNode, bool>("render_on_top", &GastNode::set_render_on_top,
+                                      &GastNode::is_render_on_top, kDefaultRenderOnTop);
     register_property<GastNode, Vector2>("size", &GastNode::set_size, &GastNode::get_size,
                                          kDefaultSize);
     register_property<GastNode, float>("gradient_height_ratio",
@@ -67,7 +121,6 @@ void GastNode::_init() {
 
     // Add a CollisionShape to the static body node
     CollisionShape *collision_shape = CollisionShape::_new();
-    collision_shape->set_rotation_degrees(Vector3(90, 0, 0));
     add_child(collision_shape);
 
     // Add a mesh instance to the collision shape node
@@ -78,37 +131,32 @@ void GastNode::_init() {
 void GastNode::_enter_tree() {
     ALOGV("Entering tree for %s.", get_node_tag(*this));
 
-    // Load the gast mesh resource.
-    ALOGV("Loading GAST mesh resource.");
-    Ref<Resource> gast_mesh_res = ResourceLoader::get_singleton()->load(
-            "res://godot/plugin/v1/gast/gast_plane_mesh.tres");
-    if (gast_mesh_res.is_null()) {
-        ALOGE("Unable to load mesh resource.");
-        return;
-    }
+    // Create the shader object
+    Shader *shader = Shader::_new();
+    shader->set_custom_defines(kShaderCustomDefines);
+    shader->set_code(generate_shader_code());
 
-    // Duplicate the mesh so we have a unique instance.
-    gast_mesh_res = gast_mesh_res->duplicate(true);
-    auto *mesh = Object::cast_to<PlaneMesh>(*gast_mesh_res);
-    if (!mesh) {
-        ALOGE("Failed cast to %s.", PlaneMesh::___get_class_name());
-        return;
-    }
+    // Create the external texture
+    ExternalTexture *external_texture = ExternalTexture::_new();
 
-    ALOGV("Setting up GAST mesh resource.");
-    MeshInstance *mesh_instance = get_mesh_instance();
-    if (!mesh_instance) {
-        return;
-    }
-    mesh_instance->set_mesh(mesh);
+    // Create the shader material.
+    ALOGV("Creating GAST shader material.");
+    ShaderMaterial *shader_material = ShaderMaterial::_new();
+    shader_material->set_shader(shader);
+    shader_material->set_shader_param(kGastTextureParamName, external_texture);
 
-    ALOGV("Setting up GAST shape resource.");
-    update_collision_shape();
+    shader_material_ref = Ref<ShaderMaterial>(shader_material);
+
+    update_mesh_and_collision_shape();
+    update_render_priority();
 }
 
 void GastNode::_exit_tree() {
     ALOGV("Exiting tree.");
+    reset_mesh_and_collision_shape();
+}
 
+void GastNode::reset_mesh_and_collision_shape() {
     // Unset the GAST mesh resource
     MeshInstance *mesh_instance = get_mesh_instance();
     if (mesh_instance) {
@@ -119,25 +167,76 @@ void GastNode::_exit_tree() {
     update_collision_shape();
 }
 
-Vector2 GastNode::get_size() {
-    Vector2 size;
-    PlaneMesh *mesh = get_plane_mesh();
-    if (mesh) {
-        size = mesh->get_size();
-    }
-    return size;
-}
-
-void GastNode::set_size(Vector2 size) {
-    auto *mesh = get_plane_mesh();
+void GastNode::update_mesh_dimensions_and_collision_shape() {
+    auto *mesh = get_mesh();
     if (!mesh) {
         ALOGE("Unable to access mesh resource for %s", get_node_tag(*this));
         return;
     }
 
-    mesh->set_size(size);
-    update_shader_params();
+    if (is_curved()) {
+        // TODO: Complete implementation.
+
+    } else {
+        auto *quad_mesh = Object::cast_to<QuadMesh>(mesh);
+        if (!quad_mesh) {
+            ALOGE("Failed to cast non curved mesh to %s.", QuadMesh::___get_class_name());
+            return;
+        }
+
+        quad_mesh->set_size(mesh_size);
+    }
+
     update_collision_shape();
+}
+
+void GastNode::update_mesh_and_collision_shape() {
+    Mesh *mesh;
+
+    if (is_curved()) {
+        // TODO: Complete implementation.
+        mesh = nullptr;
+    } else {
+        mesh = QuadMesh::_new();
+    }
+
+    ALOGV("Setting up GAST mesh resource.");
+    MeshInstance *mesh_instance = get_mesh_instance();
+    if (!mesh_instance || !mesh) {
+        return;
+    }
+    mesh_instance->set_mesh(mesh);
+
+    ALOGV("Setting up GAST shader material resource.");
+    mesh_instance->set_surface_material(kDefaultSurfaceIndex, shader_material_ref);
+
+    ALOGV("Setting up GAST shape resource.");
+    update_mesh_dimensions_and_collision_shape();
+}
+
+void GastNode::update_render_priority() {
+    ShaderMaterial *shader_material = *shader_material_ref;
+    if (!shader_material) {
+        return;
+    }
+
+    int render_priority = 0;
+    if (render_on_top) {
+        render_priority++;
+        if (gaze_tracking) {
+            render_priority++;
+        }
+    }
+    shader_material->set_render_priority(render_priority);
+}
+
+Vector2 GastNode::get_size() {
+    return mesh_size;
+}
+
+void GastNode::set_size(Vector2 size) {
+    this->mesh_size = size;
+    update_mesh_dimensions_and_collision_shape();
 }
 
 void GastNode::update_collision_shape() {
@@ -147,7 +246,7 @@ void GastNode::update_collision_shape() {
         return;
     }
 
-    PlaneMesh *mesh = get_plane_mesh();
+    Mesh *mesh = get_mesh();
     if (!is_visible_in_tree() || !collidable || !mesh) {
         collision_shape->set_shape(Ref<Resource>());
     } else {
@@ -156,13 +255,12 @@ void GastNode::update_collision_shape() {
 }
 
 void GastNode::update_shader_params() {
-    ShaderMaterial *shader_material = get_shader_material(kDefaultSurfaceIndex);
+    ShaderMaterial *shader_material = get_shader_material();
     if (!shader_material) {
         return;
     }
 
-    shader_material->set_shader_param(kGastCurvedParamName, curved);
-    shader_material->set_shader_param(kGastWidthParamName, get_size().width);
+    shader_material->set_shader_param(kGastEnableBillBoardParamName, gaze_tracking);
     shader_material->set_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
 }
 
@@ -230,6 +328,24 @@ void GastNode::_notification(const int64_t what) {
         case NOTIFICATION_VISIBILITY_CHANGED:
             update_collision_shape();
             break;
+    }
+}
+
+void GastNode::_process(const real_t delta) {
+    if (is_gaze_tracking()) {
+        Rect2 gaze_area = get_viewport()->get_visible_rect();
+        Vector2 gaze_center_point = Vector2(gaze_area.position.x + gaze_area.size.x / 2.0,
+                                            gaze_area.position.y + gaze_area.size.y / 2.0);
+
+        // Get the distance between the camera and this node.
+        Camera* camera = get_viewport()->get_camera();
+        Transform global_transform = get_global_transform();
+        float distance = camera->get_global_transform().origin.distance_to(global_transform.origin);
+
+        // Update the node's position to match the center of the gaze area.
+        Vector3 updated_position = camera->project_position(gaze_center_point, distance);
+        global_transform.origin = updated_position;
+        set_global_transform(global_transform);
     }
 }
 
@@ -343,7 +459,7 @@ bool GastNode::calculate_raycast_plane_collision(const RayCast &raycast, const P
 }
 
 ExternalTexture *GastNode::get_external_texture(int surface_index) {
-    ShaderMaterial *shader_material = get_shader_material(surface_index);
+    ShaderMaterial *shader_material = get_shader_material();
     if (!shader_material) {
         return nullptr;
     }
@@ -358,24 +474,6 @@ ExternalTexture *GastNode::get_external_texture(int surface_index) {
         ALOGV("Found external GastNode texture for node %s", get_node_tag(*this));
     }
     return external_texture;
-}
-
-ShaderMaterial *GastNode::get_shader_material(int surface_index) {
-    PlaneMesh *plane_mesh = get_plane_mesh();
-    if (!plane_mesh) {
-        return nullptr;
-    }
-
-    ShaderMaterial *shader_material = nullptr;
-
-    if (surface_index < plane_mesh->get_surface_count()) {
-        Ref<Material> material = plane_mesh->surface_get_material(surface_index);
-        if (material.is_valid()) {
-            shader_material = Object::cast_to<ShaderMaterial>(*material);
-        }
-    }
-
-    return shader_material;
 }
 
 bool
@@ -441,6 +539,14 @@ GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_co
     }
 
     return press_in_progress;
+}
+
+String GastNode::generate_shader_code() const {
+    String shader_code = kShaderCode;
+    if (render_on_top) {
+        shader_code += kDisableDepthTestRenderMode;
+    }
+    return shader_code;
 }
 
 Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point) {
