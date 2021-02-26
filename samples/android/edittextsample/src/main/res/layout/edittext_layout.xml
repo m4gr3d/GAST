@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.godotengine.plugin.gast.view.GastFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/edittext_wrapper_view"
+    android:layout_width="360dp"
+    android:layout_height="50dp"
+    android:layout_gravity="center"
+    android:background="@android:color/holo_blue_dark"
+    android:gravity="center">
+
+    <EditText
+        android:id="@+id/content"
+        android:textStyle="bold"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:inputType="text"
+        android:text="Hello Keyboard"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"/>
+
+</org.godotengine.plugin.gast.view.GastFrameLayout>

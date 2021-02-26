@@ -1,9 +1,0 @@
-[config]
-
-name = "gast-webview"
-binary_type="local"
-binary="gast-webview.0.2.0-release.aar"
-
-[dependencies]
-
-local=["gast-core.0.5.0-release.aar"]
