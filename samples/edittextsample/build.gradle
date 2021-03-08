@@ -24,7 +24,19 @@ android {
 
     sourceSets {
         main {
-            assets.srcDirs += ['../../godot/edittextsample/']
+            assets.srcDirs += ['src/main/godot/']
+        }
+    }
+
+    flavorDimensions "xrMode"
+    productFlavors {
+        ovr {
+            applicationIdSuffix ".ovr"
+            versionNameSuffix "-ovr"
+        }
+        pancake {
+            applicationIdSuffix ".pancake"
+            versionNameSuffix "-pancake"
         }
     }
 
@@ -39,10 +51,12 @@ android {
 }
 
 dependencies {
+    // Common dependencies
+    implementation project(path: ':core')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlinVersion}"
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation(fileTree(dir: "libs", include: ["*.aar"]))
-    implementation(fileTree(dir: "../../../libs", include: ["*.aar"]))
+    implementation(fileTree(dir: "../../libs", include: ["godot-lib*.aar"]))
 
-    implementation project(':core')
+    // Dependencies for the `ovr` flavor
+    ovrImplementation(fileTree(dir: "libs", include: ["gdovrmobile*.aar"]))
 }
