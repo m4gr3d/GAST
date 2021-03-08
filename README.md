@@ -24,8 +24,14 @@ Clone the repository and **initialize the submodules** with `git submodule updat
 
 - The `git submodule update --init --recursive` command should have checked out the
 [godot-cpp repo](https://github.com/GodotNativeTools/godot-cpp) under the `core/libs/godot-cpp` directory.
-- Navigate to the `core/libs/godot-cpp` directory and follow [these steps](https://github.com/GodotNativeTools/godot-cpp/tree/master#compiling-the-cpp-bindings-library)
-to generate the Godot Cpp bindings.
+- Navigate to the `core/libs/godot-cpp` directory and follow these steps:
+  - Checkout the `3.2` branch of the `godot-cpp` repo: `git checkout 3.2`
+  - Run `git submodule update --init --recursive` after checkout
+  - Generate the `godot-cpp` bindings and static libraries with the following commands:
+    - `scons platform=android generate_bindings=yes android_arch=arm64v8 target=release`
+    - `scons platform=android generate_bindings=yes android_arch=arm64v8 target=release_debug`
+
+**Note**: If you run into issues, check out the [repo setup instructions](https://github.com/godotengine/godot-cpp/tree/3.2#compiling-the-c-bindings-library).
 
 ### IDE
 
@@ -35,8 +41,8 @@ open the project within Android Studio.
 
 ## GAST Plugins
 
-- [GAST-Video](video/README.md)
-- [GAST-WebView](webview/README.md)
+- [GAST-Video](core/src/plugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
+- [GAST-WebView](core/src/plugins/java/org/godotengine/plugin/gast/plugins/webview/README.md)
 
 ## Architecture
 
@@ -73,8 +79,8 @@ to render the GastNode.
 Once a GastNode is created, the client gains the ability to retrieve a [Surface](https://developer.android.com/reference/android/view/Surface)
 instance via the [GastNode#bindSurface()](core/src/main/java/org/godotengine/plugin/gast/GastNode.kt#L81) API.
 The Surface instance can be used as an output destination onto which Android Views, images or videos
-can be rendered. This is the process used by the [GAST-Video](video/README.md)
-and [GAST-WebView](webview/README.md) plugins.
+can be rendered. This is the process used by the [GAST-Video](core/src/plugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
+and [GAST-WebView](core/src/plugins/java/org/godotengine/plugin/gast/plugins/webview/README.md) plugins.
 
 #### Input Handling
 
