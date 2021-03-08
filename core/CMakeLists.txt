@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.6)
 
-# Default android abi is arm64-v8a
-if (NOT ANDROID_ABI)
+# Supported android abi is arm64-v8a
+if (NOT (ANDROID_ABI STREQUAL "arm64-v8a"))
     set(ANDROID_ABI "arm64-v8a")
-endif (NOT ANDROID_ABI)
+endif (NOT (ANDROID_ABI STREQUAL "arm64-v8a"))
 
 # Default android platform is android-24
 if (NOT ANDROID_PLATFORM)
@@ -17,10 +17,10 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-D_DEBUG)
-    set(VRAPI_LIB_BUILD_TYPE Debug)
+    set(GODOT_CPP_LIB_BUILD_TYPE debug)
 else ()
     add_definitions(-DNDEBUG)
-    set(VRAPI_LIB_BUILD_TYPE Release)
+    set(GODOT_CPP_LIB_BUILD_TYPE release)
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 if (NOT (ANDROID_STL STREQUAL "c++_shared"))
@@ -80,30 +80,49 @@ endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 ## godot-cpp library
 set(GODOT-CPP "godot-cpp")
+set(USE_GODOT_CPP_PREBUILT_STATIC_BINARY TRUE)
 
-file(GLOB_RECURSE GODOT_CPP_SOURCES ${GODOT_CPP_DIR}/src/*.c**)
-file(GLOB_RECURSE GODOT_CPP_HEADERS ${GODOT_CPP_DIR}/include/*.h**)
+if (USE_GODOT_CPP_PREBUILT_STATIC_BINARY)
+    # Use the prebuilt static binary to speed up compilation.
+    set(GODOT_CPP_STATIC_LIB "${GODOT_CPP_DIR}/bin/libgodot-cpp.android.${GODOT_CPP_LIB_BUILD_TYPE}.arm64v8.a")
 
-add_library(${GODOT-CPP}
-        STATIC
-        ${GODOT_CPP_SOURCES} ${GODOT_CPP_HEADERS})
+    list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_CPP_DIR}/include")
+    list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_CPP_DIR}/include/core")
+    list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_CPP_DIR}/include/gen")
+    list(APPEND GODOT_CPP_INCLUDE_DIRECTORIES "${GODOT_HEADERS_DIR}")
 
-target_include_directories(${GODOT-CPP}
-        PUBLIC
-        ${GODOT_CPP_DIR}/include
-        ${GODOT_CPP_DIR}/include/core
-        ${GODOT_CPP_DIR}/include/gen
-        )
+    add_library(${GODOT-CPP}
+            STATIC
+            IMPORTED GLOBAL
+            INTERFACE_INCLUDE_DIRECTORIES "${GODOT_CPP_INCLUDE_DIRECTORIES}")
+    set_target_properties(${GODOT-CPP} PROPERTIES IMPORTED_LOCATION ${GODOT_CPP_STATIC_LIB})
+else (USE_GODOT_CPP_PREBUILT_STATIC_BINARY)
+    # This section should be enabled if you'd like to recompile the 'godot-cpp' library instead of
+    # depending on the imported prebuilt static binary (e.g: may be useful for debugging).
+    file(GLOB_RECURSE GODOT_CPP_SOURCES ${GODOT_CPP_DIR}/src/*.c**)
+    file(GLOB_RECURSE GODOT_CPP_HEADERS ${GODOT_CPP_DIR}/include/*.h**)
 
-# Put godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
-target_include_directories(${GODOT-CPP}
-        SYSTEM PUBLIC
-        ${GODOT_HEADERS_DIR}
-        )
+    add_library(${GODOT-CPP}
+            STATIC
+            ${GODOT_CPP_SOURCES} ${GODOT_CPP_HEADERS})
 
-# Add the compile flags
-set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})
-set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY LINK_FLAGS ${GODOT_LINKER_FLAGS})
+    target_include_directories(${GODOT-CPP}
+            PUBLIC
+            ${GODOT_CPP_DIR}/include
+            ${GODOT_CPP_DIR}/include/core
+            ${GODOT_CPP_DIR}/include/gen
+            )
+
+    # Put godot headers as SYSTEM PUBLIC to exclude warnings from irrelevant headers
+    target_include_directories(${GODOT-CPP}
+            SYSTEM PUBLIC
+            ${GODOT_HEADERS_DIR}
+            )
+
+    # Add the compile flags
+    set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY COMPILE_FLAGS ${GODOT_COMPILE_FLAGS})
+    set_property(TARGET ${GODOT-CPP} APPEND_STRING PROPERTY LINK_FLAGS ${GODOT_LINKER_FLAGS})
+endif (USE_GODOT_CPP_PREBUILT_STATIC_BINARY)
 
 ## Setup the plugin library
 # Get sources
