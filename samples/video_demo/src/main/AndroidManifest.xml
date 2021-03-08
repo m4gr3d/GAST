@@ -6,7 +6,7 @@
 
     <uses-feature
         android:name="android.hardware.vr.headtracking"
-        android:required="true"
+        android:required="false"
         android:version="1"/>
 
     <application
@@ -14,11 +14,6 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
-
-        <!-- Metadata populated at export time and used by Godot to figure out which plugins must be enabled. -->
-        <meta-data
-            android:name="plugins"
-            android:value="OVRMobile|gast-core|gast-video"/>
 
         <meta-data
             android:name="com.samsung.android.vr.application.mode"

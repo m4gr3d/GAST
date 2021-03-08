@@ -1,4 +1,4 @@
-package org.godotengine.plugin.gast.samples.video
+package org.godotengine.plugin.gast.samples.webview
 
 import org.godotengine.godot.Godot
 import org.godotengine.godot.xr.XRMode
@@ -17,4 +17,5 @@ class MainActivity : Godot() {
             return original
         }
     }
+
 }
