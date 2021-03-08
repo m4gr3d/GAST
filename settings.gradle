@@ -1,5 +1,4 @@
 rootProject.name= "GAST"
 
 include ':core'
-include ':plugins'
-include ':samples:android:edittextsample'
+include ':samples:edittextsample'

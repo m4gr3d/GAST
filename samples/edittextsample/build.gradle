@@ -20,6 +20,8 @@ android {
         targetSdkVersion versions.targetSdk
         versionCode 1
         versionName "1.0"
+
+        missingDimensionStrategy 'features', 'core'
     }
 
     sourceSets {

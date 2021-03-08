@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.godotengine.plugin.gast">
+
+    <application>
+
+        <meta-data
+            android:name="org.godotengine.plugin.v1.gast-video"
+            android:value="org.godotengine.plugin.gast.plugins.video.GastVideoPlugin" />
+
+        <meta-data
+            android:name="org.godotengine.plugin.v1.gast-webview"
+            android:value="org.godotengine.plugin.gast.plugins.webview.GastWebviewPlugin" />
+    </application>
+
+</manifest>

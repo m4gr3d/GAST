@@ -9,9 +9,6 @@ android {
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
-        versionCode 11
-        versionName '0.11.0'
-        setProperty("archivesBaseName", "gast-core.${versionName}")
 
         externalNativeBuild {
             cmake {
@@ -30,6 +27,24 @@ android {
         }
     }
 
+    flavorDimensions "features"
+    productFlavors {
+        core {
+            versionCode 11
+            versionName '0.11.0'
+        }
+        plugins {
+            versionCode 3
+            versionName "0.3.0"
+        }
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "gast-${variant.getFlavorName()}.${variant.mergedFlavor.versionName}.${variant.buildType.name}.aar"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -40,8 +55,12 @@ android {
 }
 
 dependencies {
+    // Common dependencies
+    compileOnly(fileTree(dir: "../libs", include: ["godot-lib*.aar"]))
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlinVersion}"
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
-    compileOnly(fileTree(dir: "../libs", include: ["godot-lib*.aar"]))
+    // Dependencies for the `plugins` flavor
+    pluginsImplementation("com.google.android.exoplayer:exoplayer:2.11.3")
 }
