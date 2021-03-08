@@ -50,7 +50,7 @@ project(gast)
 
 # Location to the Godot headers directory.
 set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/libs/godot-cpp")
-set(GODOT_HEADERS_DIR "${GODOT_CPP_DIR}/godot_headers")
+set(GODOT_HEADERS_DIR "${GODOT_CPP_DIR}/godot-headers")
 
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)
