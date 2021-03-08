@@ -15,13 +15,13 @@ android {
             ignoreAssetsPattern "!.svn:!.git:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:<dir>android"
         }
 
-        applicationId "org.godotengine.plugin.gast.samples.edittext"
+        applicationId "org.godotengine.plugin.gast.samples.video"
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
         versionCode 1
         versionName "1.0"
 
-        missingDimensionStrategy 'features', 'core'
+        missingDimensionStrategy 'features', 'plugins'
     }
 
     sourceSets {
@@ -49,7 +49,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
 }
 
 dependencies {

@@ -1,6 +1,6 @@
 # GAST-Video Plugin
 
-[![mp4 video playback in Godot on an Android device](samples/contents/raw/flight_screenshot.png?raw=true)](https://drive.google.com/file/d/1EivylJMbkO9GymIkv8D25vOIxNevDT2C/view?usp=sharing "mp4 video playback in Godot on an Android device")
+[![mp4 video playback in Godot on an Android device](../../../../../../../../../../samples/video_demo/src/main/res/raw/flight_screenshot.png)](https://drive.google.com/file/d/1EivylJMbkO9GymIkv8D25vOIxNevDT2C/view?usp=sharing "mp4 video playback in Godot on an Android device")
 
 This is a Godot Android plugin which enables video playback for all codecs supported by the target platform within Godot games / apps.
 
@@ -93,12 +93,11 @@ The following APIs are exposed by the plugin:
 
 ### Player Input APIs
 
-See the [Collision Events](../README.md#collision-events) documentation in the top `README` for
+See the [Collision Events](../../../../../../../../../../README.md#collision-events) documentation in the top `README` for
 information on how to setup input handling for the Gast-Video plugin.
 
 ## Samples
 
-Example code and sample projects can be found under the [`samples`](samples) directory:
+Example code and sample projects can be found under the [`samples`](../../../../../../../../../../samples) directory:
 
-- [Plugin demo](samples/video_demo)
-- [VR Plugin demo](samples/video_demo_vr)
+- [Plugin demo](../../../../../../../../../../samples/video_demo)

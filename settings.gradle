@@ -2,3 +2,4 @@ rootProject.name= "GAST"
 
 include ':core'
 include ':samples:edittextsample'
+include ':samples:video_demo'
