@@ -11,8 +11,10 @@
 #include <gen/InputEventScreenDrag.hpp>
 #include <gen/InputEventScreenTouch.hpp>
 #include <gen/Material.hpp>
+#include <gen/Mesh.hpp>
 #include <gen/Node.hpp>
 #include <gen/QuadMesh.hpp>
+#include <gen/ArrayMesh.hpp>
 #include <gen/Resource.hpp>
 #include <gen/ResourceLoader.hpp>
 #include <gen/SceneTree.hpp>
@@ -168,8 +170,9 @@ void GastNode::reset_mesh_and_collision_shape() {
 }
 
 void GastNode::update_mesh_dimensions_and_collision_shape() {
+    MeshInstance *mesh_instance = get_mesh_instance();
     auto *mesh = get_mesh();
-    if (!mesh) {
+    if (!mesh_instance || !mesh) {
         ALOGE("Unable to access mesh resource for %s", get_node_tag(*this));
         return;
     }
@@ -178,27 +181,27 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
         // TODO: Complete implementation.
 
     } else {
-        auto *quad_mesh = Object::cast_to<QuadMesh>(mesh);
-        if (!quad_mesh) {
-            ALOGE("Failed to cast non curved mesh to %s.", QuadMesh::___get_class_name());
+        auto *array_mesh = Object::cast_to<ArrayMesh>(mesh);
+        if (!array_mesh) {
+            ALOGE("Failed to cast non curved mesh to %s.", ArrayMesh::___get_class_name());
             return;
         }
 
+        auto *quad_mesh = QuadMesh::_new();
         quad_mesh->set_size(mesh_size);
+        array_mesh->surface_remove(0);
+        array_mesh->add_surface_from_arrays(
+                Mesh::PRIMITIVE_TRIANGLES, quad_mesh->get_mesh_arrays().duplicate());
     }
+
+    ALOGV("Setting up GAST shader material resource.");
+    mesh_instance->set_surface_material(kDefaultSurfaceIndex, shader_material_ref);
 
     update_collision_shape();
 }
 
 void GastNode::update_mesh_and_collision_shape() {
-    Mesh *mesh;
-
-    if (is_curved()) {
-        // TODO: Complete implementation.
-        mesh = nullptr;
-    } else {
-        mesh = QuadMesh::_new();
-    }
+    Mesh *mesh = ArrayMesh::_new();
 
     ALOGV("Setting up GAST mesh resource.");
     MeshInstance *mesh_instance = get_mesh_instance();
@@ -206,9 +209,6 @@ void GastNode::update_mesh_and_collision_shape() {
         return;
     }
     mesh_instance->set_mesh(mesh);
-
-    ALOGV("Setting up GAST shader material resource.");
-    mesh_instance->set_surface_material(kDefaultSurfaceIndex, shader_material_ref);
 
     ALOGV("Setting up GAST shape resource.");
     update_mesh_dimensions_and_collision_shape();
