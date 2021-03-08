@@ -1,9 +1,0 @@
-[config]
-
-name="gast-plugins"
-binary_type="local"
-binary="gast-plugins.0.3.0-release.aar"
-
-[dependencies]
-
-remote=["com.google.android.exoplayer:exoplayer:2.11.3"]
