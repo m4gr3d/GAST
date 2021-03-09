@@ -80,7 +80,7 @@ endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 ## godot-cpp library
 set(GODOT-CPP "godot-cpp")
-set(USE_GODOT_CPP_PREBUILT_STATIC_BINARY TRUE)
+set(USE_GODOT_CPP_PREBUILT_STATIC_BINARY FALSE)
 
 if (USE_GODOT_CPP_PREBUILT_STATIC_BINARY)
     # Use the prebuilt static binary to speed up compilation.

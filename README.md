@@ -25,11 +25,9 @@ Clone the repository and **initialize the submodules** with `git submodule updat
 - The `git submodule update --init --recursive` command should have checked out the
 [godot-cpp repo](https://github.com/GodotNativeTools/godot-cpp) under the `core/libs/godot-cpp` directory.
 - Navigate to the `core/libs/godot-cpp` directory and follow these steps:
-  - Checkout the `3.2` branch of the `godot-cpp` repo: `git checkout 3.2`
-  - Run `git submodule update --init --recursive` after checkout
   - Generate the `godot-cpp` bindings and static libraries with the following commands:
-    - `scons platform=android generate_bindings=yes android_arch=arm64v8 target=release`
-    - `scons platform=android generate_bindings=yes android_arch=arm64v8 target=release_debug`
+    - `scons platform=android generate_bindings=yes android_arch=arm64v8 target=release ANDROID_NDK_ROOT="/PATH-TO-ANDROID-NDK/"`
+    - `scons platform=android generate_bindings=yes android_arch=arm64v8 target=debug ANDROID_NDK_ROOT="/PATH-TO-ANDROID-NDK/"`
 
 **Note**: If you run into issues, check out the [repo setup instructions](https://github.com/godotengine/godot-cpp/tree/3.2#compiling-the-c-bindings-library).
 
