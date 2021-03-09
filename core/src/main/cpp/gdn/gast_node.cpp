@@ -262,7 +262,9 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
         ALOGE("Failed to cast mesh to %s.", ArrayMesh::___get_class_name());
         return;
     }
-    array_mesh->surface_remove(0);
+    for (int i = 0; i < array_mesh->get_surface_count(); i++) {
+        array_mesh->surface_remove(i);
+    }
     array_mesh->add_surface_from_arrays(primitive, mesh_surface_array);
 
     ALOGV("Setting up GAST shader material resource.");
