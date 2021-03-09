@@ -101,6 +101,14 @@ public:
         return gaze_tracking;
     }
 
+    inline void set_alpha(float alpha) {
+        if (this->alpha == alpha) {
+            return;
+        }
+        this->alpha = alpha;
+        update_shader_params();
+    }
+
     inline void set_render_on_top(bool enable) {
         if (this->render_on_top == enable) {
             return;
@@ -243,6 +251,7 @@ private:
     bool curved;
     bool gaze_tracking;
     bool render_on_top;
+    float alpha;
     float gradient_height_ratio;
     Vector2 mesh_size;
     Ref<ShaderMaterial> shader_material_ref = Ref<ShaderMaterial>();

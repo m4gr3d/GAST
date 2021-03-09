@@ -163,6 +163,12 @@ JNI_METHOD(updateGastNodeSize)(JNIEnv *, jobject, jlong node_pointer, jfloat wid
     gast_node->set_size(Vector2(width, height));
 }
 
+JNIEXPORT void JNICALL JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong node_pointer, jfloat alpha) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_alpha(alpha);
+}
+
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeLocalTranslation)(JNIEnv *, jobject, jlong node_pointer,
                                            jfloat x_translation, jfloat y_translation,
