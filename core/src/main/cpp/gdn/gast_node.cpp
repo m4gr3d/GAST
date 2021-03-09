@@ -510,8 +510,8 @@ void GastNode::_physics_process(const real_t delta) {
                 // Fire a hover exit event.
                 GastManager::get_singleton_instance()->on_render_input_hover(node_path,
                                                                              ray_cast_path,
-                                                                             last_coordinate.x,
-                                                                             last_coordinate.y);
+                                                                             kInvalidCoordinate.x,
+                                                                             kInvalidCoordinate.y);
             }
 
             // Remove the raycast from this node.
