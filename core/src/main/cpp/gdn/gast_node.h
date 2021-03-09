@@ -84,8 +84,7 @@ public:
     }
 
     inline bool is_curved() {
-        return false;
-        // TODO: Fix once fully implemented - return curved;
+        return this->curved;
     }
 
     inline void set_gaze_tracking(bool gaze_tracking) {
@@ -238,6 +237,8 @@ private:
     bool has_captured_raycast(const RayCast &ray_cast) {
         return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
     }
+
+    Array create_curved_screen_surface_array();
 
     bool collidable;
     bool curved;

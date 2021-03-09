@@ -32,6 +32,8 @@ const char *kGastTextureParamName = "gast_texture";
 const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
+const float kCurvedScreenRadius = 6.0f;
+const size_t kCurvedScreenResolution = 20;
 
 const char *kShaderCode = R"GAST_SHADER(
 shader_type spatial;
@@ -169,6 +171,72 @@ void GastNode::reset_mesh_and_collision_shape() {
     update_collision_shape();
 }
 
+Array GastNode::create_curved_screen_surface_array() {
+    const float horizontal_angle =
+            2.0f * std::atan(mesh_size.x * 0.5f / kCurvedScreenRadius);
+    const size_t vertical_resolution = kCurvedScreenResolution;
+    const size_t horizontal_resolution = kCurvedScreenResolution;
+    Array arr = Array();
+    arr.resize(Mesh::ARRAY_MAX);
+    PoolVector3Array vertices = PoolVector3Array();
+    PoolVector2Array uv = PoolVector2Array();
+    PoolIntArray indices = PoolIntArray();
+
+    for (size_t row = 0; row < vertical_resolution; row++) {
+        for (size_t col = 0; col < horizontal_resolution; col++) {
+            const float x_percent = static_cast<float>(col) /
+                                    static_cast<float>(horizontal_resolution - 1U);
+            const float y_percent = static_cast<float>(row) /
+                                    static_cast<float>(vertical_resolution - 1U);
+            const float angle = x_percent * horizontal_angle - (horizontal_angle / 2.0f);
+            const float x_pos = sin(angle);
+            const float z_pos = -cos(angle) + cos(horizontal_angle / 4.0f);
+            Vector3 out_pos =
+                    Vector3(
+                            x_pos * kCurvedScreenRadius,
+                            (y_percent - 0.5) * mesh_size.y,
+                            z_pos * kCurvedScreenRadius);
+            Vector2 out_uv = Vector2(x_percent, 1 - y_percent);
+            vertices.append(out_pos);
+            uv.append(out_uv);
+        }
+    }
+
+    uint32_t vertex_offset = 0;
+    for (size_t row = 0; row < vertical_resolution - 1; row++) {
+        // Add last index from the previous row another time to produce a degenerate triangle.
+        if (row > 0) {
+            int last_index = indices[indices.size() - 1];
+            indices.append(last_index);
+        }
+
+        for (size_t col = 0; col < horizontal_resolution; col++) {
+            // Add indices for this vertex and the vertex beneath it.
+            indices.append(vertex_offset);
+            indices.append(static_cast<uint32_t>(vertex_offset + horizontal_resolution));
+
+            // Move to the vertex in the next column.
+            if (col < horizontal_resolution - 1) {
+                // Move from left-to-right on even rows, right-to-left on odd rows.
+                if (row % 2 == 0) {
+                    vertex_offset++;
+                } else {
+                    vertex_offset--;
+                }
+            }
+        }
+
+        // Move to the vertex in the next row.
+        vertex_offset = vertex_offset + static_cast<int>(horizontal_resolution);
+    }
+
+    arr[Mesh::ARRAY_VERTEX] = vertices;
+    arr[Mesh::ARRAY_TEX_UV] = uv;
+    arr[Mesh::ARRAY_INDEX] = indices;
+
+    return arr;
+}
+
 void GastNode::update_mesh_dimensions_and_collision_shape() {
     MeshInstance *mesh_instance = get_mesh_instance();
     auto *mesh = get_mesh();
@@ -177,22 +245,25 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
         return;
     }
 
+    Mesh::PrimitiveType primitive;
+    Array mesh_surface_array;
     if (is_curved()) {
-        // TODO: Complete implementation.
-
+        primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
+        mesh_surface_array = create_curved_screen_surface_array();
     } else {
-        auto *array_mesh = Object::cast_to<ArrayMesh>(mesh);
-        if (!array_mesh) {
-            ALOGE("Failed to cast non curved mesh to %s.", ArrayMesh::___get_class_name());
-            return;
-        }
-
+        primitive = Mesh::PRIMITIVE_TRIANGLES;
         auto *quad_mesh = QuadMesh::_new();
         quad_mesh->set_size(mesh_size);
-        array_mesh->surface_remove(0);
-        array_mesh->add_surface_from_arrays(
-                Mesh::PRIMITIVE_TRIANGLES, quad_mesh->get_mesh_arrays().duplicate());
+        mesh_surface_array = quad_mesh->get_mesh_arrays().duplicate();
     }
+
+    auto *array_mesh = Object::cast_to<ArrayMesh>(mesh);
+    if (!array_mesh) {
+        ALOGE("Failed to cast mesh to %s.", ArrayMesh::___get_class_name());
+        return;
+    }
+    array_mesh->surface_remove(0);
+    array_mesh->add_surface_from_arrays(primitive, mesh_surface_array);
 
     ALOGV("Setting up GAST shader material resource.");
     mesh_instance->set_surface_material(kDefaultSurfaceIndex, shader_material_ref);
