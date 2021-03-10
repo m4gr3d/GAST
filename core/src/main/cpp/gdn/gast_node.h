@@ -238,8 +238,6 @@ private:
         return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
     }
 
-    Array create_curved_screen_surface_array();
-
     bool collidable;
     bool curved;
     bool gaze_tracking;

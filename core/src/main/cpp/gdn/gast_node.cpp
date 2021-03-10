@@ -1,5 +1,6 @@
 #include "gast_node.h"
 #include "gast_manager.h"
+#include <utils.h>
 
 #include <core/Array.hpp>
 #include <core/String.hpp>
@@ -171,72 +172,6 @@ void GastNode::reset_mesh_and_collision_shape() {
     update_collision_shape();
 }
 
-Array GastNode::create_curved_screen_surface_array() {
-    const float horizontal_angle =
-            2.0f * std::atan(mesh_size.x * 0.5f / kCurvedScreenRadius);
-    const size_t vertical_resolution = kCurvedScreenResolution;
-    const size_t horizontal_resolution = kCurvedScreenResolution;
-    Array arr = Array();
-    arr.resize(Mesh::ARRAY_MAX);
-    PoolVector3Array vertices = PoolVector3Array();
-    PoolVector2Array uv = PoolVector2Array();
-    PoolIntArray indices = PoolIntArray();
-
-    for (size_t row = 0; row < vertical_resolution; row++) {
-        for (size_t col = 0; col < horizontal_resolution; col++) {
-            const float x_percent = static_cast<float>(col) /
-                                    static_cast<float>(horizontal_resolution - 1U);
-            const float y_percent = static_cast<float>(row) /
-                                    static_cast<float>(vertical_resolution - 1U);
-            const float angle = x_percent * horizontal_angle - (horizontal_angle / 2.0f);
-            const float x_pos = sin(angle);
-            const float z_pos = -cos(angle) + cos(horizontal_angle / 4.0f);
-            Vector3 out_pos =
-                    Vector3(
-                            x_pos * kCurvedScreenRadius,
-                            (y_percent - 0.5) * mesh_size.y,
-                            z_pos * kCurvedScreenRadius);
-            Vector2 out_uv = Vector2(x_percent, 1 - y_percent);
-            vertices.append(out_pos);
-            uv.append(out_uv);
-        }
-    }
-
-    uint32_t vertex_offset = 0;
-    for (size_t row = 0; row < vertical_resolution - 1; row++) {
-        // Add last index from the previous row another time to produce a degenerate triangle.
-        if (row > 0) {
-            int last_index = indices[indices.size() - 1];
-            indices.append(last_index);
-        }
-
-        for (size_t col = 0; col < horizontal_resolution; col++) {
-            // Add indices for this vertex and the vertex beneath it.
-            indices.append(vertex_offset);
-            indices.append(static_cast<uint32_t>(vertex_offset + horizontal_resolution));
-
-            // Move to the vertex in the next column.
-            if (col < horizontal_resolution - 1) {
-                // Move from left-to-right on even rows, right-to-left on odd rows.
-                if (row % 2 == 0) {
-                    vertex_offset++;
-                } else {
-                    vertex_offset--;
-                }
-            }
-        }
-
-        // Move to the vertex in the next row.
-        vertex_offset = vertex_offset + static_cast<int>(horizontal_resolution);
-    }
-
-    arr[Mesh::ARRAY_VERTEX] = vertices;
-    arr[Mesh::ARRAY_TEX_UV] = uv;
-    arr[Mesh::ARRAY_INDEX] = indices;
-
-    return arr;
-}
-
 void GastNode::update_mesh_dimensions_and_collision_shape() {
     MeshInstance *mesh_instance = get_mesh_instance();
     auto *mesh = get_mesh();
@@ -249,7 +184,8 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
     Array mesh_surface_array;
     if (is_curved()) {
         primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
-        mesh_surface_array = create_curved_screen_surface_array();
+        mesh_surface_array = create_curved_screen_surface_array(
+                mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
     } else {
         primitive = Mesh::PRIMITIVE_TRIANGLES;
         auto *quad_mesh = QuadMesh::_new();

@@ -5,6 +5,7 @@
 #include <core/Godot.hpp>
 #include <core/String.hpp>
 #include <core/Variant.hpp>
+#include <gen/Mesh.hpp>
 #include <gen/Node.hpp>
 #include <gen/Object.hpp>
 
@@ -107,6 +108,73 @@ static inline Node *get_node_from_variant(Variant variant) {
 
     Node *node = Object::cast_to<Node>(variant);
     return node;
+}
+
+static inline Array create_curved_screen_surface_array(
+        Vector2 mesh_size, float curved_screen_radius, size_t curved_screen_resolution) {
+    const float horizontal_angle =
+            2.0f * std::atan(mesh_size.x * 0.5f / curved_screen_radius);
+    const size_t vertical_resolution = curved_screen_resolution;
+    const size_t horizontal_resolution = curved_screen_resolution;
+    Array arr = Array();
+    arr.resize(Mesh::ARRAY_MAX);
+    PoolVector3Array vertices = PoolVector3Array();
+    PoolVector2Array uv = PoolVector2Array();
+    PoolIntArray indices = PoolIntArray();
+
+    for (size_t row = 0; row < vertical_resolution; row++) {
+        for (size_t col = 0; col < horizontal_resolution; col++) {
+            const float x_percent = static_cast<float>(col) /
+                                    static_cast<float>(horizontal_resolution - 1U);
+            const float y_percent = static_cast<float>(row) /
+                                    static_cast<float>(vertical_resolution - 1U);
+            const float angle = x_percent * horizontal_angle - (horizontal_angle / 2.0f);
+            const float x_pos = sin(angle);
+            const float z_pos = -cos(angle) + cos(horizontal_angle / 4.0f);
+            Vector3 out_pos =
+                    Vector3(
+                            x_pos * curved_screen_radius,
+                            (y_percent - 0.5) * mesh_size.y,
+                            z_pos * curved_screen_radius);
+            Vector2 out_uv = Vector2(x_percent, 1 - y_percent);
+            vertices.append(out_pos);
+            uv.append(out_uv);
+        }
+    }
+
+    uint32_t vertex_offset = 0;
+    for (size_t row = 0; row < vertical_resolution - 1; row++) {
+        // Add last index from the previous row another time to produce a degenerate triangle.
+        if (row > 0) {
+            int last_index = indices[indices.size() - 1];
+            indices.append(last_index);
+        }
+
+        for (size_t col = 0; col < horizontal_resolution; col++) {
+            // Add indices for this vertex and the vertex beneath it.
+            indices.append(vertex_offset);
+            indices.append(static_cast<uint32_t>(vertex_offset + horizontal_resolution));
+
+            // Move to the vertex in the next column.
+            if (col < horizontal_resolution - 1) {
+                // Move from left-to-right on even rows, right-to-left on odd rows.
+                if (row % 2 == 0) {
+                    vertex_offset++;
+                } else {
+                    vertex_offset--;
+                }
+            }
+        }
+
+        // Move to the vertex in the next row.
+        vertex_offset = vertex_offset + static_cast<int>(horizontal_resolution);
+    }
+
+    arr[Mesh::ARRAY_VERTEX] = vertices;
+    arr[Mesh::ARRAY_TEX_UV] = uv;
+    arr[Mesh::ARRAY_INDEX] = indices;
+
+    return arr;
 }
 
 }  // namespace gast
