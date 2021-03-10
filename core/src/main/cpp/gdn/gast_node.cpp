@@ -263,7 +263,11 @@ void GastNode::update_collision_shape() {
     if (!is_visible_in_tree() || !collidable || !mesh) {
         collision_shape->set_shape(Ref<Resource>());
     } else {
-        collision_shape->set_shape(mesh->create_convex_shape());
+        if (is_curved()) {
+            collision_shape->set_shape(mesh->create_trimesh_shape());
+        } else {
+            collision_shape->set_shape(mesh->create_convex_shape());
+        }
     }
 }
 
