@@ -343,6 +343,16 @@ class GastNode @JvmOverloads constructor(
     private external fun updateGastNodeSize(nodePointer: Long, width: Float, height: Float)
 
     /**
+     * Update the node's opacity.
+     */
+    fun updateAlpha(alpha: Float) {
+        checkIfReleased()
+        updateAlpha(nodePointer, alpha)
+    }
+
+    private external fun updateAlpha(nodePointer: Long, alpha: Float)
+
+    /**
      * Translate the Gast node relative to its parent.
      */
     fun updateLocalTranslation(

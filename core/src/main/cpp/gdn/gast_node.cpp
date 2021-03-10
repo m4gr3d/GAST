@@ -31,6 +31,8 @@ const int kDefaultSurfaceIndex = 0;
 const char *kGastEnableBillBoardParamName = "enable_billboard";
 const char *kGastTextureParamName = "gast_texture";
 const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
+const char *kGastNodeAlphaParamName = "node_alpha";
+const float kDefaultAlpha = 1;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
 const float kCurvedScreenRadius = 6.0f;
@@ -43,6 +45,7 @@ render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, am
 uniform samplerExternalOES gast_texture;
 uniform bool enable_billboard;
 uniform float gradient_height_ratio;
+uniform float node_alpha = 1.0;
 
 void vertex() {
 	if (enable_billboard) {
@@ -52,7 +55,7 @@ void vertex() {
 
 void fragment() {
 	vec4 texture_color = texture(gast_texture, UV);
-	float target_alpha = COLOR.a * texture_color.a;
+	float target_alpha = COLOR.a * texture_color.a * node_alpha;
 	if (gradient_height_ratio >= 0.05) {
 		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
 		target_alpha = target_alpha * gradient_mask;
@@ -78,6 +81,7 @@ const char *kShaderCustomDefines = R"GAST_DEFINES(
 GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue),
                        gaze_tracking(kDefaultGazeTracking),
                        render_on_top(kDefaultRenderOnTop),
+                       alpha(kDefaultAlpha),
                        gradient_height_ratio(kDefaultGradientHeightRatio),
                        mesh_size(kDefaultSize){}
 
@@ -271,6 +275,7 @@ void GastNode::update_shader_params() {
 
     shader_material->set_shader_param(kGastEnableBillBoardParamName, gaze_tracking);
     shader_material->set_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
+    shader_material->set_shader_param(kGastNodeAlphaParamName, alpha);
 }
 
 int GastNode::get_external_texture_id(int surface_index) {
