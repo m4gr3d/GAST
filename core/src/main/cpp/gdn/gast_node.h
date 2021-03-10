@@ -84,8 +84,7 @@ public:
     }
 
     inline bool is_curved() {
-        return false;
-        // TODO: Fix once fully implemented - return curved;
+        return this->curved;
     }
 
     inline void set_gaze_tracking(bool gaze_tracking) {
