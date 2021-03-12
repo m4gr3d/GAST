@@ -141,32 +141,30 @@ JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong node_pointer, jboolean rende
     gast_node->set_render_on_top(render_on_top);
 }
 
-JNIEXPORT jboolean JNICALL
-JNI_METHOD(hasCollisionLayer)(JNIEnv*, jobject, jlong node_pointer, jint layer) {
+JNIEXPORT jlong JNICALL JNI_METHOD(getCollisionLayers)(JNIEnv*, jobject, jlong node_pointer) {
   GastNode* gast_node = from_pointer(node_pointer);
   ERR_FAIL_NULL_V(gast_node, false);
-  return gast_node->get_collision_layer_bit(layer);
+  return gast_node->get_collision_layer();
 }
 
 JNIEXPORT void JNICALL
-JNI_METHOD(setCollisionLayer)(JNIEnv*, jobject, jlong node_pointer, jint layer, jboolean enable) {
+JNI_METHOD(setCollisionLayers)(JNIEnv*, jobject, jlong node_pointer, jlong layers) {
   GastNode* gast_node = from_pointer(node_pointer);
   ERR_FAIL_NULL(gast_node);
-  gast_node->set_collision_layer_bit(layer, enable);
+  gast_node->set_collision_layer(layers);
 }
 
-JNIEXPORT jboolean JNICALL
-JNI_METHOD(hasCollisionMask)(JNIEnv*, jobject, jlong node_pointer, jint mask) {
+JNIEXPORT jlong JNICALL JNI_METHOD(getCollisionMasks)(JNIEnv*, jobject, jlong node_pointer) {
   GastNode* gast_node = from_pointer(node_pointer);
   ERR_FAIL_NULL_V(gast_node, false);
-  return gast_node->get_collision_mask_bit(mask);
+  return gast_node->get_collision_mask();
 }
 
 JNIEXPORT void JNICALL
-JNI_METHOD(setCollisionMask)(JNIEnv*, jobject, jlong node_pointer, jint mask, jboolean enable) {
+JNI_METHOD(setCollisionMasks)(JNIEnv*, jobject, jlong node_pointer, jlong masks) {
   GastNode* gast_node = from_pointer(node_pointer);
   ERR_FAIL_NULL(gast_node);
-  gast_node->set_collision_mask_bit(mask, enable);
+  gast_node->set_collision_mask(masks);
 }
 
 JNIEXPORT jfloat JNICALL

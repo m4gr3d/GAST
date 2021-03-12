@@ -4,8 +4,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
+import androidx.annotation.RequiresApi
+import java.util.BitSet
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -319,48 +322,52 @@ class GastNode @JvmOverloads constructor(
     private external fun setRenderOnTop(nodePointer: Long, enable: Boolean)
 
     /**
-     * Returns true if the given collision layer is enabled.
+     * Returns this node's collision layers.
      */
-    fun hasCollisionLayer(layer: Int): Boolean {
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun getCollisionLayers(): BitSet {
         checkIfReleased()
-        return hasCollisionLayer(nodePointer, layer)
+        return BitSet.valueOf(longArrayOf(getCollisionLayers(nodePointer)))
     }
 
-    private external fun hasCollisionLayer(nodePointer: Long, layer: Int): Boolean
+    private external fun getCollisionLayers(nodePointer: Long): Long
 
     /**
-     * Toggle the collision layer.
+     * Update the node's collision layers.
      *
      * [Additional docs](https://docs.godotengine.org/en/stable/classes/class_physicsbody.html#class-physicsbody-property-collision-layer)
      */
-    fun setCollisionLayer(layer:Int, enable: Boolean) {
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun setCollisionLayers(layers: BitSet) {
         checkIfReleased()
-        setCollisionLayer(layer, enable)
+        setCollisionLayers(nodePointer, layers.toLongArray()[0])
     }
 
-    private external fun setCollisionLayer(nodePointer: Long, layer: Int, enable: Boolean)
+    private external fun setCollisionLayers(nodePointer: Long, layers: Long)
 
     /**
-     * Returns true if the given collision mask is enabled.
+     * Returns this node's collision masks.
      */
-    fun hasCollisionMask(mask: Int): Boolean {
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun getCollisionMasks(): BitSet {
         checkIfReleased()
-        return hasCollisionMask(nodePointer, mask)
+        return BitSet.valueOf(longArrayOf(getCollisionMasks(nodePointer)))
     }
 
-    private external fun hasCollisionMask(nodePointer: Long, mask: Int): Boolean
+    private external fun getCollisionMasks(nodePointer: Long): Long
 
     /**
-     * Toggle the collision mask.
+     * Update the node's collision masks.
      *
      * [Additional docs](https://docs.godotengine.org/en/stable/classes/class_physicsbody.html#class-physicsbody-property-collision-mask)
      */
-    fun setCollisionMask(mask: Int, enable: Boolean) {
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun setCollisionMasks(masks: BitSet) {
         checkIfReleased()
-        setCollisionMask(mask, enable)
+        setCollisionMasks(nodePointer, masks.toLongArray()[0])
     }
 
-    private external fun setCollisionMask(nodePointer: Long, mask: Int, enable: Boolean)
+    private external fun setCollisionMasks(nodePointer: Long, masks: Long)
 
     fun getGradientHeightRatio(): Float {
         checkIfReleased()
