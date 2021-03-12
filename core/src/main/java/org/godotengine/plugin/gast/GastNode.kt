@@ -318,6 +318,50 @@ class GastNode @JvmOverloads constructor(
 
     private external fun setRenderOnTop(nodePointer: Long, enable: Boolean)
 
+    /**
+     * Returns true if the given collision layer is enabled.
+     */
+    fun hasCollisionLayer(layer: Int): Boolean {
+        checkIfReleased()
+        return hasCollisionLayer(nodePointer, layer)
+    }
+
+    private external fun hasCollisionLayer(nodePointer: Long, layer: Int): Boolean
+
+    /**
+     * Toggle the collision layer.
+     *
+     * [Additional docs](https://docs.godotengine.org/en/stable/classes/class_physicsbody.html#class-physicsbody-property-collision-layer)
+     */
+    fun setCollisionLayer(layer:Int, enable: Boolean) {
+        checkIfReleased()
+        setCollisionLayer(layer, enable)
+    }
+
+    private external fun setCollisionLayer(nodePointer: Long, layer: Int, enable: Boolean)
+
+    /**
+     * Returns true if the given collision mask is enabled.
+     */
+    fun hasCollisionMask(mask: Int): Boolean {
+        checkIfReleased()
+        return hasCollisionMask(nodePointer, mask)
+    }
+
+    private external fun hasCollisionMask(nodePointer: Long, mask: Int): Boolean
+
+    /**
+     * Toggle the collision mask.
+     *
+     * [Additional docs](https://docs.godotengine.org/en/stable/classes/class_physicsbody.html#class-physicsbody-property-collision-mask)
+     */
+    fun setCollisionMask(mask: Int, enable: Boolean) {
+        checkIfReleased()
+        setCollisionMask(mask, enable)
+    }
+
+    private external fun setCollisionMask(nodePointer: Long, mask: Int, enable: Boolean)
+
     fun getGradientHeightRatio(): Float {
         checkIfReleased()
         return getGastNodeGradientHeightRatio(nodePointer)

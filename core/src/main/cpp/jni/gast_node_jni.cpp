@@ -141,6 +141,34 @@ JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong node_pointer, jboolean rende
     gast_node->set_render_on_top(render_on_top);
 }
 
+JNIEXPORT jboolean JNICALL
+JNI_METHOD(hasCollisionLayer)(JNIEnv*, jobject, jlong node_pointer, jint layer) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL_V(gast_node, false);
+  return gast_node->get_collision_layer_bit(layer);
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setCollisionLayer)(JNIEnv*, jobject, jlong node_pointer, jint layer, jboolean enable) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL(gast_node);
+  gast_node->set_collision_layer_bit(layer, enable);
+}
+
+JNIEXPORT jboolean JNICALL
+JNI_METHOD(hasCollisionMask)(JNIEnv*, jobject, jlong node_pointer, jint mask) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL_V(gast_node, false);
+  return gast_node->get_collision_mask_bit(mask);
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setCollisionMask)(JNIEnv*, jobject, jlong node_pointer, jint mask, jboolean enable) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL(gast_node);
+  gast_node->set_collision_mask_bit(mask, enable);
+}
+
 JNIEXPORT jfloat JNICALL
 JNI_METHOD(getGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong node_pointer) {
     GastNode *gast_node = from_pointer(node_pointer);
