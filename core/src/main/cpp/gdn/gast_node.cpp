@@ -264,7 +264,8 @@ void GastNode::update_collision_shape() {
         collision_shape->set_shape(Ref<Resource>());
     } else {
         if (is_curved()) {
-            collision_shape->set_shape(mesh->create_trimesh_shape());
+            // TODO: Use `create_trimesh_shape()` instead after resolving why the shape doesn't detect collisions.
+            collision_shape->set_shape(mesh->create_convex_shape());
         } else {
             collision_shape->set_shape(mesh->create_convex_shape());
         }

@@ -4,8 +4,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
+import androidx.annotation.RequiresApi
+import java.util.BitSet
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -317,6 +320,54 @@ class GastNode @JvmOverloads constructor(
     }
 
     private external fun setRenderOnTop(nodePointer: Long, enable: Boolean)
+
+    /**
+     * Returns this node's collision layers.
+     */
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun getCollisionLayers(): BitSet {
+        checkIfReleased()
+        return BitSet.valueOf(longArrayOf(getCollisionLayers(nodePointer)))
+    }
+
+    private external fun getCollisionLayers(nodePointer: Long): Long
+
+    /**
+     * Update the node's collision layers.
+     *
+     * [Additional docs](https://docs.godotengine.org/en/stable/classes/class_physicsbody.html#class-physicsbody-property-collision-layer)
+     */
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun setCollisionLayers(layers: BitSet) {
+        checkIfReleased()
+        setCollisionLayers(nodePointer, layers.toLongArray()[0])
+    }
+
+    private external fun setCollisionLayers(nodePointer: Long, layers: Long)
+
+    /**
+     * Returns this node's collision masks.
+     */
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun getCollisionMasks(): BitSet {
+        checkIfReleased()
+        return BitSet.valueOf(longArrayOf(getCollisionMasks(nodePointer)))
+    }
+
+    private external fun getCollisionMasks(nodePointer: Long): Long
+
+    /**
+     * Update the node's collision masks.
+     *
+     * [Additional docs](https://docs.godotengine.org/en/stable/classes/class_physicsbody.html#class-physicsbody-property-collision-mask)
+     */
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun setCollisionMasks(masks: BitSet) {
+        checkIfReleased()
+        setCollisionMasks(nodePointer, masks.toLongArray()[0])
+    }
+
+    private external fun setCollisionMasks(nodePointer: Long, masks: Long)
 
     fun getGradientHeightRatio(): Float {
         checkIfReleased()

@@ -141,6 +141,32 @@ JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong node_pointer, jboolean rende
     gast_node->set_render_on_top(render_on_top);
 }
 
+JNIEXPORT jlong JNICALL JNI_METHOD(getCollisionLayers)(JNIEnv*, jobject, jlong node_pointer) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL_V(gast_node, false);
+  return gast_node->get_collision_layer();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setCollisionLayers)(JNIEnv*, jobject, jlong node_pointer, jlong layers) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL(gast_node);
+  gast_node->set_collision_layer(layers);
+}
+
+JNIEXPORT jlong JNICALL JNI_METHOD(getCollisionMasks)(JNIEnv*, jobject, jlong node_pointer) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL_V(gast_node, false);
+  return gast_node->get_collision_mask();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setCollisionMasks)(JNIEnv*, jobject, jlong node_pointer, jlong masks) {
+  GastNode* gast_node = from_pointer(node_pointer);
+  ERR_FAIL_NULL(gast_node);
+  gast_node->set_collision_mask(masks);
+}
+
 JNIEXPORT jfloat JNICALL
 JNI_METHOD(getGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong node_pointer) {
     GastNode *gast_node = from_pointer(node_pointer);
