@@ -220,4 +220,12 @@ JNI_METHOD(updateGastNodeLocalRotation)(JNIEnv *, jobject, jlong node_pointer,
     gast_node->set_rotation_degrees(Vector3(x_rotation, y_rotation, z_rotation));
 }
 
+JNIEXPORT void JNICALL
+JNI_METHOD(nativeSetProjectionMeshType)(JNIEnv *, jobject, jlong node_pointer,
+                                        jint projection_mesh_type) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_projection_mesh_type(projection_mesh_type);
+}
+
 }

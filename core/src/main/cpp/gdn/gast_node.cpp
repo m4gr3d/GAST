@@ -83,7 +83,8 @@ GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue
                        render_on_top(kDefaultRenderOnTop),
                        alpha(kDefaultAlpha),
                        gradient_height_ratio(kDefaultGradientHeightRatio),
-                       mesh_size(kDefaultSize){}
+                       mesh_size(kDefaultSize),
+                       projection_mesh_type(ProjectionMeshType::RECTANGULAR){}
 
 GastNode::~GastNode() = default;
 

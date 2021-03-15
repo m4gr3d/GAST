@@ -33,6 +33,13 @@ class GastNode @JvmOverloads constructor(
     private var nodePointer: Long
     val nodePath get() = nativeGetNodePath(nodePointer)
 
+    // Mirrors enum ProjectionMeshType in src/main/cpp/gdn/gast_node.h
+    enum class ProjectionMeshType {
+        RECTANGULAR,
+        EQUIRECTANGULAR,
+        MESH,
+    }
+
     init {
         if (TextUtils.isEmpty(parentNodePath)) {
             throw IllegalArgumentException("Invalid parent node path value: $parentNodePath")
@@ -464,4 +471,11 @@ class GastNode @JvmOverloads constructor(
             counter = updateTextureImageCounter.decrementAndGet()
         }
     }
+
+    fun setProjectionMeshType(projectionMeshType: ProjectionMeshType) {
+        nativeSetProjectionMeshType(nodePointer, projectionMeshType.ordinal)
+    }
+
+    private external fun nativeSetProjectionMeshType(nodePointer: Long, projectionMeshType: Int)
+
 }

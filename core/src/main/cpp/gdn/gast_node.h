@@ -63,6 +63,13 @@ public:
 
     int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
 
+    // Mirrors src/main/java/org/godotengine/plugin/gast/GastNode#ProjectionMeshType
+    enum ProjectionMeshType {
+        RECTANGULAR = 0,
+        EQUIRECTANGULAR = 1,
+        MESH = 2,
+    };
+
     inline void set_collidable(bool collidable) {
         if (this->collidable == collidable) {
             return;
@@ -85,6 +92,22 @@ public:
 
     inline bool is_curved() {
         return this->curved;
+    }
+
+    inline void set_projection_mesh_type(int projection_mesh_type) {
+        set_projection_mesh_type(static_cast<ProjectionMeshType>(projection_mesh_type));
+    }
+
+    inline void set_projection_mesh_type(ProjectionMeshType projection_mesh_type) {
+        if (this->projection_mesh_type == projection_mesh_type) {
+            return;
+        }
+        this->projection_mesh_type = projection_mesh_type;
+        update_mesh_and_collision_shape();
+    }
+
+    inline ProjectionMeshType get_projection_mesh_type() {
+        return this->projection_mesh_type;
     }
 
     inline void set_gaze_tracking(bool gaze_tracking) {
@@ -247,7 +270,10 @@ private:
     }
 
     bool collidable;
+    // Whether the rectangular screen is curved or not. This is only relevant if the
+    // projection_mesh_type is RECTANGULAR.
     bool curved;
+    ProjectionMeshType projection_mesh_type;
     bool gaze_tracking;
     bool render_on_top;
     float alpha;
