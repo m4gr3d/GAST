@@ -16,6 +16,7 @@
 #include <gen/Node.hpp>
 #include <gen/QuadMesh.hpp>
 #include <gen/ArrayMesh.hpp>
+#include <gen/SphereMesh.hpp>
 #include <gen/Resource.hpp>
 #include <gen/ResourceLoader.hpp>
 #include <gen/SceneTree.hpp>
@@ -40,7 +41,7 @@ const size_t kCurvedScreenResolution = 20;
 
 const char *kShaderCode = R"GAST_SHADER(
 shader_type spatial;
-render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
+render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled, cull_disabled;
 
 uniform samplerExternalOES gast_texture;
 uniform bool enable_billboard;
@@ -135,6 +136,7 @@ void GastNode::_init() {
     // Add a mesh instance to the collision shape node
     MeshInstance *mesh_instance = MeshInstance::_new();
     collision_shape->add_child(mesh_instance);
+    set_projection_mesh_type(ProjectionMeshType::RECTANGULAR);
 }
 
 void GastNode::_enter_tree() {
@@ -186,15 +188,22 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
 
     Mesh::PrimitiveType primitive;
     Array mesh_surface_array;
-    if (is_curved()) {
-        primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
-        mesh_surface_array = create_curved_screen_surface_array(
-                mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
-    } else {
+    if (projection_mesh_type == ProjectionMeshType::RECTANGULAR) {
+        if (is_curved()) {
+            primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
+            mesh_surface_array = create_curved_screen_surface_array(
+                    mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
+        } else {
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
+            auto *quad_mesh = QuadMesh::_new();
+            quad_mesh->set_size(mesh_size);
+            mesh_surface_array = quad_mesh->get_mesh_arrays().duplicate();
+        }
+        set_render_on_top(false);
+    } else if (projection_mesh_type == ProjectionMeshType::EQUIRECTANGULAR) {
         primitive = Mesh::PRIMITIVE_TRIANGLES;
-        auto *quad_mesh = QuadMesh::_new();
-        quad_mesh->set_size(mesh_size);
-        mesh_surface_array = quad_mesh->get_mesh_arrays().duplicate();
+        mesh_surface_array = create_spherical_surface_array(1.0, 80, 80);
+        set_render_on_top(true);
     }
 
     auto *array_mesh = Object::cast_to<ArrayMesh>(mesh);

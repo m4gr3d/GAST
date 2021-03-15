@@ -177,6 +177,77 @@ static inline Array create_curved_screen_surface_array(
     return arr;
 }
 
+static inline Array create_spherical_surface_array(
+        float size, size_t band_count, size_t sector_count) {
+    float degrees_to_radians = M_PI / 180.0f;
+    float longitude_start = -180.f * degrees_to_radians;
+    float longitude_end = 180.f * degrees_to_radians;
+    float latitude_start = -90.f * degrees_to_radians;
+    float latitude_end = 90.f * degrees_to_radians;
+    band_count = std::max(static_cast<size_t>(2), band_count);
+    sector_count = std::max(static_cast<size_t>(3), sector_count);
+
+    const size_t vertices_per_ring = sector_count + 1;
+    const size_t vertices_per_band = band_count + 1;
+
+    Array arr;
+    arr.resize(Mesh::ARRAY_MAX);
+    PoolVector3Array vertices = PoolVector3Array();
+    PoolVector2Array uvs = PoolVector2Array();
+    PoolIntArray indices = PoolIntArray();
+
+    const float sector_angle =
+            (longitude_end - longitude_start) / static_cast<float>(sector_count);
+    const Vector3 scale = 0.5f * Vector3(size, size, size);
+
+    const float delta_angle =
+            (latitude_end - latitude_start) / static_cast<float>(band_count);
+
+    for (size_t ring = 0; ring < vertices_per_band; ring++) {
+        const float latitude_angle =
+                latitude_start + delta_angle * static_cast<float>(ring);
+        const float ring_radius = cosf(latitude_angle);
+        const float sphere_y = sinf(latitude_angle);
+
+        for (size_t s = 0; s < vertices_per_ring; s++) {
+            const float radians =
+                    longitude_start + sector_angle * static_cast<float>(s);
+            const Vector2 ring_pt = Vector2(cosf(radians), sinf(radians));
+            const Vector3 sphere_pt = Vector3(ring_radius * ring_pt[1], sphere_y,
+                                             ring_radius * -ring_pt[0]);
+            const Vector3 pos = Vector3(scale * sphere_pt);
+
+            const float ts = static_cast<float>(s) / static_cast<float>(sector_count);
+            const float tt =
+                    1.0f - (static_cast<float>(ring) / static_cast<float>(band_count));
+            const Vector2 uv = Vector2(ts, tt);
+
+            vertices.append(pos);
+            uvs.append(uv);
+        }
+    }
+
+    const int ring_offset = static_cast<int>(vertices_per_ring);
+    for (int band = 0; band < band_count; band++) {
+        const int first_band_vertex = static_cast<int>(band * ring_offset);
+        for (int s = 0; s < sector_count; s++) {
+            const int v = static_cast<int>(first_band_vertex + s);
+            indices.append(v);
+            indices.append(v + 1U);
+            indices.append(v + ring_offset);
+
+            indices.append(v + 1U);
+            indices.append(v + ring_offset + 1U);
+            indices.append(v + ring_offset);
+        }
+    }
+
+    arr[Mesh::ARRAY_VERTEX] = vertices;
+    arr[Mesh::ARRAY_TEX_UV] = uvs;
+    arr[Mesh::ARRAY_INDEX] = indices;
+    return arr;
+}
+
 }  // namespace gast
 
 #endif // UTILS_H

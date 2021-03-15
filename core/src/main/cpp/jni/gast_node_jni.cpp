@@ -180,10 +180,10 @@ JNI_METHOD(updateGastNodeLocalTranslation)(JNIEnv *, jobject, jlong node_pointer
 
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeLocalScale)(JNIEnv *, jobject, jlong node_pointer, jfloat x_scale,
-                                     jfloat y_scale) {
+                                     jfloat y_scale, jfloat z_scale) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL(gast_node);
-    gast_node->set_scale(Vector3(x_scale, y_scale, 1));
+    gast_node->set_scale(Vector3(x_scale, y_scale, z_scale));
 }
 
 JNIEXPORT void JNICALL
