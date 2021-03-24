@@ -13,6 +13,7 @@
 #include <gen/Mesh.hpp>
 #include <gen/Object.hpp>
 #include <gen/PlaneMesh.hpp>
+#include <gen/QuadMesh.hpp>
 #include <gen/RayCast.hpp>
 #include <gen/Shader.hpp>
 #include <gen/ShaderMaterial.hpp>
@@ -87,7 +88,7 @@ public:
             return;
         }
         this->curved = curved;
-        update_mesh_and_collision_shape();
+        update_mesh_dimensions_and_collision_shape();
     }
 
     inline bool is_curved() {
@@ -103,7 +104,7 @@ public:
             return;
         }
         this->projection_mesh_type = projection_mesh_type;
-        update_mesh_and_collision_shape();
+        update_mesh_dimensions_and_collision_shape();
     }
 
     inline ProjectionMeshType get_projection_mesh_type() {
@@ -284,6 +285,9 @@ private:
     // Map used to keep track of the raycasts colliding with this node.
     // The boolean specifies whether a `press` is currently in progress.
     std::map<String, std::shared_ptr<CollisionInfo>> colliding_raycast_paths;
+
+    QuadMesh *rectangular_surface;
+    Array spherical_surface_array;
 };
 }  // namespace gast
 
