@@ -37,6 +37,9 @@ const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
 const float kCurvedScreenRadius = 6.0f;
 const size_t kCurvedScreenResolution = 20;
+const float kEquirectSphereSize = 1.0f;
+const size_t kEquirectSphereMeshBandCount = 80;
+const size_t kEquirectSphereMeshSectorCount = 80;
 
 const char *kShaderCode = R"GAST_SHADER(
 shader_type spatial;
@@ -67,6 +70,7 @@ void fragment() {
 )GAST_SHADER";
 
 const char *kDisableDepthTestRenderMode = "render_mode depth_test_disable;";
+const char *kCullFrontRenderMode = "render_mode cull_front;";
 
 const char *kShaderCustomDefines = R"GAST_DEFINES(
 #ifdef ANDROID_ENABLED
@@ -136,6 +140,10 @@ void GastNode::_init() {
     // Add a mesh instance to the collision shape node
     MeshInstance *mesh_instance = MeshInstance::_new();
     collision_shape->add_child(mesh_instance);
+
+    rectangular_surface = QuadMesh::_new();
+    spherical_surface_array = create_spherical_surface_array(
+            kEquirectSphereSize, kEquirectSphereMeshBandCount, kEquirectSphereMeshSectorCount);
 }
 
 void GastNode::_enter_tree() {
@@ -187,15 +195,19 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
 
     Mesh::PrimitiveType primitive;
     Array mesh_surface_array;
-    if (is_curved()) {
-        primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
-        mesh_surface_array = create_curved_screen_surface_array(
-                mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
-    } else {
+    if (projection_mesh_type == ProjectionMeshType::RECTANGULAR) {
+        if (is_curved()) {
+            primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
+            mesh_surface_array = create_curved_screen_surface_array(
+                    mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
+        } else {
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
+            rectangular_surface->set_size(mesh_size);
+            mesh_surface_array = rectangular_surface->get_mesh_arrays();
+        }
+    } else if (projection_mesh_type == ProjectionMeshType::EQUIRECTANGULAR) {
         primitive = Mesh::PRIMITIVE_TRIANGLES;
-        auto *quad_mesh = QuadMesh::_new();
-        quad_mesh->set_size(mesh_size);
-        mesh_surface_array = quad_mesh->get_mesh_arrays().duplicate();
+        mesh_surface_array = spherical_surface_array;
     }
 
     auto *array_mesh = Object::cast_to<ArrayMesh>(mesh);
@@ -208,6 +220,8 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
     }
     array_mesh->add_surface_from_arrays(primitive, mesh_surface_array);
 
+    // Generate updated shader code for the type of projection being used.
+    shader_material_ref->get_shader()->set_code(generate_shader_code());
     ALOGV("Setting up GAST shader material resource.");
     mesh_instance->set_surface_material(kDefaultSurfaceIndex, shader_material_ref);
 
@@ -565,6 +579,9 @@ String GastNode::generate_shader_code() const {
     String shader_code = kShaderCode;
     if (render_on_top) {
         shader_code += kDisableDepthTestRenderMode;
+    }
+    if (projection_mesh_type == ProjectionMeshType::EQUIRECTANGULAR) {
+        shader_code += kCullFrontRenderMode;
     }
     return shader_code;
 }

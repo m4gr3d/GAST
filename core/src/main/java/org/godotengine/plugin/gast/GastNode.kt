@@ -432,12 +432,12 @@ class GastNode @JvmOverloads constructor(
     /**
      * Scale the Gast node relative to its parent.
      */
-    fun updateLocalScale(xScale: Float, yScale: Float) {
+    fun updateLocalScale(xScale: Float, yScale: Float, zScale: Float) {
         checkIfReleased()
-        updateGastNodeLocalScale(nodePointer, xScale, yScale)
+        updateGastNodeLocalScale(nodePointer, xScale, yScale, zScale)
     }
 
-    private external fun updateGastNodeLocalScale(nodePointer: Long, xScale: Float, yScale: Float)
+    private external fun updateGastNodeLocalScale(nodePointer: Long, xScale: Float, yScale: Float, zScale: Float)
 
     /**
      * Rotate the Gast node relative to its parent.
