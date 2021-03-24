@@ -472,7 +472,11 @@ class GastNode @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Updates the node's projection type.
+     */
     fun setProjectionMeshType(projectionMeshType: ProjectionMeshType) {
+        checkIfReleased()
         nativeSetProjectionMeshType(nodePointer, projectionMeshType.ordinal)
     }
 
