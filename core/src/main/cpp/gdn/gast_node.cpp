@@ -16,7 +16,6 @@
 #include <gen/Node.hpp>
 #include <gen/QuadMesh.hpp>
 #include <gen/ArrayMesh.hpp>
-#include <gen/SphereMesh.hpp>
 #include <gen/Resource.hpp>
 #include <gen/ResourceLoader.hpp>
 #include <gen/SceneTree.hpp>
