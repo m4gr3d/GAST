@@ -1,5 +1,6 @@
 #include "gast_node.h"
 #include "gast_manager.h"
+#include "gdn/projection_mesh/rectangular_projection_mesh.h"
 #include <utils.h>
 
 #include <core/Array.hpp>
@@ -26,69 +27,13 @@
 namespace gast {
 
 namespace {
-const Vector2 kDefaultSize = Vector2(2.0, 1.125);
-const int kDefaultSurfaceIndex = 0;
-const char *kGastEnableBillBoardParamName = "enable_billboard";
-const char *kGastTextureParamName = "gast_texture";
-const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
-const char *kGastNodeAlphaParamName = "node_alpha";
-const float kDefaultAlpha = 1;
-const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const char *kCapturedGastRayCastGroupName = "captured_gast_ray_casts";
-const float kCurvedScreenRadius = 6.0f;
-const size_t kCurvedScreenResolution = 20;
-const float kEquirectSphereSize = 1.0f;
-const size_t kEquirectSphereMeshBandCount = 80;
-const size_t kEquirectSphereMeshSectorCount = 80;
-
-const char *kShaderCode = R"GAST_SHADER(
-shader_type spatial;
-render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
-
-uniform samplerExternalOES gast_texture;
-uniform bool enable_billboard;
-uniform float gradient_height_ratio;
-uniform float node_alpha = 1.0;
-
-void vertex() {
-	if (enable_billboard) {
-		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
-	}
 }
 
-void fragment() {
-	vec4 texture_color = texture(gast_texture, UV);
-	float target_alpha = COLOR.a * texture_color.a * node_alpha;
-	if (gradient_height_ratio >= 0.05) {
-		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
-		target_alpha = target_alpha * gradient_mask;
-	}
-	ALPHA = target_alpha;
-	ALBEDO = texture_color.rgb * target_alpha;
+GastNode::GastNode() : collidable(kDefaultCollidable),
+                       projection_mesh_pool(ProjectionMeshPool()) {
+    projection_mesh = projection_mesh_pool.get_or_create_rectangular_projection_mesh();
 }
-
-)GAST_SHADER";
-
-const char *kDisableDepthTestRenderMode = "render_mode depth_test_disable;";
-const char *kCullFrontRenderMode = "render_mode cull_front;";
-
-const char *kShaderCustomDefines = R"GAST_DEFINES(
-#ifdef ANDROID_ENABLED
-#extension GL_OES_EGL_image_external : enable
-#extension GL_OES_EGL_image_external_essl3 : enable
-#else
-#define samplerExternalOES sampler2D
-#endif
-)GAST_DEFINES";
-}
-
-GastNode::GastNode() : collidable(kDefaultCollidable), curved(kDefaultCurveValue),
-                       gaze_tracking(kDefaultGazeTracking),
-                       render_on_top(kDefaultRenderOnTop),
-                       alpha(kDefaultAlpha),
-                       gradient_height_ratio(kDefaultGradientHeightRatio),
-                       mesh_size(kDefaultSize),
-                       projection_mesh_type(ProjectionMeshType::RECTANGULAR){}
 
 GastNode::~GastNode() = default;
 
@@ -100,12 +45,8 @@ void GastNode::_register_methods() {
     register_method("_process", &GastNode::_process);
     register_method("_notification", &GastNode::_notification);
 
-    register_method("set_size", &GastNode::set_size);
-    register_method("get_size", &GastNode::get_size);
     register_method("set_collidable", &GastNode::set_collidable);
     register_method("is_collidable", &GastNode::is_collidable);
-    register_method("set_curved", &GastNode::set_curved);
-    register_method("is_curved", &GastNode::is_curved);
     register_method("set_gaze_tracking", &GastNode::set_gaze_tracking);
     register_method("is_gaze_tracking", &GastNode::is_gaze_tracking);
     register_method("set_render_on_top", &GastNode::set_render_on_top);
@@ -116,14 +57,10 @@ void GastNode::_register_methods() {
 
     register_property<GastNode, bool>("collidable", &GastNode::set_collidable,
                                       &GastNode::is_collidable, kDefaultCollidable);
-    register_property<GastNode, bool>("curved", &GastNode::set_curved, &GastNode::is_curved,
-                                      kDefaultCurveValue);
     register_property<GastNode, bool>("gaze_tracking", &GastNode::set_gaze_tracking,
                                       &GastNode::is_gaze_tracking, kDefaultGazeTracking);
     register_property<GastNode, bool>("render_on_top", &GastNode::set_render_on_top,
                                       &GastNode::is_render_on_top, kDefaultRenderOnTop);
-    register_property<GastNode, Vector2>("size", &GastNode::set_size, &GastNode::get_size,
-                                         kDefaultSize);
     register_property<GastNode, float>("gradient_height_ratio",
                                        &GastNode::set_gradient_height_ratio,
                                        &GastNode::get_gradient_height_ratio,
@@ -136,37 +73,15 @@ void GastNode::_init() {
     // Add a CollisionShape to the static body node
     CollisionShape *collision_shape = CollisionShape::_new();
     add_child(collision_shape);
-
-    // Add a mesh instance to the collision shape node
-    MeshInstance *mesh_instance = MeshInstance::_new();
-    collision_shape->add_child(mesh_instance);
-
-    rectangular_surface = QuadMesh::_new();
-    spherical_surface_array = create_spherical_surface_array(
-            kEquirectSphereSize, kEquirectSphereMeshBandCount, kEquirectSphereMeshSectorCount);
 }
 
 void GastNode::_enter_tree() {
     ALOGV("Entering tree for %s.", get_node_tag(*this));
 
-    // Create the shader object
-    Shader *shader = Shader::_new();
-    shader->set_custom_defines(kShaderCustomDefines);
-    shader->set_code(generate_shader_code());
-
     // Create the external texture
-    ExternalTexture *external_texture = ExternalTexture::_new();
+    external_texture = ExternalTexture::_new();
 
-    // Create the shader material.
-    ALOGV("Creating GAST shader material.");
-    ShaderMaterial *shader_material = ShaderMaterial::_new();
-    shader_material->set_shader(shader);
-    shader_material->set_shader_param(kGastTextureParamName, external_texture);
-
-    shader_material_ref = Ref<ShaderMaterial>(shader_material);
-
-    update_mesh_and_collision_shape();
-    update_render_priority();
+    setup_projection_mesh();
 }
 
 void GastNode::_exit_tree() {
@@ -176,95 +91,20 @@ void GastNode::_exit_tree() {
 
 void GastNode::reset_mesh_and_collision_shape() {
     // Unset the GAST mesh resource
-    MeshInstance *mesh_instance = get_mesh_instance();
-    if (mesh_instance) {
-        mesh_instance->set_mesh(Ref<Resource>());
-    }
-
+    projection_mesh->reset_mesh();
     // Unset the box shape resource
     update_collision_shape();
 }
 
-void GastNode::update_mesh_dimensions_and_collision_shape() {
-    MeshInstance *mesh_instance = get_mesh_instance();
-    auto *mesh = get_mesh();
-    if (!mesh_instance || !mesh) {
-        ALOGE("Unable to access mesh resource for %s", get_node_tag(*this));
-        return;
+void GastNode::setup_projection_mesh() {
+    CollisionShape *collisionShape = get_collision_shape();
+    for (int i = 0; i < collisionShape->get_child_count(); i++) {
+        collisionShape->remove_child(collisionShape->get_child(i));
     }
-
-    Mesh::PrimitiveType primitive;
-    Array mesh_surface_array;
-    if (projection_mesh_type == ProjectionMeshType::RECTANGULAR) {
-        if (is_curved()) {
-            primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
-            mesh_surface_array = create_curved_screen_surface_array(
-                    mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
-        } else {
-            primitive = Mesh::PRIMITIVE_TRIANGLES;
-            rectangular_surface->set_size(mesh_size);
-            mesh_surface_array = rectangular_surface->get_mesh_arrays();
-        }
-    } else if (projection_mesh_type == ProjectionMeshType::EQUIRECTANGULAR) {
-        primitive = Mesh::PRIMITIVE_TRIANGLES;
-        mesh_surface_array = spherical_surface_array;
-    }
-
-    auto *array_mesh = Object::cast_to<ArrayMesh>(mesh);
-    if (!array_mesh) {
-        ALOGE("Failed to cast mesh to %s.", ArrayMesh::___get_class_name());
-        return;
-    }
-    for (int i = 0; i < array_mesh->get_surface_count(); i++) {
-        array_mesh->surface_remove(i);
-    }
-    array_mesh->add_surface_from_arrays(primitive, mesh_surface_array);
-
-    // Generate updated shader code for the type of projection being used.
-    shader_material_ref->get_shader()->set_code(generate_shader_code());
-    ALOGV("Setting up GAST shader material resource.");
-    mesh_instance->set_surface_material(kDefaultSurfaceIndex, shader_material_ref);
-
+    collisionShape->add_child(projection_mesh->get_mesh_instance());
+    projection_mesh->set_external_texture(external_texture);
     update_collision_shape();
-}
-
-void GastNode::update_mesh_and_collision_shape() {
-    Mesh *mesh = ArrayMesh::_new();
-
-    ALOGV("Setting up GAST mesh resource.");
-    MeshInstance *mesh_instance = get_mesh_instance();
-    if (!mesh_instance || !mesh) {
-        return;
-    }
-    mesh_instance->set_mesh(mesh);
-
-    ALOGV("Setting up GAST shape resource.");
-    update_mesh_dimensions_and_collision_shape();
-}
-
-void GastNode::update_render_priority() {
-    ShaderMaterial *shader_material = *shader_material_ref;
-    if (!shader_material) {
-        return;
-    }
-
-    int render_priority = 0;
-    if (render_on_top) {
-        render_priority++;
-        if (gaze_tracking) {
-            render_priority++;
-        }
-    }
-    shader_material->set_render_priority(render_priority);
-}
-
-Vector2 GastNode::get_size() {
-    return mesh_size;
-}
-
-void GastNode::set_size(Vector2 size) {
-    this->mesh_size = size;
-    update_mesh_dimensions_and_collision_shape();
+    projection_mesh->update_render_priority();
 }
 
 void GastNode::update_collision_shape() {
@@ -274,28 +114,11 @@ void GastNode::update_collision_shape() {
         return;
     }
 
-    Mesh *mesh = get_mesh();
-    if (!is_visible_in_tree() || !collidable || !mesh) {
+    if (!is_visible_in_tree() || !collidable || projection_mesh->get_mesh_instance() == nullptr) {
         collision_shape->set_shape(Ref<Resource>());
     } else {
-        if (is_curved()) {
-            // TODO: Use `create_trimesh_shape()` instead after resolving why the shape doesn't detect collisions.
-            collision_shape->set_shape(mesh->create_convex_shape());
-        } else {
-            collision_shape->set_shape(mesh->create_convex_shape());
-        }
+        collision_shape->set_shape(projection_mesh->get_collision_shape());
     }
-}
-
-void GastNode::update_shader_params() {
-    ShaderMaterial *shader_material = get_shader_material();
-    if (!shader_material) {
-        return;
-    }
-
-    shader_material->set_shader_param(kGastEnableBillBoardParamName, gaze_tracking);
-    shader_material->set_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
-    shader_material->set_shader_param(kGastNodeAlphaParamName, alpha);
 }
 
 int GastNode::get_external_texture_id(int surface_index) {
@@ -311,6 +134,9 @@ int GastNode::get_external_texture_id(int surface_index) {
     return tex_id;
 }
 
+ExternalTexture *GastNode::get_external_texture(int surface_index) {
+    return external_texture;
+}
 
 void GastNode::_input_event(const godot::Object *camera,
                             const godot::Ref<godot::InputEvent> event,
@@ -366,7 +192,7 @@ void GastNode::_notification(const int64_t what) {
 }
 
 void GastNode::_process(const real_t delta) {
-    if (is_gaze_tracking()) {
+    if (projection_mesh->is_gaze_tracking()) {
         Rect2 gaze_area = get_viewport()->get_visible_rect();
         Vector2 gaze_center_point = Vector2(gaze_area.position.x + gaze_area.size.x / 2.0,
                                             gaze_area.position.y + gaze_area.size.y / 2.0);
@@ -492,24 +318,6 @@ bool GastNode::calculate_raycast_plane_collision(const RayCast &raycast, const P
                                 raycast.to_global(raycast.get_cast_to()), collision_point);
 }
 
-ExternalTexture *GastNode::get_external_texture(int surface_index) {
-    ShaderMaterial *shader_material = get_shader_material();
-    if (!shader_material) {
-        return nullptr;
-    }
-
-    ExternalTexture *external_texture = nullptr;
-    Ref<Texture> texture = shader_material->get_shader_param(kGastTextureParamName);
-    if (texture.is_valid()) {
-        external_texture = Object::cast_to<ExternalTexture>(*texture);
-    }
-
-    if (external_texture) {
-        ALOGV("Found external GastNode texture for node %s", get_node_tag(*this));
-    }
-    return external_texture;
-}
-
 bool
 GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point) {
     Input *input = Input::get_singleton();
@@ -575,39 +383,15 @@ GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_co
     return press_in_progress;
 }
 
-String GastNode::generate_shader_code() const {
-    String shader_code = kShaderCode;
-    if (render_on_top) {
-        shader_code += kDisableDepthTestRenderMode;
-    }
-    if (projection_mesh_type == ProjectionMeshType::EQUIRECTANGULAR) {
-        shader_code += kCullFrontRenderMode;
-    }
-    return shader_code;
-}
-
 Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point) {
-    Vector2 relative_collision_point = kInvalidCoordinate;
-
-    // Turn the collision point into local space
     Vector3 local_point = to_local(absolute_collision_point);
-
-    // Normalize the collision point. A Gast node is a flat quad so we only worry about
-    // the x,y coordinates
-    Vector2 node_size = get_size();
-    if (node_size.width > 0 && node_size.height > 0) {
-        float max_x = node_size.width / 2;
-        float min_x = -max_x;
-        float max_y = node_size.height / 2;
-        float min_y = -max_y;
-        relative_collision_point = Vector2((local_point.x - min_x) / node_size.width,
-                                           (local_point.y - min_y) / node_size.height);
-
-        // Adjust the y coordinate to match the Android view coordinates system.
-        relative_collision_point.y = 1 - relative_collision_point.y;
+    if (get_projection_mesh()->is_rectangular_projection_mesh()) {
+        auto *rectangular_projection_mesh =
+            dynamic_cast<RectangularProjectionMesh*>(get_projection_mesh());
+        return rectangular_projection_mesh->get_relative_collision_point(local_point);
+    } else {
+        return kInvalidCoordinate;
     }
-
-    return relative_collision_point;
 }
 
 }  // namespace gast

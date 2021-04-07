@@ -13,6 +13,7 @@ import com.google.android.exoplayer2.util.Util
 import org.godotengine.godot.Godot
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.extension.GastExtension
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -166,7 +167,11 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     @Suppress("unused")
     fun setVideoScreenCurved(curved: Boolean) {
         runOnRenderThread {
-            gastNode?.setCurved(curved)
+            if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
+                val projectionMesh: RectangularProjectionMesh =
+                    gastNode?.getProjectionMesh() as RectangularProjectionMesh
+                projectionMesh.setCurved(curved)
+            }
         }
     }
 
@@ -179,7 +184,11 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     @Suppress("unused")
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
-            gastNode?.updateSize(width, height)
+            if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
+                val projectionMesh: RectangularProjectionMesh =
+                    gastNode?.getProjectionMesh() as RectangularProjectionMesh
+                projectionMesh.setMeshSize(width, height)
+            }
         }
     }
 

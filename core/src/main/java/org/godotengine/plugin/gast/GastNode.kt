@@ -8,6 +8,8 @@ import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
 import androidx.annotation.RequiresApi
+import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import java.util.BitSet
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -57,6 +59,29 @@ class GastNode @JvmOverloads constructor(
 
         gastManager.registerGastRenderListener(this)
     }
+
+    fun getProjectionMesh() : ProjectionMesh {
+        return ProjectionMesh(nativeGetProjectionMesh(nodePointer))
+    }
+
+    fun getRectangularProjectionMesh() : RectangularProjectionMesh? {
+        if (!getProjectionMesh().isRectangular()) {
+            return null
+        }
+        return RectangularProjectionMesh(nativeGetProjectionMesh(nodePointer))
+    }
+
+    private external fun nativeGetProjectionMesh(nodePointer: Long) : Long
+
+    fun setProjectionMesh(projectionMeshType: ProjectionMeshType) {
+        setProjectionMesh(projectionMeshType.ordinal)
+    }
+
+    fun setProjectionMesh(projectionMeshType: Int) {
+        nativeSetProjectionMesh(nodePointer, projectionMeshType)
+    }
+
+    private external fun nativeSetProjectionMesh(nodePointer: Long, projectionMeshType: Int)
 
     companion object {
         private val TAG = GastNode::class.java.simpleName
@@ -286,20 +311,6 @@ class GastNode @JvmOverloads constructor(
 
     private external fun isGastNodeCollidable(nodePointer: Long): Boolean
 
-    fun isCurved(): Boolean {
-        checkIfReleased()
-        return isGastNodeCurved(nodePointer)
-    }
-
-    private external fun isGastNodeCurved(nodePointer: Long): Boolean
-
-    fun setCurved(curved: Boolean) {
-        checkIfReleased()
-        setGastNodeCurved(nodePointer, curved)
-    }
-
-    private external fun setGastNodeCurved(nodePointer: Long, curved: Boolean)
-
     fun isGazeTracking(): Boolean {
         checkIfReleased()
         return isGazeTracking(nodePointer)
@@ -391,16 +402,6 @@ class GastNode @JvmOverloads constructor(
     private external fun setGastNodeGradientHeightRatio(nodePointer: Long, ratio: Float)
 
     /**
-     * Update the size of the Gast node.
-     */
-    fun updateSize(width: Float, height: Float) {
-        checkIfReleased()
-        updateGastNodeSize(nodePointer, width, height)
-    }
-
-    private external fun updateGastNodeSize(nodePointer: Long, width: Float, height: Float)
-
-    /**
      * Update the node's opacity.
      */
     fun updateAlpha(alpha: Float) {
@@ -471,15 +472,4 @@ class GastNode @JvmOverloads constructor(
             counter = updateTextureImageCounter.decrementAndGet()
         }
     }
-
-    /**
-     * Updates the node's projection type.
-     */
-    fun setProjectionMeshType(projectionMeshType: ProjectionMeshType) {
-        checkIfReleased()
-        nativeSetProjectionMeshType(nodePointer, projectionMeshType.ordinal)
-    }
-
-    private external fun nativeSetProjectionMeshType(nodePointer: Long, projectionMeshType: Int)
-
 }

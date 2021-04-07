@@ -4,6 +4,7 @@
 #include <core/Vector2.hpp>
 #include <core/Vector3.hpp>
 #include "gdn/gast_node.h"
+#include "gdn/projection_mesh/projection_mesh.h"
 #include "gast_manager.h"
 #include "utils.h"
 
@@ -24,6 +25,10 @@ inline GastNode *from_pointer(jlong gast_node_pointer) {
 
 inline jlong to_pointer(GastNode *gast_node) {
     return reinterpret_cast<intptr_t>(gast_node);
+}
+
+inline jlong to_pointer(ProjectionMesh *projection_mesh) {
+    return reinterpret_cast<intptr_t>(projection_mesh);
 }
 
 }  // namespace
@@ -101,20 +106,6 @@ JNI_METHOD(isGastNodeCollidable)(JNIEnv *, jobject, jlong node_pointer) {
     return gast_node->is_collidable();
 }
 
-JNIEXPORT void JNICALL
-JNI_METHOD(setGastNodeCurved)(JNIEnv *, jobject, jlong node_pointer, jboolean curved) {
-    GastNode *gast_node = from_pointer(node_pointer);
-    ERR_FAIL_NULL(gast_node);
-    gast_node->set_curved(curved);
-}
-
-JNIEXPORT jboolean JNICALL
-JNI_METHOD(isGastNodeCurved)(JNIEnv *, jobject, jlong node_pointer) {
-    GastNode *gast_node = from_pointer(node_pointer);
-    ERR_FAIL_NULL_V(gast_node, kDefaultCurveValue);
-    return gast_node->is_curved();
-}
-
 JNIEXPORT jboolean JNICALL JNI_METHOD(isGazeTracking)(JNIEnv *, jobject, jlong node_pointer) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL_V(gast_node, kDefaultGazeTracking);
@@ -181,14 +172,6 @@ JNI_METHOD(setGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong node_pointer
     gast_node->set_gradient_height_ratio(ratio);
 }
 
-JNIEXPORT void JNICALL
-JNI_METHOD(updateGastNodeSize)(JNIEnv *, jobject, jlong node_pointer, jfloat width,
-                               jfloat height) {
-    GastNode *gast_node = from_pointer(node_pointer);
-    ERR_FAIL_NULL(gast_node);
-    gast_node->set_size(Vector2(width, height));
-}
-
 JNIEXPORT void JNICALL JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong node_pointer, jfloat alpha) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL(gast_node);
@@ -220,12 +203,19 @@ JNI_METHOD(updateGastNodeLocalRotation)(JNIEnv *, jobject, jlong node_pointer,
     gast_node->set_rotation_degrees(Vector3(x_rotation, y_rotation, z_rotation));
 }
 
+JNIEXPORT jlong JNICALL
+JNI_METHOD(nativeGetProjectionMesh)(JNIEnv *, jobject, jlong node_pointer) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL_V(gast_node, 0);
+    return to_pointer(gast_node->get_projection_mesh());
+}
+
 JNIEXPORT void JNICALL
-JNI_METHOD(nativeSetProjectionMeshType)(JNIEnv *, jobject, jlong node_pointer,
-                                        jint projection_mesh_type) {
+JNI_METHOD(nativeSetProjectionMesh)(JNIEnv *, jobject, jlong node_pointer,
+                                    jint projection_mesh_type) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL(gast_node);
-    gast_node->set_projection_mesh_type(projection_mesh_type);
+    gast_node->set_projection_mesh(projection_mesh_type);
 }
 
 }

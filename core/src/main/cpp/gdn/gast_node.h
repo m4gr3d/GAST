@@ -20,6 +20,8 @@
 #include <gen/StaticBody.hpp>
 #include <map>
 
+#include "gdn/projection_mesh/projection_mesh.h"
+#include "gdn/projection_mesh/projection_mesh_pool.h"
 #include "utils.h"
 
 namespace gast {
@@ -29,7 +31,6 @@ using namespace godot;
 constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
-const bool kDefaultCurveValue = false;
 const bool kDefaultGazeTracking = false;
 const bool kDefaultRenderOnTop = false;
 const float kDefaultGradientHeightRatio = 0.0f;
@@ -64,13 +65,6 @@ public:
 
     int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
 
-    // Mirrors src/main/java/org/godotengine/plugin/gast/GastNode#ProjectionMeshType
-    enum ProjectionMeshType {
-        RECTANGULAR = 0,
-        EQUIRECTANGULAR = 1,
-        MESH = 2,
-    };
-
     inline void set_collidable(bool collidable) {
         if (this->collidable == collidable) {
             return;
@@ -83,88 +77,56 @@ public:
         return collidable;
     }
 
-    inline void set_curved(bool curved) {
-        if (this->curved == curved) {
+    inline void set_projection_mesh(int projection_mesh_type) {
+        set_projection_mesh(static_cast<ProjectionMesh::ProjectionMeshType>(projection_mesh_type));
+    }
+
+    inline void set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
+        if (projection_mesh_type == get_projection_mesh()->get_projection_mesh_type()) {
             return;
         }
-        this->curved = curved;
-        update_mesh_dimensions_and_collision_shape();
-    }
 
-    inline bool is_curved() {
-        return this->curved;
-    }
-
-    inline void set_projection_mesh_type(int projection_mesh_type) {
-        set_projection_mesh_type(static_cast<ProjectionMeshType>(projection_mesh_type));
-    }
-
-    inline void set_projection_mesh_type(ProjectionMeshType projection_mesh_type) {
-        if (this->projection_mesh_type == projection_mesh_type) {
-            return;
+        if (projection_mesh_type == ProjectionMesh::ProjectionMeshType::RECTANGULAR) {
+            projection_mesh = projection_mesh_pool.get_or_create_rectangular_projection_mesh();
+        } else if (projection_mesh_type == ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR) {
+            projection_mesh = projection_mesh_pool.get_or_create_equirectangular_projection_mesh();
         }
-        this->projection_mesh_type = projection_mesh_type;
-        update_mesh_dimensions_and_collision_shape();
+        setup_projection_mesh();
     }
 
-    inline ProjectionMeshType get_projection_mesh_type() {
-        return this->projection_mesh_type;
-    }
-
-    inline void set_gaze_tracking(bool gaze_tracking) {
-        if (this->gaze_tracking == gaze_tracking) {
-            return;
-        }
-        this->gaze_tracking = gaze_tracking;
-        update_render_priority();
-        update_shader_params();
-    }
-
-    inline bool is_gaze_tracking() {
-        return gaze_tracking;
-    }
-
-    inline void set_alpha(float alpha) {
-        if (this->alpha == alpha) {
-            return;
-        }
-        this->alpha = alpha;
-        update_shader_params();
+    inline ProjectionMesh* get_projection_mesh() {
+        return this->projection_mesh;
     }
 
     inline void set_render_on_top(bool enable) {
-        if (this->render_on_top == enable) {
-            return;
-        }
-        this->render_on_top = enable;
-
-        if (shader_material_ref.is_valid() && shader_material_ref->get_shader().is_valid()) {
-            shader_material_ref->get_shader()->set_code(generate_shader_code());
-        }
-        update_render_priority();
+        projection_mesh->set_render_on_top(enable);
     }
 
     inline bool is_render_on_top() {
-        return render_on_top;
+        return projection_mesh->is_render_on_top();
     }
 
-    Vector2 get_size();
+    inline void set_gaze_tracking(bool gaze_tracking) {
+        projection_mesh->set_gaze_tracking(gaze_tracking);
+    }
 
-    void set_size(Vector2 size);
+    inline bool is_gaze_tracking() {
+        return projection_mesh->is_gaze_tracking();
+    }
 
     inline float get_gradient_height_ratio() {
-        return gradient_height_ratio;
+        return projection_mesh->get_gradient_height_ratio();
     }
 
     inline void set_gradient_height_ratio(float ratio) {
-        if (this->gradient_height_ratio == ratio) {
-            return;
-        }
-        this->gradient_height_ratio = std::min(1.0f, std::max(0.0f, ratio));
-        update_shader_params();
+        projection_mesh->set_gradient_height_ratio(ratio);
     }
 
-private:
+    inline void set_alpha(float alpha) {
+        projection_mesh->set_alpha(alpha);
+    }
+
+ private:
 
     // Tracks raycast collision info.
     struct CollisionInfo {
@@ -180,33 +142,6 @@ private:
         CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
         return collision_shape;
     }
-
-    inline MeshInstance *get_mesh_instance() {
-        CollisionShape *collision_shape = get_collision_shape();
-        if (!collision_shape) {
-            return nullptr;
-        }
-
-        Node *node = collision_shape->get_child(0);
-        MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(node);
-        return mesh_instance;
-    }
-
-    inline Mesh *get_mesh() {
-        Mesh *mesh = nullptr;
-
-        MeshInstance *mesh_instance = get_mesh_instance();
-        if (mesh_instance) {
-            Ref<Mesh> mesh_ref = mesh_instance->get_mesh();
-            if (mesh_ref.is_valid()) {
-                mesh = *mesh_ref;
-            }
-        }
-
-        return mesh;
-    }
-
-    String generate_shader_code() const;
 
     static inline RayCast *get_ray_cast_from_variant(Variant variant) {
         RayCast *ray_cast = Object::cast_to<RayCast>(variant);
@@ -242,10 +177,6 @@ private:
 
     ExternalTexture *get_external_texture(int surface_index);
 
-    inline ShaderMaterial *get_shader_material() {
-        return *shader_material_ref;
-    }
-
     // Calculate whether a collision occurs between the given `RayCast` and `Plane`.
     // Return True if they collide, with `collision_point` filled appropriately.
     bool calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
@@ -258,36 +189,22 @@ private:
 
     void reset_mesh_and_collision_shape();
 
-    void update_mesh_and_collision_shape();
-
-    void update_mesh_dimensions_and_collision_shape();
-
-    void update_render_priority();
-
-    void update_shader_params();
+    void setup_projection_mesh();
 
     bool has_captured_raycast(const RayCast &ray_cast) {
         return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
     }
 
     bool collidable;
-    // Whether the rectangular screen is curved or not. This is only relevant if the
-    // projection_mesh_type is RECTANGULAR.
-    bool curved;
-    ProjectionMeshType projection_mesh_type;
-    bool gaze_tracking;
-    bool render_on_top;
-    float alpha;
-    float gradient_height_ratio;
-    Vector2 mesh_size;
-    Ref<ShaderMaterial> shader_material_ref = Ref<ShaderMaterial>();
+    ProjectionMeshPool projection_mesh_pool;
+    ProjectionMesh *projection_mesh;
 
     // Map used to keep track of the raycasts colliding with this node.
     // The boolean specifies whether a `press` is currently in progress.
     std::map<String, std::shared_ptr<CollisionInfo>> colliding_raycast_paths;
 
-    QuadMesh *rectangular_surface;
-    Array spherical_surface_array;
+
+    ExternalTexture *external_texture;
 };
 }  // namespace gast
 
