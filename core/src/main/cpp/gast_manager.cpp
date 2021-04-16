@@ -8,7 +8,6 @@
 #include <gen/Input.hpp>
 #include <gen/InputEventAction.hpp>
 #include <gen/MainLoop.hpp>
-#include <gen/SceneTree.hpp>
 #include <gen/Object.hpp>
 #include <gen/Viewport.hpp>
 
@@ -134,6 +133,12 @@ GastNode *GastManager::get_gast_node(const godot::String &node_path) {
     return gast_node;
 }
 
+SceneTree *GastManager::get_scene_tree() {
+    MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
+    auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
+    return scene_tree;
+}
+
 Node *GastManager::get_node(const godot::String &node_path) {
     // First search by treating the given argument as a node path since it's more efficient.
     if (node_path.empty()) {
@@ -141,8 +146,7 @@ Node *GastManager::get_node(const godot::String &node_path) {
         return nullptr;
     }
 
-    MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
-    auto *scene_tree = Object::cast_to<SceneTree>(main_loop);
+    auto *scene_tree = get_scene_tree();
     if (!scene_tree) {
         ALOGW("Unable to retrieve scene tree.");
         return nullptr;
@@ -176,14 +180,14 @@ GastNode
         ALOGV("Creating a new Gast node.");
         // Creating a new static body node
         gast_node = GastNode::_new();
-
-        // Add the new node to the GastNode group. This is how we keep track of the nodes
-        // that are created and managed by this plugin.
-        gast_node->add_to_group(kGastNodeGroupName);
     } else {
         gast_node = reusable_pool_.back();
         reusable_pool_.pop_back();
     }
+
+    // Add the new node to the GastNode group. This is how we keep track of the nodes
+    // that are created and managed by this plugin.
+    gast_node->add_to_group(kGastNodeGroupName);
 
     if (gast_node->get_parent() != nullptr) {
         ALOGV("Removing Gast node parent.");
@@ -212,11 +216,14 @@ void GastManager::unbind_and_release_gast_node(GastNode *gast_node) {
         gast_node->set_owner(nullptr);
     }
 
+    // Remove the node from the GastNode group
+    gast_node->remove_from_group(kGastNodeGroupName);
+
     // Move the Gast node to the reusable pool.
     reusable_pool_.push_back(gast_node);
 }
 
-void GastManager::on_process() {
+void GastManager::check_for_monitored_input_actions() {
     // Check if one of the monitored input actions was dispatched.
     if (input_actions_to_monitor_.empty()) {
         return;
@@ -238,6 +245,126 @@ void GastManager::on_process() {
             on_render_input_action(action, press_state, input->get_action_strength(action));
         }
     }
+}
+
+void GastManager::process_raycast_input() {
+    auto *scene_tree = get_scene_tree();
+    if (!scene_tree) {
+        ALOGW("Unable to retrieve scene tree.");
+        return;
+    }
+
+    // Get the list of ray casts in the group
+    Array gast_ray_casts = scene_tree->get_nodes_in_group(kGastRayCasterGroupName);
+    if (gast_ray_casts.empty()) {
+        return;
+    }
+
+    for (int i = 0; i < gast_ray_casts.size(); i++) {
+        RayCast *ray_cast = GastNode::get_ray_cast_from_variant(gast_ray_casts[i]);
+        if (!ray_cast || !ray_cast->is_enabled()) {
+            continue;
+        }
+
+        String ray_cast_path = ray_cast->get_path();
+
+        // Check if the ray cast is colliding.
+        GastNode *collider;
+        bool collides_with_gast_node = false;
+        Vector3 collision_point;
+        Vector3 collision_normal;
+
+        if (has_captured_raycast(*ray_cast) &&
+            colliding_raycast_paths[ray_cast_path]->press_in_progress) {
+            // A press was in progress when the raycast 'move off' this node. Continue faking the
+            // collision until the press is released.
+            collider = colliding_raycast_paths[ray_cast_path]->collider;
+            collision_point = colliding_raycast_paths[ray_cast_path]->collision_point;
+            collision_normal = colliding_raycast_paths[ray_cast_path]->collision_normal;
+
+            // Simulate collision and update collision_point accordingly.
+            // Generate the plane defined by the collision normal and the collision point.
+            auto *collision_plane = new Plane(collision_point, collision_normal);
+
+            collides_with_gast_node = calculate_raycast_plane_collision(*ray_cast, *collision_plane,
+                                                                        &collision_point);
+        } else if (ray_cast->is_colliding()) {
+            collider = Object::cast_to<GastNode>(ray_cast->get_collider());
+            if (collider != nullptr && collider->is_in_group(kGastNodeGroupName)) {
+                collides_with_gast_node = true;
+                collision_point = ray_cast->get_collision_point();
+                collision_normal = ray_cast->get_collision_normal();
+            }
+        }
+
+        if (collides_with_gast_node) {
+            // Check if we're now colliding with a different GastNode. If that's the case, we need
+            // to send a exit event to the previous one.
+            if (has_captured_raycast(*ray_cast) &&
+                colliding_raycast_paths[ray_cast_path]->collider != collider) {
+                release_captured_raycast(*ray_cast);
+            }
+
+            std::shared_ptr<CollisionInfo> collision_info =
+                    has_captured_raycast(*ray_cast)
+                    ? colliding_raycast_paths[ray_cast_path] : std::make_shared<CollisionInfo>();
+
+            // Calculate the 2D collision point of the raycast on the Gast node.
+            Vector2 relative_collision_point = collider->get_relative_collision_point(
+                    collision_point);
+            collision_info->press_in_progress = collider->handle_ray_cast_input(ray_cast_path,
+                                                                                relative_collision_point);
+            collision_info->collider = collider;
+            collision_info->collision_normal = collision_normal;
+            collision_info->collision_point = collision_point;
+
+            // Add the raycast to the list of colliding raycasts and update its collision info.
+            colliding_raycast_paths[ray_cast_path] = collision_info;
+
+            continue;
+        }
+
+        // Cleanup
+        release_captured_raycast(*ray_cast);
+    }
+}
+
+void GastManager::on_process() {
+    check_for_monitored_input_actions();
+    process_raycast_input();
+}
+
+void GastManager::release_captured_raycast(const RayCast &ray_cast) {
+    if (has_captured_raycast(ray_cast)) {
+        String ray_cast_path = ray_cast.get_path();
+        GastNode *collider = colliding_raycast_paths[ray_cast_path]->collider;
+
+        // Grab the last coordinates.
+        Vector2 last_coordinate = collider->get_relative_collision_point(
+                colliding_raycast_paths[ray_cast_path]->collision_point);
+        if (colliding_raycast_paths[ray_cast_path]->press_in_progress) {
+            // Fire a release event.
+            GastManager::get_singleton_instance()->on_render_input_release(collider->get_path(),
+                                                                           ray_cast_path,
+                                                                           last_coordinate.x,
+                                                                           last_coordinate.y);
+        } else {
+            // Fire a hover exit event.
+            GastManager::get_singleton_instance()->on_render_input_hover(collider->get_path(),
+                                                                         ray_cast_path,
+                                                                         kInvalidCoordinate.x,
+                                                                         kInvalidCoordinate.y);
+        }
+
+        // Remove the raycast from this node.
+        colliding_raycast_paths.erase(ray_cast_path);
+    }
+}
+
+bool GastManager::calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
+                                                 Vector3 *collision_point) {
+    return plane.intersects_ray(raycast.to_global(raycast.get_translation()),
+                                raycast.to_global(raycast.get_cast_to()), collision_point);
 }
 
 void GastManager::on_render_input_action(const String &action, InputPressState press_state, float strength) {

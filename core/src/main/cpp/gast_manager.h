@@ -5,9 +5,11 @@
 #include <core/Vector2.hpp>
 #include <core/Vector3.hpp>
 #include <gen/Node.hpp>
+#include <gen/SceneTree.hpp>
 #include <gen/Spatial.hpp>
 #include <jni.h>
 #include <list>
+#include <map>
 
 #include "gdn/gast_loader.h"
 #include "gdn/gast_node.h"
@@ -80,6 +82,25 @@ public:
     GastNode *get_gast_node(const String &node_path);
 
 private:
+
+    // Tracks raycast collision info.
+    struct CollisionInfo {
+        GastNode *collider;
+        // Tracks whether a press is in progress. If so, collision is faked via simulation
+        // when the raycast no longer collides with the node.
+        bool press_in_progress;
+        Vector3 collision_point;
+        Vector3 collision_normal;
+    };
+
+    bool has_captured_raycast(const RayCast &ray_cast) {
+        return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
+    }
+
+    void check_for_monitored_input_actions();
+
+    void process_raycast_input();
+
     static void delete_singleton_instance();
 
     static void register_callback(JNIEnv *env, jobject callback);
@@ -102,7 +123,16 @@ private:
 
     void on_render_input_action(const String &action, InputPressState press_state, float strength);
 
+    SceneTree *get_scene_tree();
+
     Node *get_node(const String &node_path);
+
+    // Calculate whether a collision occurs between the given `RayCast` and `Plane`.
+    // Return True if they collide, with `collision_point` filled appropriately.
+    bool calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
+                                           Vector3 *collision_point);
+
+    void release_captured_raycast(const RayCast &ray_cast);
 
     GastManager();
 
@@ -110,6 +140,9 @@ private:
 
     std::list<GastNode *> reusable_pool_;
     std::list<String> input_actions_to_monitor_;
+    // Map used to keep track of the raycasts colliding with this node.
+    // The boolean specifies whether a `press` is currently in progress.
+    std::map<String, std::shared_ptr<CollisionInfo>> colliding_raycast_paths;
 
     static GastManager *singleton_instance_;
     static GastLoader *gast_loader_;
