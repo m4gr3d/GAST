@@ -399,7 +399,8 @@ ExternalTexture *GastNode::get_external_texture(int surface_index) {
 }
 
 bool
-GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point) {
+GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point,
+                                bool was_press_in_progress) {
     Input *input = Input::get_singleton();
     String node_path = get_path();
 
@@ -409,15 +410,17 @@ GastNode::handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_co
     // Check for click actions
     String ray_cast_click_action = get_click_action_from_node_path(ray_cast_path);
     const bool press_in_progress = input->is_action_pressed(ray_cast_click_action);
-    if (input->is_action_just_pressed(ray_cast_click_action)) {
-        GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_path,
-                                                                     x_percent, y_percent);
-    } else if (input->is_action_just_released(ray_cast_click_action)) {
-        GastManager::get_singleton_instance()->on_render_input_release(node_path, ray_cast_path,
-                                                                       x_percent, y_percent);
-    } else {
+    if (press_in_progress == was_press_in_progress) {
         GastManager::get_singleton_instance()->on_render_input_hover(node_path, ray_cast_path,
                                                                      x_percent, y_percent);
+    } else {
+        if (press_in_progress) {
+            GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_path,
+                                                                         x_percent, y_percent);
+        } else {
+            GastManager::get_singleton_instance()->on_render_input_release(node_path, ray_cast_path,
+                                                                           x_percent, y_percent);
+        }
     }
 
     // Check for scrolling actions

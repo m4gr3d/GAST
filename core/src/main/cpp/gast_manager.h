@@ -85,17 +85,17 @@ private:
 
     // Tracks raycast collision info.
     struct CollisionInfo {
-        GastNode *collider;
+        GastNode *collider = nullptr;
         // Tracks whether a press is in progress. If so, collision is faked via simulation
         // when the raycast no longer collides with the node.
-        bool press_in_progress;
-        Vector3 collision_point;
-        Vector3 collision_normal;
+        bool press_in_progress = false;
+        Vector3 collision_point = Vector3::ZERO;
+        Vector3 collision_normal = Vector3::ZERO;
     };
 
-    bool has_captured_raycast(const RayCast &ray_cast) {
-        return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
-    }
+    void cleanup_collision_info(const CollisionInfo &collision_info, const String &ray_cast_path);
+
+    bool get_raycast_collision_info(const RayCast &ray_cast, CollisionInfo *collision_info);
 
     void check_for_monitored_input_actions();
 
@@ -126,13 +126,6 @@ private:
     SceneTree *get_scene_tree();
 
     Node *get_node(const String &node_path);
-
-    // Calculate whether a collision occurs between the given `RayCast` and `Plane`.
-    // Return True if they collide, with `collision_point` filled appropriately.
-    bool calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
-                                           Vector3 *collision_point);
-
-    void release_captured_raycast(const RayCast &ray_cast);
 
     GastManager();
 

@@ -247,6 +247,16 @@ void GastManager::check_for_monitored_input_actions() {
     }
 }
 
+bool GastManager::get_raycast_collision_info(const RayCast &ray_cast, CollisionInfo *collision_info) {
+    auto *collider = Object::cast_to<GastNode>(ray_cast.get_collider());
+    if (collider != nullptr && collision_info != nullptr) {
+        collision_info->collider = collider;
+        collision_info->collision_point = ray_cast.get_collision_point();
+        collision_info->collision_normal = ray_cast.get_collision_normal();
+    }
+    return collider != nullptr;
+}
+
 void GastManager::process_raycast_input() {
     auto *scene_tree = get_scene_tree();
     if (!scene_tree) {
@@ -266,66 +276,35 @@ void GastManager::process_raycast_input() {
             continue;
         }
 
-        String ray_cast_path = ray_cast->get_path();
-
         // Check if the ray cast is colliding.
-        GastNode *collider;
-        bool collides_with_gast_node = false;
-        Vector3 collision_point;
-        Vector3 collision_normal;
+        String ray_cast_path = ray_cast->get_path();
+        std::shared_ptr<CollisionInfo> collision_info =
+                colliding_raycast_paths.count(ray_cast_path) != 0
+                ? colliding_raycast_paths[ray_cast_path] : std::make_shared<CollisionInfo>();
 
-        if (has_captured_raycast(*ray_cast) &&
-            colliding_raycast_paths[ray_cast_path]->press_in_progress) {
-            // A press was in progress when the raycast 'move off' this node. Continue faking the
-            // collision until the press is released.
-            collider = colliding_raycast_paths[ray_cast_path]->collider;
-            collision_point = colliding_raycast_paths[ray_cast_path]->collision_point;
-            collision_normal = colliding_raycast_paths[ray_cast_path]->collision_normal;
+        const CollisionInfo previous_collision_info = *collision_info;
+        bool collides_with_gast_node = get_raycast_collision_info(*ray_cast, collision_info.get());
 
-            // Simulate collision and update collision_point accordingly.
-            // Generate the plane defined by the collision normal and the collision point.
-            auto *collision_plane = new Plane(collision_point, collision_normal);
-
-            collides_with_gast_node = calculate_raycast_plane_collision(*ray_cast, *collision_plane,
-                                                                        &collision_point);
-        } else if (ray_cast->is_colliding()) {
-            collider = Object::cast_to<GastNode>(ray_cast->get_collider());
-            if (collider != nullptr && collider->is_in_group(kGastNodeGroupName)) {
-                collides_with_gast_node = true;
-                collision_point = ray_cast->get_collision_point();
-                collision_normal = ray_cast->get_collision_normal();
-            }
+        // Check if the previous collider is different from the current one. If that's the case,
+        // we need to send a exit event to the previous one.
+        if (previous_collision_info.collider != nullptr &&
+            previous_collision_info.collider != collision_info->collider) {
+            cleanup_collision_info(previous_collision_info, ray_cast_path);
+            colliding_raycast_paths.erase(ray_cast_path);
         }
 
         if (collides_with_gast_node) {
-            // Check if we're now colliding with a different GastNode. If that's the case, we need
-            // to send a exit event to the previous one.
-            if (has_captured_raycast(*ray_cast) &&
-                colliding_raycast_paths[ray_cast_path]->collider != collider) {
-                release_captured_raycast(*ray_cast);
-            }
-
-            std::shared_ptr<CollisionInfo> collision_info =
-                    has_captured_raycast(*ray_cast)
-                    ? colliding_raycast_paths[ray_cast_path] : std::make_shared<CollisionInfo>();
-
             // Calculate the 2D collision point of the raycast on the Gast node.
-            Vector2 relative_collision_point = collider->get_relative_collision_point(
-                    collision_point);
-            collision_info->press_in_progress = collider->handle_ray_cast_input(ray_cast_path,
-                                                                                relative_collision_point);
-            collision_info->collider = collider;
-            collision_info->collision_normal = collision_normal;
-            collision_info->collision_point = collision_point;
+            Vector2 relative_collision_point = collision_info->collider->get_relative_collision_point(
+                    collision_info->collision_point);
+            collision_info->press_in_progress = collision_info->collider->handle_ray_cast_input(
+                    ray_cast_path,
+                    relative_collision_point,
+                    previous_collision_info.press_in_progress);
 
             // Add the raycast to the list of colliding raycasts and update its collision info.
             colliding_raycast_paths[ray_cast_path] = collision_info;
-
-            continue;
         }
-
-        // Cleanup
-        release_captured_raycast(*ray_cast);
     }
 }
 
@@ -334,37 +313,24 @@ void GastManager::on_process() {
     process_raycast_input();
 }
 
-void GastManager::release_captured_raycast(const RayCast &ray_cast) {
-    if (has_captured_raycast(ray_cast)) {
-        String ray_cast_path = ray_cast.get_path();
-        GastNode *collider = colliding_raycast_paths[ray_cast_path]->collider;
-
-        // Grab the last coordinates.
-        Vector2 last_coordinate = collider->get_relative_collision_point(
-                colliding_raycast_paths[ray_cast_path]->collision_point);
-        if (colliding_raycast_paths[ray_cast_path]->press_in_progress) {
-            // Fire a release event.
-            GastManager::get_singleton_instance()->on_render_input_release(collider->get_path(),
-                                                                           ray_cast_path,
-                                                                           last_coordinate.x,
-                                                                           last_coordinate.y);
-        } else {
-            // Fire a hover exit event.
-            GastManager::get_singleton_instance()->on_render_input_hover(collider->get_path(),
-                                                                         ray_cast_path,
-                                                                         kInvalidCoordinate.x,
-                                                                         kInvalidCoordinate.y);
-        }
-
-        // Remove the raycast from this node.
-        colliding_raycast_paths.erase(ray_cast_path);
+void GastManager::cleanup_collision_info(const CollisionInfo &collision_info, const String &ray_cast_path) {
+    if (collision_info.press_in_progress) {
+        Vector2 last_coordinate = collision_info.collider->get_relative_collision_point(
+                collision_info.collision_point);
+        // Fire a release event.
+        GastManager::get_singleton_instance()->on_render_input_release(
+                collision_info.collider->get_path(),
+                ray_cast_path,
+                last_coordinate.x,
+                last_coordinate.y);
+    } else {
+        // Fire a hover exit event.
+        GastManager::get_singleton_instance()->on_render_input_hover(
+                collision_info.collider->get_path(),
+                ray_cast_path,
+                kInvalidCoordinate.x,
+                kInvalidCoordinate.y);
     }
-}
-
-bool GastManager::calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
-                                                 Vector3 *collision_point) {
-    return plane.intersects_ray(raycast.to_global(raycast.get_translation()),
-                                raycast.to_global(raycast.get_cast_to()), collision_point);
 }
 
 void GastManager::on_render_input_action(const String &action, InputPressState press_state, float strength) {
