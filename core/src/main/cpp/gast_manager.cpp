@@ -298,7 +298,7 @@ void GastManager::process_raycast_input() {
             Vector2 relative_collision_point = collision_info->collider->get_relative_collision_point(
                     collision_info->collision_point);
             collision_info->press_in_progress = collision_info->collider->handle_ray_cast_input(
-                    ray_cast_path,
+                    ray_cast->get_name(),
                     relative_collision_point,
                     previous_collision_info.press_in_progress);
 

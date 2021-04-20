@@ -170,7 +170,7 @@ public:
     Vector2 get_relative_collision_point(Vector3 absolute_collision_point);
 
     // Handle the raycast input. Returns true if a press is in progress.
-    bool handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point,
+    bool handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point,
                                bool was_press_in_progress);
 
 private:
@@ -208,29 +208,30 @@ private:
 
     String generate_shader_code() const;
 
-    static inline String get_click_action_from_node_path(const String& node_path) {
+    static inline String get_click_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_click";
+        return node_name.replace("/", "_") + "_click";
     }
 
-    static inline String get_horizontal_left_scroll_action_from_node_path(const String& node_path) {
+    static inline String get_horizontal_left_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_left_scroll";
+        return node_name.replace("/", "_") + "_left_scroll";
     }
 
-    static inline String get_horizontal_right_scroll_action_from_node_path(const String& node_path) {
+    static inline String
+    get_horizontal_right_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_right_scroll";
+        return node_name.replace("/", "_") + "_right_scroll";
     }
 
-    static inline String get_vertical_up_scroll_action_from_node_path(const String& node_path) {
+    static inline String get_vertical_up_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_up_scroll";
+        return node_name.replace("/", "_") + "_up_scroll";
     }
 
-    static inline String get_vertical_down_scroll_action_from_node_path(const String& node_path) {
+    static inline String get_vertical_down_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_down_scroll";
+        return node_name.replace("/", "_") + "_down_scroll";
     }
 
     ExternalTexture *get_external_texture(int surface_index);

@@ -55,14 +55,14 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.009, 0, -0.297 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="RayCast" type="RayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" groups=[
+[node name="LeftRayCast" type="RayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" groups=[
 "gast_ray_caster",
 ]]
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/LeftTouchController/MeshInstance/RayCast"]
+[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/LeftTouchController/MeshInstance/LeftRayCast"]
 mesh = SubResource( 4 )
 material/0 = null
 
@@ -78,14 +78,14 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.009, 0, -0.297 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="RayCast" type="RayCast" parent="ARVROrigin/RightTouchController/MeshInstance" groups=[
+[node name="RightRayCast" type="RayCast" parent="ARVROrigin/RightTouchController/MeshInstance" groups=[
 "gast_ray_caster",
 ]]
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/RightTouchController/MeshInstance/RayCast"]
+[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/RightTouchController/MeshInstance/RightRayCast"]
 mesh = SubResource( 6 )
 material/0 = null
 
