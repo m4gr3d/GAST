@@ -8,9 +8,26 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "OculusTracker",
+"class": "OculusHandTracker",
+"language": "GDScript",
+"path": "res://oculus_hand_tracker.gd"
+}, {
+"base": "OculusTracker",
+"class": "OculusTouchController",
+"language": "GDScript",
+"path": "res://oculus_touch_controller.gd"
+}, {
+"base": "ARVRController",
+"class": "OculusTracker",
+"language": "GDScript",
+"path": "res://oculus_tracker.gd"
+} ]
 _global_script_class_icons={
-
+"OculusHandTracker": "",
+"OculusTouchController": "",
+"OculusTracker": ""
 }
 
 [application]
@@ -21,57 +38,57 @@ config/icon="res://icon.png"
 
 [input]
 
-LeftRayCast_click={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":7,"pressure":0.0,"pressed":false,"script":null)
-, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":15,"pressure":0.0,"pressed":false,"script":null)
- ]
+ui_accept={
+"deadzone": 0.5,
+"events": [  ]
 }
-RightRayCast_click={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":1,"button_index":7,"pressure":0.0,"pressed":false,"script":null)
-, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":1,"button_index":15,"pressure":0.0,"pressed":false,"script":null)
- ]
+ui_select={
+"deadzone": 0.5,
+"events": [  ]
 }
-LeftRayCast_left_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":0,"axis_value":-1.0,"script":null)
- ]
+ui_cancel={
+"deadzone": 0.5,
+"events": [  ]
 }
-LeftRayCast_up_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":1,"axis_value":-1.0,"script":null)
- ]
+ui_focus_next={
+"deadzone": 0.5,
+"events": [  ]
 }
-RightRayCast_left_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":0,"axis_value":-1.0,"script":null)
- ]
+ui_focus_prev={
+"deadzone": 0.5,
+"events": [  ]
 }
-RightRayCast_up_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":1,"axis_value":-1.0,"script":null)
- ]
+ui_left={
+"deadzone": 0.5,
+"events": [  ]
 }
-LeftRayCast_right_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":0,"axis_value":1.0,"script":null)
- ]
+ui_right={
+"deadzone": 0.5,
+"events": [  ]
 }
-LeftRayCast_down_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":0,"axis":1,"axis_value":1.0,"script":null)
- ]
+ui_up={
+"deadzone": 0.5,
+"events": [  ]
 }
-RightRayCast_right_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":0,"axis_value":1.0,"script":null)
- ]
+ui_down={
+"deadzone": 0.5,
+"events": [  ]
 }
-RightRayCast_down_scroll={
-"deadzone": 0.0,
-"events": [ Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":1,"axis":1,"axis_value":1.0,"script":null)
- ]
+ui_page_up={
+"deadzone": 0.5,
+"events": [  ]
+}
+ui_page_down={
+"deadzone": 0.5,
+"events": [  ]
+}
+ui_home={
+"deadzone": 0.5,
+"events": [  ]
+}
+ui_end={
+"deadzone": 0.5,
+"events": [  ]
 }
 
 [rendering]

@@ -1,9 +1,14 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://main.gd" type="Script" id=1]
 [ext_resource path="res://touch_controller.tscn" type="PackedScene" id=2]
 [ext_resource path="res://ray_cast_with_reticle.gd" type="Script" id=3]
 [ext_resource path="res://test_shader.shader" type="Shader" id=4]
+[ext_resource path="res://oculus_hand_tracker.gd" type="Script" id=5]
+[ext_resource path="res://right_hand_model.glb" type="PackedScene" id=6]
+[ext_resource path="res://oculus_touch_controller.gd" type="Script" id=7]
+[ext_resource path="res://left_hand_model.glb" type="PackedScene" id=8]
+[ext_resource path="res://hand_pointer.tscn" type="PackedScene" id=9]
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 4 )
@@ -46,8 +51,9 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.32891, 0 )
 
 [node name="LeftTouchController" type="ARVRController" parent="ARVROrigin"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1.727, -0.4 )
+script = ExtResource( 7 )
 
-[node name="touch_controller" parent="ARVROrigin/LeftTouchController" instance=ExtResource( 2 )]
+[node name="TouchControllerModel" parent="ARVROrigin/LeftTouchController" instance=ExtResource( 2 )]
 transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 0 )
 
 [node name="MeshInstance" type="MeshInstance" parent="ARVROrigin/LeftTouchController"]
@@ -55,22 +61,23 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.009, 0, -0.297 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="LeftRayCast" type="RayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" groups=[
+[node name="LeftTouchRayCast" type="RayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" groups=[
 "gast_ray_caster",
 ]]
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/LeftTouchController/MeshInstance/LeftRayCast"]
+[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/LeftTouchController/MeshInstance/LeftTouchRayCast"]
 mesh = SubResource( 4 )
 material/0 = null
 
 [node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.727, -0.4 )
 controller_id = 2
+script = ExtResource( 7 )
 
-[node name="touch_controller" parent="ARVROrigin/RightTouchController" instance=ExtResource( 2 )]
+[node name="TouchControllerModel" parent="ARVROrigin/RightTouchController" instance=ExtResource( 2 )]
 transform = Transform( 1, 3.25841e-07, 0, -3.25841e-07, 1, 0, 0, 0, -1, 0, 0, 0 )
 
 [node name="MeshInstance" type="MeshInstance" parent="ARVROrigin/RightTouchController"]
@@ -78,16 +85,35 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.009, 0, -0.297 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="RightRayCast" type="RayCast" parent="ARVROrigin/RightTouchController/MeshInstance" groups=[
+[node name="RightTouchRayCast" type="RayCast" parent="ARVROrigin/RightTouchController/MeshInstance" groups=[
 "gast_ray_caster",
 ]]
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/RightTouchController/MeshInstance/RightRayCast"]
+[node name="RayReticle" type="MeshInstance" parent="ARVROrigin/RightTouchController/MeshInstance/RightTouchRayCast"]
 mesh = SubResource( 6 )
 material/0 = null
+
+[node name="LeftHand" type="ARVRController" parent="ARVROrigin"]
+script = ExtResource( 5 )
+
+[node name="HandModel" parent="ARVROrigin/LeftHand" instance=ExtResource( 8 )]
+
+[node name="HandPointer" type="Spatial" parent="ARVROrigin/LeftHand/HandModel"]
+
+[node name="LeftHandRayCast" parent="ARVROrigin/LeftHand/HandModel/HandPointer" instance=ExtResource( 9 )]
+
+[node name="RightHand" type="ARVRController" parent="ARVROrigin"]
+controller_id = 2
+script = ExtResource( 5 )
+
+[node name="HandModel" parent="ARVROrigin/RightHand" instance=ExtResource( 6 )]
+
+[node name="HandPointer" type="Spatial" parent="ARVROrigin/RightHand/HandModel"]
+
+[node name="RightHandRayCast" parent="ARVROrigin/RightHand/HandModel/HandPointer" instance=ExtResource( 9 )]
 
 [node name="WebViewContainer" type="Position3D" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1.129, -2.287 )
