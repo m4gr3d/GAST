@@ -33,7 +33,7 @@
         <!-- Enable Android views rendering on Quest 2. -->
         <meta-data android:name="com.oculus.always_draw_view_root" android:value="true"/>
 
-        <activity android:name=".MainActivity"
+        <activity android:name=".EditTextActivity"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
             android:launchMode="singleTask"
             android:excludeFromRecents="true"
