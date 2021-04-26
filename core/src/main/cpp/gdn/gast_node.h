@@ -18,7 +18,6 @@
 #include <gen/Shader.hpp>
 #include <gen/ShaderMaterial.hpp>
 #include <gen/StaticBody.hpp>
-#include <map>
 
 #include "utils.h"
 
@@ -28,6 +27,7 @@ namespace {
 using namespace godot;
 constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
+const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const bool kDefaultCollidable = true;
 const bool kDefaultCurveValue = false;
 const bool kDefaultGazeTracking = false;
@@ -55,8 +55,6 @@ public:
     void
     _input_event(const Object *camera, const Ref<InputEvent> event, const Vector3 click_position,
                  const Vector3 click_normal, const int64_t shape_idx);
-
-    void _physics_process(const real_t delta);
 
     void _process(const real_t delta);
 
@@ -164,16 +162,18 @@ public:
         update_shader_params();
     }
 
-private:
+    static inline RayCast *get_ray_cast_from_variant(Variant variant) {
+        RayCast *ray_cast = Object::cast_to<RayCast>(variant);
+        return ray_cast;
+    }
 
-    // Tracks raycast collision info.
-    struct CollisionInfo {
-        // Tracks whether a press is in progress. If so, collision is faked via simulation
-        // when the raycast no longer collides with the node.
-        bool press_in_progress;
-        Vector3 collision_point;
-        Vector3 collision_normal;
-    };
+    Vector2 get_relative_collision_point(Vector3 absolute_collision_point);
+
+    // Handle the raycast input. Returns true if a press is in progress.
+    bool handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point,
+                               bool was_press_in_progress);
+
+private:
 
     inline CollisionShape *get_collision_shape() {
         Node *node = get_child(0);
@@ -208,36 +208,30 @@ private:
 
     String generate_shader_code() const;
 
-    static inline RayCast *get_ray_cast_from_variant(Variant variant) {
-        RayCast *ray_cast = Object::cast_to<RayCast>(variant);
-        return ray_cast;
+    static inline String get_click_action_from_node_name(const String &node_name) {
+        // Replace the '/' character with a '_' character
+        return node_name.replace("/", "_") + "_click";
     }
 
-    Vector2 get_relative_collision_point(Vector3 absolute_collision_point);
-
-    static inline String get_click_action_from_node_path(const String& node_path) {
+    static inline String get_horizontal_left_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_click";
+        return node_name.replace("/", "_") + "_left_scroll";
     }
 
-    static inline String get_horizontal_left_scroll_action_from_node_path(const String& node_path) {
+    static inline String
+    get_horizontal_right_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_left_scroll";
+        return node_name.replace("/", "_") + "_right_scroll";
     }
 
-    static inline String get_horizontal_right_scroll_action_from_node_path(const String& node_path) {
+    static inline String get_vertical_up_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_right_scroll";
+        return node_name.replace("/", "_") + "_up_scroll";
     }
 
-    static inline String get_vertical_up_scroll_action_from_node_path(const String& node_path) {
+    static inline String get_vertical_down_scroll_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_up_scroll";
-    }
-
-    static inline String get_vertical_down_scroll_action_from_node_path(const String& node_path) {
-        // Replace the '/' character with a '_' character
-        return node_path.replace("/", "_") + "_down_scroll";
+        return node_name.replace("/", "_") + "_down_scroll";
     }
 
     ExternalTexture *get_external_texture(int surface_index);
@@ -245,14 +239,6 @@ private:
     inline ShaderMaterial *get_shader_material() {
         return *shader_material_ref;
     }
-
-    // Calculate whether a collision occurs between the given `RayCast` and `Plane`.
-    // Return True if they collide, with `collision_point` filled appropriately.
-    bool calculate_raycast_plane_collision(const RayCast &raycast, const Plane &plane,
-                                           Vector3 *collision_point);
-
-    // Handle the raycast input. Returns true if a press is in progress.
-    bool handle_ray_cast_input(const String &ray_cast_path, Vector2 relative_collision_point);
 
     void update_collision_shape();
 
@@ -266,10 +252,6 @@ private:
 
     void update_shader_params();
 
-    bool has_captured_raycast(const RayCast &ray_cast) {
-        return colliding_raycast_paths.count(ray_cast.get_path()) != 0;
-    }
-
     bool collidable;
     // Whether the rectangular screen is curved or not. This is only relevant if the
     // projection_mesh_type is RECTANGULAR.
@@ -281,10 +263,6 @@ private:
     float gradient_height_ratio;
     Vector2 mesh_size;
     Ref<ShaderMaterial> shader_material_ref = Ref<ShaderMaterial>();
-
-    // Map used to keep track of the raycasts colliding with this node.
-    // The boolean specifies whether a `press` is currently in progress.
-    std::map<String, std::shared_ptr<CollisionInfo>> colliding_raycast_paths;
 
     QuadMesh *rectangular_surface;
     Array spherical_surface_array;

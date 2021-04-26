@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import org.godotengine.godot.Godot
+import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
 import org.godotengine.plugin.gast.extension.GastExtension
@@ -30,13 +31,6 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
     private lateinit var webPanelsContainerView: ViewGroup
 
     override fun getPluginName() = "gast-webview"
-
-    override fun getPluginMethods() = listOf(
-        "initializeWebView",
-        "loadUrl",
-        "setWebViewSize",
-        "shutdownWebView"
-    )
 
     override fun onMainCreate(activity: Activity): View? {
         super.onMainCreate(activity)
@@ -70,6 +64,7 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
     }
 
     @Suppress("unused")
+    @UsedByGodot
     private fun initializeWebView(parentNodePath: String): Int {
         if (TextUtils.isEmpty(parentNodePath)) {
             Log.e(TAG, "Invalid parent node path value: $parentNodePath")
@@ -91,18 +86,21 @@ class GastWebviewPlugin(godot: Godot) : GastExtension(godot) {
     }
 
     @Suppress("unused")
+    @UsedByGodot
     private fun loadUrl(webViewId: Int, url: String) {
         val webPanel = webPanelsById[webViewId] ?: return
         webPanel.loadUrl(url)
     }
 
     @Suppress("unused")
+    @UsedByGodot
     private fun setWebViewSize(webViewId: Int, width: Float, height: Float) {
         val webPanel = webPanelsById[webViewId] ?: return
         webPanel.setSize(width, height)
     }
 
     @Suppress("unused")
+    @UsedByGodot
     private fun shutdownWebView(webViewId: Int) {
         val webPanel = webPanelsById.remove(webViewId) ?: return
         webPanel.onDestroy()

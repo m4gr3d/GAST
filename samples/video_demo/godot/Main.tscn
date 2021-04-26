@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://touch_controller.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Main.gd" type="Script" id=2]
-[ext_resource path="res://ray_cast_with_reticle.gd" type="Script" id=3]
-[ext_resource path="res://ray_reticle.tscn" type="PackedScene" id=4]
+[ext_resource path="res://ray_cast.tscn" type="PackedScene" id=3]
 
 [sub_resource type="SpatialMaterial" id=1]
 albedo_color = Color( 0.929412, 0.858824, 0.858824, 1 )
@@ -36,14 +35,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.009, 0, -0.297 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="RayCast" type="RayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" groups=[
-"gast_ray_caster",
-]]
-enabled = true
-cast_to = Vector3( 0, 0, -5 )
-script = ExtResource( 3 )
-
-[node name="RayReticle" parent="ARVROrigin/LeftTouchController/MeshInstance/RayCast" instance=ExtResource( 4 )]
+[node name="LeftRayCast" parent="ARVROrigin/LeftTouchController/MeshInstance" instance=ExtResource( 3 )]
 
 [node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1.727, -0.4 )
@@ -57,11 +49,4 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.009, 0, -0.297 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="RayCast" type="RayCast" parent="ARVROrigin/RightTouchController/MeshInstance" groups=[
-"gast_ray_caster",
-]]
-enabled = true
-cast_to = Vector3( 0, 0, -5 )
-script = ExtResource( 3 )
-
-[node name="RayReticle" parent="ARVROrigin/RightTouchController/MeshInstance/RayCast" instance=ExtResource( 4 )]
+[node name="RightRayCast" parent="ARVROrigin/RightTouchController/MeshInstance" instance=ExtResource( 3 )]
