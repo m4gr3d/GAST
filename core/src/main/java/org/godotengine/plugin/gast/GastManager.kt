@@ -81,8 +81,6 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
-    override fun getPluginMethods(): MutableList<String> = emptyList<String>().toMutableList()
-
     override fun getPluginName() = "gast-core"
 
     override fun getPluginGDNativeLibrariesPaths() = setOf("godot/plugin/v1/gast/gastlib.gdnlib")

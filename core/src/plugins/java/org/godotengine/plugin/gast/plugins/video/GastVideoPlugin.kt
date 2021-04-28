@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.util.Util
 import org.godotengine.godot.Godot
+import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.extension.GastExtension
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
@@ -35,19 +36,6 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     init {
         player.addListener(this)
     }
-
-    override fun getPluginMethods() = mutableListOf(
-        "preparePlayer",
-        "play",
-        "isPlaying",
-        "pause",
-        "seekTo",
-        "stop",
-        "setVideoScreenCollidable",
-        "setVideoScreenCurved",
-        "setVideoScreenSize",
-        "setRepeatMode"
-    )
 
     override fun getPluginName() = "gast-video"
 
@@ -142,6 +130,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * raw resources directory and the file extension should be omitted (e.g: `res/raw/flight.mp4` -> ["flight"]).
      */
     @Suppress("unused")
+    @UsedByGodot
     fun preparePlayer(parentNodePath: String, videoRawNames: Array<String>) {
         setVideoNodePath(parentNodePath)
         setVideoSource(videoRawNames)
@@ -153,6 +142,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * @param[collidable] True to enable collision, false otherwise.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun setVideoScreenCollidable(collidable: Boolean) {
         runOnRenderThread {
             gastNode?.setCollidable(collidable)
@@ -165,6 +155,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * @param[curved] True to curve the player screen, false otherwise.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun setVideoScreenCurved(curved: Boolean) {
         runOnRenderThread {
             if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
@@ -182,6 +173,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * @param[height] Height of the player screen.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
             if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
@@ -196,6 +188,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * Resume media playback if paused or stopped.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun play() {
         runOnUiThread {
             player.playWhenReady = true
@@ -207,12 +200,14 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * @return True if the player is setup and media is playing, false otherwise.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun isPlaying() = isInitialized() && playing.get()
 
     /**
      * Pause media playback.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun pause() {
         runOnUiThread {
             player.playWhenReady = false
@@ -228,6 +223,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * - REPEAT_MODE_ALL = 2; "Repeat All" mode to repeat the entire timeline infinitely.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun setRepeatMode(@Player.RepeatMode repeatMode: Int) {
         runOnUiThread {
             player.repeatMode = repeatMode
@@ -240,6 +236,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * @param[positionInMsec] The seek position to target.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun seekTo(positionInMsec: Int) {
         runOnUiThread {
             player.seekTo(positionInMsec.toLong())
@@ -250,6 +247,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      * Stop playback.
      */
     @Suppress("unused")
+    @UsedByGodot
     fun stop() {
         runOnUiThread {
             player.stop()

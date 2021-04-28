@@ -8,11 +8,6 @@
 
     <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
 
-    <uses-feature
-        android:name="android.hardware.vr.headtracking"
-        android:required="false"
-        android:version="1"/>
-
     <!-- Enable overlay keyboard -->
     <uses-feature android:name="oculus.software.overlay_keyboard"
         android:required="true" />
@@ -23,17 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
 
-        <meta-data
-            android:name="com.samsung.android.vr.application.mode"
-            android:value="vr_only"/>
-
-        <!-- List of Supported Devices. "delmar" is the codename for Quest 2. -->
-        <meta-data android:name="com.oculus.supportedDevices" android:value="quest|delmar"/>
-
-        <!-- Enable Android views rendering on Quest 2. -->
-        <meta-data android:name="com.oculus.always_draw_view_root" android:value="true"/>
-
-        <activity android:name=".MainActivity"
+        <activity android:name=".EditTextActivity"
             android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
             android:launchMode="singleTask"
             android:excludeFromRecents="true"
