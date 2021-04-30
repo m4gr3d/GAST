@@ -23,7 +23,10 @@ func _ready():
 
 func _process(delta_t):
 	_check_and_perform_runtime_config()
-	gast.on_process()
+
+
+func _physics_process(delta_t):
+	gast.on_physics_process()
 
 
 # this code check for the OVRMobile inteface; and if successful also initializes the

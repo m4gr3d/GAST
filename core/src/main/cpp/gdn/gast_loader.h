@@ -31,7 +31,7 @@ public:
     // Shutdown GastManager
     void shutdown();
 
-    void on_process();
+    void on_physics_process();
 
     void emitHoverEvent(const String &node_path, const String &event_origin_id, float x_percent,
                         float y_percent);

@@ -249,7 +249,7 @@ void GastManager::check_for_monitored_input_actions() {
 
 bool GastManager::get_raycast_collision_info(const RayCast &ray_cast, CollisionInfo *collision_info) {
     auto *collider = Object::cast_to<GastNode>(ray_cast.get_collider());
-    if (collider != nullptr && collision_info != nullptr) {
+    if (collision_info != nullptr) {
         collision_info->collider = collider;
         collision_info->collision_point = ray_cast.get_collision_point();
         collision_info->collision_normal = ray_cast.get_collision_normal();
@@ -289,7 +289,7 @@ void GastManager::process_raycast_input() {
         // we need to send a exit event to the previous one.
         if (previous_collision_info.collider != nullptr &&
             previous_collision_info.collider != collision_info->collider) {
-            cleanup_collision_info(previous_collision_info, ray_cast_path);
+            cleanup_collision_info(previous_collision_info, ray_cast->get_name());
             colliding_raycast_paths.erase(ray_cast_path);
         }
 
@@ -299,8 +299,7 @@ void GastManager::process_raycast_input() {
                     collision_info->collision_point);
             collision_info->press_in_progress = collision_info->collider->handle_ray_cast_input(
                     ray_cast->get_name(),
-                    relative_collision_point,
-                    previous_collision_info.press_in_progress);
+                    relative_collision_point);
 
             // Add the raycast to the list of colliding raycasts and update its collision info.
             colliding_raycast_paths[ray_cast_path] = collision_info;
@@ -308,32 +307,29 @@ void GastManager::process_raycast_input() {
     }
 }
 
-void GastManager::on_process() {
+void GastManager::on_physics_process() {
     check_for_monitored_input_actions();
     process_raycast_input();
 }
 
-void GastManager::cleanup_collision_info(const CollisionInfo &collision_info, const String &ray_cast_path) {
+void GastManager::cleanup_collision_info(const CollisionInfo &collision_info,
+                                         const String &ray_cast_name) {
     if (collision_info.press_in_progress) {
         Vector2 last_coordinate = collision_info.collider->get_relative_collision_point(
                 collision_info.collision_point);
         // Fire a release event.
-        GastManager::get_singleton_instance()->on_render_input_release(
-                collision_info.collider->get_path(),
-                ray_cast_path,
-                last_coordinate.x,
-                last_coordinate.y);
+        on_render_input_release(collision_info.collider->get_path(),
+                                ray_cast_name, last_coordinate.x,
+                                last_coordinate.y);
     } else {
         // Fire a hover exit event.
-        GastManager::get_singleton_instance()->on_render_input_hover(
-                collision_info.collider->get_path(),
-                ray_cast_path,
-                kInvalidCoordinate.x,
-                kInvalidCoordinate.y);
+        on_render_input_hover(collision_info.collider->get_path(), ray_cast_name,
+                              kInvalidCoordinate.x, kInvalidCoordinate.y);
     }
 }
 
-void GastManager::on_render_input_action(const String &action, InputPressState press_state, float strength) {
+void GastManager::on_render_input_action(const String &action, InputPressState press_state,
+                                         float strength) {
     if (callback_instance_ && on_render_input_action_) {
         JNIEnv *env = godot::android_api->godot_android_get_env();
         env->CallVoidMethod(callback_instance_, on_render_input_action_,

@@ -29,20 +29,23 @@ func _ready():
 		print("Initialized webview " + str(webview_id))
 		gast_webview_plugin.loadUrl(webview_id, "https://news.ycombinator.com/")
 		gast_webview_plugin.setWebViewSize(webview_id, 2, 2)
-		
+
 		print("Setting webview 2...")
 		var webview2_id = gast_webview_plugin.initializeWebView("/root/Main/WebViewContainer2")
 		print("Initialized webview 2 " + str(webview2_id))
 		gast_webview_plugin.loadUrl(webview2_id, "https://google.com")
 		gast_webview_plugin.setWebViewSize(webview2_id, 2, 2)
-	
+
 	else:
 		print("Unable to load gast-webview singleton.")
 
 
 func _process(delta_t):
 	_check_and_perform_runtime_config()
-	gast.on_process()
+
+
+func _physics_process(delta_t):
+	gast.on_physics_process()
 
 
 # this code check for the OVRMobile inteface; and if successful also initializes the

@@ -170,8 +170,7 @@ public:
     Vector2 get_relative_collision_point(Vector3 absolute_collision_point);
 
     // Handle the raycast input. Returns true if a press is in progress.
-    bool handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point,
-                               bool was_press_in_progress);
+    bool handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point);
 
 private:
 

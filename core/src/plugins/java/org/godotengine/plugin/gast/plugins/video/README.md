@@ -40,11 +40,11 @@ Follow these instructions in order to use the plugin in your code:
            gast_video_plugin.setVideoScreenSize(3, 2)
         ...
      ```
-3. In `_process(delta)`, make sure to invoke `GastLoader::on_process()` method:
+3. In `_physics_process(delta)`, make sure to invoke `GastLoader::on_physics_process()` method:
    - ```
-     func _process(delta):
+     func _physics_process(delta):
         ...
-        gast_loader.on_process()
+        gast_loader.on_physics_process()
         ...
      ```
 
