@@ -172,6 +172,9 @@ public:
     // Handle the raycast input. Returns true if a press is in progress.
     bool handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point);
 
+    // Returns true if the plane defined by this node intersects the given ray.
+    bool intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3 *intersection);
+
 private:
 
     inline CollisionShape *get_collision_shape() {

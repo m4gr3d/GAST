@@ -90,7 +90,6 @@ private:
         // when the raycast no longer collides with the node.
         bool press_in_progress = false;
         Vector3 collision_point = Vector3::ZERO;
-        Vector3 collision_normal = Vector3::ZERO;
     };
 
     void cleanup_collision_info(const CollisionInfo &collision_info, const String &ray_cast_name);

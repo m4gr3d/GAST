@@ -249,12 +249,24 @@ void GastManager::check_for_monitored_input_actions() {
 
 bool GastManager::get_raycast_collision_info(const RayCast &ray_cast, CollisionInfo *collision_info) {
     auto *collider = Object::cast_to<GastNode>(ray_cast.get_collider());
+    bool collides_with_gast_node = collider != nullptr;
+
     if (collision_info != nullptr) {
-        collision_info->collider = collider;
-        collision_info->collision_point = ray_cast.get_collision_point();
-        collision_info->collision_normal = ray_cast.get_collision_normal();
+        if (!collision_info->press_in_progress || collision_info->collider == collider) {
+            collision_info->collider = collider;
+            collision_info->collision_point = ray_cast.get_collision_point();
+        } else {
+            collides_with_gast_node = collision_info->collider->intersects_ray(
+                    ray_cast.get_global_transform().origin,
+                    ray_cast.to_global(ray_cast.get_cast_to()),
+                    &collision_info->collision_point);
+            if (!collides_with_gast_node) {
+                collision_info->collider = nullptr;
+            }
+        }
     }
-    return collider != nullptr;
+
+    return collides_with_gast_node;
 }
 
 void GastManager::process_raycast_input() {

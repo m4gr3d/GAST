@@ -464,6 +464,33 @@ GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_co
     return press_in_progress;
 }
 
+bool GastNode::intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3 *intersection) {
+    // NOTE: This only handles RECTANGULAR projection type for now
+    if (projection_mesh_type != ProjectionMeshType::RECTANGULAR) {
+        return false;
+    }
+
+    // Get the mesh's aabb
+    MeshInstance *mesh_instance = get_mesh_instance();
+    if (!mesh_instance) {
+        return false;
+    }
+
+    AABB mesh_aabb = mesh_instance->get_aabb();
+    Vector3 aabb_global_position = mesh_instance->to_global(mesh_aabb.position);
+
+    // Generate a plane from 3 of the aabb's endpoints.
+    Vector3 first_endpoint = aabb_global_position;
+    Vector3 second_endpoint = Vector3(aabb_global_position.x,
+                                      aabb_global_position.y + mesh_aabb.size.y,
+                                      aabb_global_position.z);
+    Vector3 third_endpoint = Vector3(aabb_global_position.x + mesh_aabb.size.x,
+                                     aabb_global_position.y + mesh_aabb.size.y,
+                                     aabb_global_position.z);
+    Plane plane(first_endpoint, second_endpoint, third_endpoint);
+    return plane.intersects_ray(ray_origin, ray_direction, intersection);
+}
+
 String GastNode::generate_shader_code() const {
     String shader_code = kShaderCode;
     if (render_on_top) {
