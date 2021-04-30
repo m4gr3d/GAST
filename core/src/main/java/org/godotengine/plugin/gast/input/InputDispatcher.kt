@@ -7,7 +7,7 @@ import java.util.Queue
 internal class InputDispatcher private constructor() : Runnable {
 
     companion object {
-        private const val POOL_MAX_SIZE = 100
+        private const val POOL_MAX_SIZE = 1000
         private val TAG = InputDispatcher::class.java.simpleName
 
         private val inputDispatcherPool = Pools.SynchronizedPool<InputDispatcher>(POOL_MAX_SIZE)
