@@ -44,7 +44,7 @@ public:
 
     static void jni_shutdown(JNIEnv *env);
 
-    void on_process();
+    void on_physics_process();
 
     void on_render_input_hover(const String &node_path, const String &pointer_id, float x_percent,
                                float y_percent);
@@ -90,10 +90,9 @@ private:
         // when the raycast no longer collides with the node.
         bool press_in_progress = false;
         Vector3 collision_point = Vector3::ZERO;
-        Vector3 collision_normal = Vector3::ZERO;
     };
 
-    void cleanup_collision_info(const CollisionInfo &collision_info, const String &ray_cast_path);
+    void cleanup_collision_info(const CollisionInfo &collision_info, const String &ray_cast_name);
 
     bool get_raycast_collision_info(const RayCast &ray_cast, CollisionInfo *collision_info);
 

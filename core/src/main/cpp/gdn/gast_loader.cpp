@@ -20,7 +20,7 @@ void GastLoader::_register_methods() {
     // Register methods
     register_method("initialize", &GastLoader::initialize);
     register_method("shutdown", &GastLoader::shutdown);
-    register_method("on_process", &GastLoader::on_process);
+    register_method("on_physics_process", &GastLoader::on_physics_process);
 
     // Register signals
     Dictionary common_event_args;
@@ -48,8 +48,8 @@ void GastLoader::shutdown() {
     GastManager::gdn_shutdown();
 }
 
-void GastLoader::on_process() {
-    GastManager::get_singleton_instance()->on_process();
+void GastLoader::on_physics_process() {
+    GastManager::get_singleton_instance()->on_physics_process();
 }
 
 void
