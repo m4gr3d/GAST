@@ -61,14 +61,14 @@ class GastNode @JvmOverloads constructor(
     }
 
     fun getProjectionMesh() : ProjectionMesh {
-        return ProjectionMesh(nativeGetProjectionMesh(nodePointer))
+        return ProjectionMesh(nativeGetProjectionMesh(nodePointer), nodePointer)
     }
 
     fun getRectangularProjectionMesh() : RectangularProjectionMesh? {
         if (!getProjectionMesh().isRectangular()) {
             return null
         }
-        return RectangularProjectionMesh(nativeGetProjectionMesh(nodePointer))
+        return RectangularProjectionMesh(nativeGetProjectionMesh(nodePointer), nodePointer)
     }
 
     private external fun nativeGetProjectionMesh(nodePointer: Long) : Long

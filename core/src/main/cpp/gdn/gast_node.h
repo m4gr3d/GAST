@@ -136,6 +136,8 @@ public:
     // Returns true if the plane defined by this node intersects the given ray.
     bool intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3 *intersection);
 
+    void setup_projection_mesh();
+
 private:
 
     inline CollisionShape *get_collision_shape() {
@@ -175,8 +177,6 @@ private:
     void update_collision_shape();
 
     void reset_mesh_and_collision_shape();
-
-    void setup_projection_mesh();
 
     bool collidable;
     ProjectionMeshPool projection_mesh_pool;

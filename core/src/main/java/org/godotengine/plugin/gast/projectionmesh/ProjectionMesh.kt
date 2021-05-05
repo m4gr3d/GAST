@@ -1,16 +1,28 @@
 package org.godotengine.plugin.gast.projectionmesh
 
-open class ProjectionMesh(meshPointer : Long) {
+open class ProjectionMesh(meshPointer : Long, nodePointer : Long) {
 
     private var meshPointer : Long
+    private var nodePointer : Long
 
     init {
         this.meshPointer = meshPointer
+        this.nodePointer = nodePointer
     }
 
     fun getMeshPointer() : Long {
         return meshPointer
     }
+
+    fun getNodePointer() : Long {
+        return nodePointer
+    }
+
+    fun updateGastNodeFromProjectionMesh() {
+        updateGastNodeFromProjectionMesh(getNodePointer())
+    }
+
+    private external fun updateGastNodeFromProjectionMesh(nodePointer: Long)
 
     fun isGazeTracking(): Boolean {
         return isGazeTracking(getMeshPointer())

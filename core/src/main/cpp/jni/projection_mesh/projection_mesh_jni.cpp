@@ -1,5 +1,6 @@
 #include <jni.h>
 
+#include "gdn/gast_node.h"
 #include "gdn/projection_mesh/projection_mesh.h"
 #include "utils.h"
 
@@ -75,6 +76,13 @@ JNIEXPORT jboolean JNICALL
 JNI_METHOD(nativeIsEquirectangular)(JNIEnv *, jobject, jlong mesh_pointer) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
     return mesh->is_equirectangular_projection_mesh();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(updateGastNodeFromProjectionMesh)(JNIEnv *, jobject, jlong node_pointer) {
+    GastNode *gast_node = reinterpret_cast<GastNode *>(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->setup_projection_mesh();
 }
 
 }
