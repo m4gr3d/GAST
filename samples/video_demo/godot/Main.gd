@@ -36,9 +36,12 @@ func _ready():
 
 
 func _process(delta_t):
-	gast.on_process()
 	_check_inputs()
 	_check_and_perform_runtime_config()
+
+
+func _physics_process(delta_t):
+	gast.on_physics_process()
 
 
 func _check_inputs():

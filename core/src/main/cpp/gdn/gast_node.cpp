@@ -204,8 +204,8 @@ void GastNode::_process(const real_t delta) {
     }
 }
 
-bool GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point,
-                                bool was_press_in_progress) {
+bool
+GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point) {
     Input *input = Input::get_singleton();
     String node_path = get_path();
 
@@ -215,17 +215,16 @@ bool GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relati
     // Check for click actions
     String ray_cast_click_action = get_click_action_from_node_name(ray_cast_name);
     const bool press_in_progress = input->is_action_pressed(ray_cast_click_action);
-    if (press_in_progress == was_press_in_progress) {
+
+    if (input->is_action_just_pressed(ray_cast_click_action)) {
+        GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_name,
+                                                                     x_percent, y_percent);
+    } else if (input->is_action_just_released(ray_cast_click_action)) {
+        GastManager::get_singleton_instance()->on_render_input_release(node_path, ray_cast_name,
+                                                                       x_percent, y_percent);
+    } else {
         GastManager::get_singleton_instance()->on_render_input_hover(node_path, ray_cast_name,
                                                                      x_percent, y_percent);
-    } else {
-        if (press_in_progress) {
-            GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_name,
-                                                                         x_percent, y_percent);
-        } else {
-            GastManager::get_singleton_instance()->on_render_input_release(node_path, ray_cast_name,
-                                                                           x_percent, y_percent);
-        }
     }
 
     // Check for scrolling actions
@@ -269,6 +268,33 @@ bool GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relati
     }
 
     return press_in_progress;
+}
+
+bool GastNode::intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3 *intersection) {
+    // NOTE: This only handles RECTANGULAR projection type for now
+    if (!projection_mesh->is_rectangular_projection_mesh()) {
+        return false;
+    }
+
+    // Get the mesh's aabb
+    MeshInstance *mesh_instance = projection_mesh->get_mesh_instance();
+    if (!mesh_instance) {
+        return false;
+    }
+
+    AABB mesh_aabb = mesh_instance->get_aabb();
+    Vector3 aabb_global_position = mesh_instance->to_global(mesh_aabb.position);
+
+    // Generate a plane from 3 of the aabb's endpoints.
+    Vector3 first_endpoint = aabb_global_position;
+    Vector3 second_endpoint = Vector3(aabb_global_position.x,
+                                      aabb_global_position.y + mesh_aabb.size.y,
+                                      aabb_global_position.z);
+    Vector3 third_endpoint = Vector3(aabb_global_position.x + mesh_aabb.size.x,
+                                     aabb_global_position.y + mesh_aabb.size.y,
+                                     aabb_global_position.z);
+    Plane plane(first_endpoint, second_endpoint, third_endpoint);
+    return plane.intersects_ray(ray_origin, ray_direction, intersection);
 }
 
 Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point) {
