@@ -304,6 +304,7 @@ Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point)
             dynamic_cast<RectangularProjectionMesh*>(get_projection_mesh());
         return rectangular_projection_mesh->get_relative_collision_point(local_point);
     } else {
+        // TODO: Implement for other projection mesh types.
         return kInvalidCoordinate;
     }
 }
