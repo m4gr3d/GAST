@@ -46,7 +46,7 @@ public:
       Vector2 relative_collision_point = kInvalidCoordinate;
 
       // Normalize the collision point.
-      // TODO: A rectangular projection mesh is a quad so we only worry about the x,y coordinates??
+      // TODO: A rectangular projection mesh is a quad so we only worry about the x,y coordinates
       Vector2 node_size = get_mesh_size();
       if (node_size.width > 0 && node_size.height > 0) {
           float max_x = node_size.width / 2;

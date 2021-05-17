@@ -49,9 +49,8 @@ String EquirectangularProjectionMesh::generate_shader_code() {
     if (is_render_on_top()) {
         shader_code += kDisableDepthTestRenderMode;
     }
-    if (is_equirectangular_projection_mesh()) {
-        shader_code += kCullFrontRenderMode;
-    }
+    // TODO: Allow culling to be configurable.
+    shader_code += kCullFrontRenderMode;
     return shader_code;
 }
 
