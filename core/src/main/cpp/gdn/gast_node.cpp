@@ -28,7 +28,8 @@ namespace gast {
 
 GastNode::GastNode() : collidable(kDefaultCollidable),
                        projection_mesh_pool(ProjectionMeshPool()) {
-    projection_mesh = projection_mesh_pool.get_or_create_rectangular_projection_mesh();
+    projection_mesh =
+            projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
 }
 
 GastNode::~GastNode() = default;
@@ -46,8 +47,7 @@ void GastNode::_register_methods() {
     register_method("is_gaze_tracking", &GastNode::is_gaze_tracking);
     register_method("set_render_on_top", &GastNode::set_render_on_top);
     register_method("is_render_on_top", &GastNode::is_render_on_top);
-    register_method("set_gradient_height_ratio", &GastNode::set_gradient_height_ratio);
-    register_method("get_gradient_height_ratio", &GastNode::get_gradient_height_ratio);
+
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
 
     register_property<GastNode, bool>("collidable", &GastNode::set_collidable,
@@ -56,10 +56,6 @@ void GastNode::_register_methods() {
                                       &GastNode::is_gaze_tracking, kDefaultGazeTracking);
     register_property<GastNode, bool>("render_on_top", &GastNode::set_render_on_top,
                                       &GastNode::is_render_on_top, kDefaultRenderOnTop);
-    register_property<GastNode, float>("gradient_height_ratio",
-                                       &GastNode::set_gradient_height_ratio,
-                                       &GastNode::get_gradient_height_ratio,
-                                       kDefaultGradientHeightRatio);
 }
 
 void GastNode::_init() {
@@ -74,7 +70,7 @@ void GastNode::_enter_tree() {
     ALOGV("Entering tree for %s.", get_node_tag(*this));
 
     // Create the external texture
-    external_texture = ExternalTexture::_new();
+    external_texture = Ref<ExternalTexture>(ExternalTexture::_new());
 
     setup_projection_mesh();
 }
@@ -87,6 +83,7 @@ void GastNode::_exit_tree() {
 void GastNode::reset_mesh_and_collision_shape() {
     // Unset the GAST mesh resource
     projection_mesh->reset_mesh();
+    projection_mesh->reset_external_texture();
     // Unset the box shape resource
     update_collision_shape();
 }
@@ -96,8 +93,8 @@ void GastNode::setup_projection_mesh() {
     for (int i = 0; i < collisionShape->get_child_count(); i++) {
         collisionShape->remove_child(collisionShape->get_child(i));
     }
-    collisionShape->add_child(projection_mesh->get_mesh_instance());
     projection_mesh->set_external_texture(external_texture);
+    collisionShape->add_child(projection_mesh->get_mesh_instance());
     update_collision_shape();
     projection_mesh->update_render_priority();
 }
@@ -122,14 +119,14 @@ int GastNode::get_external_texture_id(int surface_index) {
         surface_index = kDefaultSurfaceIndex;
     }
 
-    ExternalTexture *external_texture = get_external_texture(surface_index);
-    int tex_id = external_texture == nullptr ? kInvalidTexId
+    Ref<ExternalTexture> external_texture = get_external_texture(surface_index);
+    int tex_id = external_texture.ptr() == nullptr ? kInvalidTexId
                                              : external_texture->get_external_texture_id();
     ALOGV("Retrieved tex id %d", tex_id);
     return tex_id;
 }
 
-ExternalTexture *GastNode::get_external_texture(int surface_index) {
+Ref<ExternalTexture> GastNode::get_external_texture(int surface_index) {
     return external_texture;
 }
 
@@ -187,7 +184,7 @@ void GastNode::_notification(const int64_t what) {
 }
 
 void GastNode::_process(const real_t delta) {
-    if (projection_mesh->is_gaze_tracking()) {
+    if (is_gaze_tracking()) {
         Rect2 gaze_area = get_viewport()->get_visible_rect();
         Vector2 gaze_center_point = Vector2(gaze_area.position.x + gaze_area.size.x / 2.0,
                                             gaze_area.position.y + gaze_area.size.y / 2.0);
@@ -299,9 +296,9 @@ bool GastNode::intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3
 
 Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point) {
     Vector3 local_point = to_local(absolute_collision_point);
-    if (get_projection_mesh()->is_rectangular_projection_mesh()) {
+    if (projection_mesh->is_rectangular_projection_mesh()) {
         auto *rectangular_projection_mesh =
-            dynamic_cast<RectangularProjectionMesh*>(get_projection_mesh());
+                Object::cast_to<RectangularProjectionMesh>(projection_mesh);
         return rectangular_projection_mesh->get_relative_collision_point(local_point);
     } else {
         // TODO: Implement for other projection mesh types.

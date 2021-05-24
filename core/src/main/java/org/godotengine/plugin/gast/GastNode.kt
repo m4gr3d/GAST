@@ -387,20 +387,6 @@ class GastNode @JvmOverloads constructor(
 
     private external fun setCollisionMasks(nodePointer: Long, masks: Long)
 
-    fun getGradientHeightRatio(): Float {
-        checkIfReleased()
-        return getGastNodeGradientHeightRatio(nodePointer)
-    }
-
-    private external fun getGastNodeGradientHeightRatio(nodePointer: Long): Float
-
-    fun setGradientHeightRatio(ratio: Float) {
-        checkIfReleased()
-        setGastNodeGradientHeightRatio(nodePointer, ratio)
-    }
-
-    private external fun setGastNodeGradientHeightRatio(nodePointer: Long, ratio: Float)
-
     /**
      * Update the node's opacity.
      */

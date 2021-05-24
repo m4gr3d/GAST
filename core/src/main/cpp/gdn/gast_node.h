@@ -79,15 +79,25 @@ public:
     }
 
     inline void set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
-        if (projection_mesh_type == get_projection_mesh()->get_projection_mesh_type()) {
+        if (projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
             return;
         }
 
+        projection_mesh->reset_external_texture();
+
         if (projection_mesh_type == ProjectionMesh::ProjectionMeshType::RECTANGULAR) {
-            projection_mesh = projection_mesh_pool.get_or_create_rectangular_projection_mesh();
+            projection_mesh =
+                    projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
         } else if (projection_mesh_type == ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR) {
-            projection_mesh = projection_mesh_pool.get_or_create_equirectangular_projection_mesh();
+            projection_mesh =
+                    projection_mesh_pool.get_or_create_projection_mesh<EquirectangularProjectionMesh>();
+        } else {
+            ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
+                    projection_mesh_type);
+            projection_mesh =
+                    projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
         }
+
         setup_projection_mesh();
     }
 
@@ -109,14 +119,6 @@ public:
 
     inline bool is_gaze_tracking() {
         return projection_mesh->is_gaze_tracking();
-    }
-
-    inline float get_gradient_height_ratio() {
-        return projection_mesh->get_gradient_height_ratio();
-    }
-
-    inline void set_gradient_height_ratio(float ratio) {
-        projection_mesh->set_gradient_height_ratio(ratio);
     }
 
     inline void set_alpha(float alpha) {
@@ -172,7 +174,7 @@ private:
         return node_name.replace("/", "_") + "_down_scroll";
     }
 
-    ExternalTexture *get_external_texture(int surface_index);
+    Ref<ExternalTexture> get_external_texture(int surface_index);
 
     void update_collision_shape();
 
@@ -181,7 +183,7 @@ private:
     bool collidable;
     ProjectionMeshPool projection_mesh_pool;
     ProjectionMesh *projection_mesh;
-    ExternalTexture *external_texture;
+    Ref<ExternalTexture> external_texture;
 };
 
 }  // namespace gast

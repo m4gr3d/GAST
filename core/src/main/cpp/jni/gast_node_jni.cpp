@@ -158,20 +158,6 @@ JNI_METHOD(setCollisionMasks)(JNIEnv*, jobject, jlong node_pointer, jlong masks)
   gast_node->set_collision_mask(masks);
 }
 
-JNIEXPORT jfloat JNICALL
-JNI_METHOD(getGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong node_pointer) {
-    GastNode *gast_node = from_pointer(node_pointer);
-    ERR_FAIL_NULL_V(gast_node, kDefaultGradientHeightRatio);
-    return gast_node->get_gradient_height_ratio();
-}
-
-JNIEXPORT void JNICALL
-JNI_METHOD(setGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong node_pointer, jfloat ratio) {
-    GastNode *gast_node = from_pointer(node_pointer);
-    ERR_FAIL_NULL(gast_node);
-    gast_node->set_gradient_height_ratio(ratio);
-}
-
 JNIEXPORT void JNICALL JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong node_pointer, jfloat alpha) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL(gast_node);

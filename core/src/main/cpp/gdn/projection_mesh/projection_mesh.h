@@ -1,5 +1,5 @@
-#ifndef CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_PROJECTION_MESH_H_
-#define CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_PROJECTION_MESH_H_
+#ifndef PROJECTION_MESH_H
+#define PROJECTION_MESH_H
 
 #include <core/Ref.hpp>
 #include <core/Vector2.hpp>
@@ -25,11 +25,18 @@ const int kDefaultSurfaceIndex = 0;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 }
 
-class ProjectionMesh : Resource {
+class ProjectionMesh : public Resource {
 GODOT_CLASS(ProjectionMesh, Resource)
 
 public:
+    ProjectionMesh();
     ~ProjectionMesh();
+
+    void _init();
+
+    void _process(const real_t delta);
+
+    static void _register_methods();
 
     // Mirrors src/main/java/org/godotengine/plugin/gast/GastNode#ProjectionMeshType
     enum ProjectionMeshType {
@@ -38,7 +45,9 @@ public:
         MESH = 2,
     };
 
-    ProjectionMeshType get_projection_mesh_type() const;
+    inline ProjectionMeshType get_projection_mesh_type() const {
+        return projection_mesh_type;
+    }
 
     inline bool is_rectangular_projection_mesh() const {
         return get_projection_mesh_type() == ProjectionMeshType::RECTANGULAR;
@@ -133,18 +142,6 @@ public:
         shader_material_ref->set_shader_param(kGastNodeAlphaParamName, alpha);
     }
 
-    inline float get_gradient_height_ratio() {
-        return gradient_height_ratio;
-    }
-
-    inline void set_gradient_height_ratio(float ratio) {
-        if (this->gradient_height_ratio == ratio) {
-            return;
-        }
-        this->gradient_height_ratio = std::min(1.0f, std::max(0.0f, ratio));
-        shader_material_ref->set_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
-    }
-
     inline StereoMode get_stereo_mode() {
         return stereo_mode;
     }
@@ -155,6 +152,11 @@ public:
 
     inline void reset_mesh() {
         mesh_instance->set_mesh(Ref<Resource>());
+        collision_shape_ref = Ref<Resource>();
+    }
+
+    inline void reset_external_texture() {
+        set_external_texture(Ref<Resource>());
     }
 
   virtual Vector2 get_relative_collision_point(Vector3 local_collision_point) {
@@ -170,13 +172,9 @@ public:
     bool render_on_top;
     bool gaze_tracking;
     float alpha;
-    float gradient_height_ratio;
 
 protected:
-    ProjectionMesh(
-            ProjectionMeshType projection_mesh_type,
-            MeshInstance *mesh_instance,
-            Ref<ShaderMaterial> shader_material_ref);
+    ProjectionMesh(ProjectionMeshType projection_mesh_type);
 
     inline void set_shader(Ref<Shader> shader) {
         if (!shader_material_ref.is_valid()) {
@@ -202,8 +200,14 @@ protected:
         collision_shape_ref = collision_shape;
     }
 
-//    virtual String generate_shader_code() = 0;
+    virtual inline String generate_shader_code() {
+        String shader_code = kMonoShaderCode;
+        if (is_render_on_top()) {
+            shader_code += kDisableDepthTestRenderMode;
+        }
+        return shader_code;
+    }
 };
 
 }  // namespace gast
-#endif //CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_PROJECTION_MESH_H_
+#endif //PROJECTION_MESH_H

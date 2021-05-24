@@ -14,10 +14,7 @@ const size_t kEquirectSphereMeshSectorCount = 80;
 }  // namespace
 
 EquirectangularProjectionMesh::EquirectangularProjectionMesh() :
-        ProjectionMesh(
-                ProjectionMeshType::EQUIRECTANGULAR,
-                MeshInstance::_new(),
-                Ref<ShaderMaterial>(ShaderMaterial::_new())) {
+        ProjectionMesh(ProjectionMeshType::EQUIRECTANGULAR) {
     update_projection_mesh();
 }
 
@@ -45,13 +42,18 @@ void EquirectangularProjectionMesh::update_projection_mesh() {
 }
 
 String EquirectangularProjectionMesh::generate_shader_code() {
-    String shader_code = kMonoShaderCode;
-    if (is_render_on_top()) {
-        shader_code += kDisableDepthTestRenderMode;
-    }
+    String shader_code = ProjectionMesh::generate_shader_code();
     // TODO: Allow culling to be configurable.
     shader_code += kCullFrontRenderMode;
     return shader_code;
+}
+
+void EquirectangularProjectionMesh::_init() {}
+
+void EquirectangularProjectionMesh::_process(const real_t delta) {}
+
+void EquirectangularProjectionMesh::_register_methods() {
+    register_method("_process", &EquirectangularProjectionMesh::_process);
 }
 
 }  // namespace gast

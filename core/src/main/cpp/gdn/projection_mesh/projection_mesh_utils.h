@@ -1,5 +1,5 @@
-#ifndef CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_PROJECTION_MESH_UTILS_H
-#define CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_PROJECTION_MESH_UTILS_H
+#ifndef PROJECTION_MESH_UTILS_H
+#define PROJECTION_MESH_UTILS_H
 
 #include "gen/Mesh.hpp"
 
@@ -197,4 +197,4 @@ static inline Array create_spherical_surface_array(
 
 }  // namespace gast
 
-#endif //CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_PROJECTION_MESH_UTILS_H
+#endif //PROJECTION_MESH_UTILS_H

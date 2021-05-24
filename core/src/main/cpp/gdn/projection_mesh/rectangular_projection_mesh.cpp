@@ -13,15 +13,15 @@ namespace gast {
 namespace {
 const float kCurvedScreenRadius = 6.0f;
 const size_t kCurvedScreenResolution = 20;
+const bool kDefaultCurveValue = false;
+const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
 RectangularProjectionMesh::RectangularProjectionMesh(Vector2 mesh_size, bool is_curved) :
-        ProjectionMesh(
-                ProjectionMeshType::RECTANGULAR,
-                MeshInstance::_new(),
-                Ref<ShaderMaterial>(ShaderMaterial::_new())) {
+        ProjectionMesh() {
     this->mesh_size = mesh_size;
     this->is_curved = is_curved;
+    this->gradient_height_ratio = kDefaultGradientHeightRatio;
     update_projection_mesh();
 }
 
@@ -29,6 +29,29 @@ RectangularProjectionMesh::RectangularProjectionMesh():
         RectangularProjectionMesh(get_default_mesh_size(), /* is_curved */ false) {}
 
 RectangularProjectionMesh::~RectangularProjectionMesh() = default;
+
+void RectangularProjectionMesh::_register_methods() {
+    register_method("_process", &RectangularProjectionMesh::_process);
+    register_method("set_size", &RectangularProjectionMesh::set_mesh_size);
+    register_method("get_size", &RectangularProjectionMesh::get_mesh_size);
+    register_method("set_curved", &RectangularProjectionMesh::set_curved);
+    register_method("is_curved", &RectangularProjectionMesh::get_curved);
+    register_method("set_gradient_height_ratio",
+            &RectangularProjectionMesh::set_gradient_height_ratio);
+    register_method("get_gradient_height_ratio",
+            &RectangularProjectionMesh::get_gradient_height_ratio);
+
+    register_property<RectangularProjectionMesh, Vector2>("size",
+            &RectangularProjectionMesh::set_mesh_size, &RectangularProjectionMesh::get_mesh_size,
+            get_default_mesh_size());
+    register_property<RectangularProjectionMesh, bool>("curved",
+            &RectangularProjectionMesh::set_curved, &RectangularProjectionMesh::get_curved,
+            kDefaultCurveValue);
+    register_property<RectangularProjectionMesh, float>("gradient_height_ratio",
+                                       &RectangularProjectionMesh::set_gradient_height_ratio,
+                                       &RectangularProjectionMesh::get_gradient_height_ratio,
+                                       kDefaultGradientHeightRatio);
+}
 
 void RectangularProjectionMesh::update_projection_mesh() {
     ArrayMesh *mesh = ArrayMesh::_new();
@@ -53,16 +76,11 @@ void RectangularProjectionMesh::update_projection_mesh() {
     set_shader(shader);
 
     get_mesh_instance()->set_surface_material(kDefaultSurfaceIndex, get_shader_material());
-
 }
 
-String RectangularProjectionMesh::generate_shader_code() {
-    String shader_code = kMonoShaderCode;
-    if (is_render_on_top()) {
-        shader_code += kDisableDepthTestRenderMode;
-    }
-    return shader_code;
-}
+void RectangularProjectionMesh::_init() {}
+
+void RectangularProjectionMesh::_process(const real_t delta) {}
 
 }  // namespace gast
 

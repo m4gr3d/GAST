@@ -49,17 +49,6 @@ JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong mesh_pointer, jboolean rende
     mesh->set_render_on_top(render_on_top);
 }
 
-JNIEXPORT jfloat JNICALL JNI_METHOD(getGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong mesh_pointer) {
-    ProjectionMesh *mesh = from_pointer(mesh_pointer);
-    return mesh->get_gradient_height_ratio();
-}
-
-JNIEXPORT void JNICALL
-JNI_METHOD(setGastNodeGradientHeightRatio)(JNIEnv *, jobject, jlong mesh_pointer, jfloat ratio) {
-    ProjectionMesh *mesh = from_pointer(mesh_pointer);
-    mesh->set_gradient_height_ratio(ratio);
-}
-
 JNIEXPORT void JNICALL
 JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong mesh_pointer, jfloat alpha) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);

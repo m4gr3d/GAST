@@ -11,29 +11,30 @@ namespace gast {
 namespace {
 const bool kDefaultGazeTracking = false;
 const bool kDefaultRenderOnTop = false;
-const float kDefaultGradientHeightRatio = 0.0f;
 const float kDefaultAlpha = 1;
 }  // namespace
 
-ProjectionMesh::~ProjectionMesh() = default;
+ProjectionMesh::~ProjectionMesh() {
+    mesh_instance = nullptr;
+};
 
-ProjectionMesh::ProjectionMeshType ProjectionMesh::get_projection_mesh_type() const {
-    return projection_mesh_type;
-}
+ProjectionMesh::ProjectionMesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) :
+        projection_mesh_type(projection_mesh_type),
+        mesh_instance(MeshInstance::_new()),
+        shader_material_ref(Ref<ShaderMaterial>(ShaderMaterial::_new())),
+        gaze_tracking(kDefaultGazeTracking),
+        render_on_top(kDefaultRenderOnTop),
+        alpha(kDefaultAlpha),
+        stereo_mode(StereoMode::kMono) {}
 
-ProjectionMesh::ProjectionMesh(
-        ProjectionMesh::ProjectionMeshType projection_mesh_type,
-        MeshInstance *mesh_instance,
-        Ref<ShaderMaterial> shader_material_ref) :
-    projection_mesh_type(projection_mesh_type),
-    mesh_instance(mesh_instance),
-    shader_material_ref(shader_material_ref),
-    gaze_tracking(kDefaultGazeTracking),
-    render_on_top(kDefaultRenderOnTop),
-    alpha(kDefaultAlpha),
-    gradient_height_ratio(kDefaultGradientHeightRatio) {
-    // TODO: Implement other stereo modes.
-    stereo_mode = StereoMode::kMono;
+ProjectionMesh::ProjectionMesh() : ProjectionMesh(ProjectionMeshType::RECTANGULAR) {}
+
+void ProjectionMesh::_init() {}
+
+void ProjectionMesh::_process(const real_t delta) {}
+
+void ProjectionMesh::_register_methods() {
+    register_method("_process", &ProjectionMesh::_process);
 }
 
 }  // namespace gast

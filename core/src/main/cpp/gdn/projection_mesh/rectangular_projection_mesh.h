@@ -1,5 +1,5 @@
-#ifndef CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_RECTANGULAR_PROJECTION_MESH_H_
-#define CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_RECTANGULAR_PROJECTION_MESH_H_
+#ifndef RECTANGULAR_PROJECTION_MESH_H
+#define RECTANGULAR_PROJECTION_MESH_H
 
 #include <core/Vector2.hpp>
 
@@ -12,11 +12,18 @@ using namespace godot;
 }
 
 class RectangularProjectionMesh : public ProjectionMesh {
+GODOT_CLASS(RectangularProjectionMesh, ProjectionMesh)
+
 public:
     RectangularProjectionMesh();
     RectangularProjectionMesh(Vector2 mesh_size, bool is_curved);
     ~RectangularProjectionMesh();
 
+    void _init();
+
+    void _process(const real_t delta);
+
+    static void _register_methods();
 
     inline void set_mesh_size(Vector2 mesh_size) {
         if (this->mesh_size == mesh_size) {
@@ -63,18 +70,30 @@ public:
       return relative_collision_point;
   }
 
+    inline float get_gradient_height_ratio() {
+        return gradient_height_ratio;
+    }
+
+    inline void set_gradient_height_ratio(float ratio) {
+        if (this->gradient_height_ratio == ratio) {
+            return;
+        }
+        this->gradient_height_ratio = std::min(1.0f, std::max(0.0f, ratio));
+        get_shader_material()->set_shader_param(
+                kGastGradientHeightRatioParamName, gradient_height_ratio);
+    }
+
 private:
     Vector2 mesh_size;
     bool is_curved;
+    float gradient_height_ratio;
 
     static inline Vector2 get_default_mesh_size() {
         return Vector2(2.0, 1.125);
     }
 
     void update_projection_mesh();
-
-    String generate_shader_code();
 };
 
 }  // namespace gast
-#endif //CORE_SRC_MAIN_CPP_GDN_PROJECTION_MESH_RECTANGULAR_PROJECTION_MESH_H_
+#endif //RECTANGULAR_PROJECTION_MESH_H

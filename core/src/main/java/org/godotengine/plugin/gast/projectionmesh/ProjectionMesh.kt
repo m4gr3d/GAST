@@ -48,18 +48,6 @@ open class ProjectionMesh(meshPointer : Long, nodePointer : Long) {
 
     private external fun setRenderOnTop(meshPointer: Long, enable: Boolean)
 
-    fun getGradientHeightRatio(): Float {
-        return getGastNodeGradientHeightRatio(getMeshPointer())
-    }
-
-    private external fun getGastNodeGradientHeightRatio(meshPointer: Long): Float
-
-    fun setGradientHeightRatio(ratio: Float) {
-        setGastNodeGradientHeightRatio(getMeshPointer(), ratio)
-    }
-
-    private external fun setGastNodeGradientHeightRatio(meshPointer: Long, ratio: Float)
-
     fun updateAlpha(alpha: Float) {
         updateAlpha(getMeshPointer(), alpha)
     }

@@ -38,4 +38,15 @@ JNI_METHOD(nativeSetCurved)(JNIEnv *, jobject, jlong mesh_pointer, jboolean curv
     mesh->set_curved(curved);
 }
 
+JNIEXPORT jfloat JNICALL JNI_METHOD(getGradientHeightRatio)(JNIEnv *, jobject, jlong mesh_pointer) {
+    RectangularProjectionMesh *mesh = from_pointer(mesh_pointer);
+    return mesh->get_gradient_height_ratio();
+}
+
+JNIEXPORT void JNICALL
+JNI_METHOD(setGradientHeightRatio)(JNIEnv *, jobject, jlong mesh_pointer, jfloat ratio) {
+    RectangularProjectionMesh *mesh = from_pointer(mesh_pointer);
+    mesh->set_gradient_height_ratio(ratio);
+}
+
 }
