@@ -85,17 +85,18 @@ public:
 
         projection_mesh->reset_external_texture();
 
-        if (projection_mesh_type == ProjectionMesh::ProjectionMeshType::RECTANGULAR) {
-            projection_mesh =
+        switch(projection_mesh_type) {
+            default:
+                ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
+                      projection_mesh_type);
+            case ProjectionMesh::ProjectionMeshType::RECTANGULAR:
+                projection_mesh =
                     projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
-        } else if (projection_mesh_type == ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR) {
-            projection_mesh =
+                break;
+            case ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR:
+                projection_mesh =
                     projection_mesh_pool.get_or_create_projection_mesh<EquirectangularProjectionMesh>();
-        } else {
-            ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
-                    projection_mesh_type);
-            projection_mesh =
-                    projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
+                break;
         }
 
         setup_projection_mesh();

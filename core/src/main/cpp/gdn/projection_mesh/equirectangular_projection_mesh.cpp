@@ -50,11 +50,7 @@ String EquirectangularProjectionMesh::generate_shader_code() {
 
 void EquirectangularProjectionMesh::_init() {}
 
-void EquirectangularProjectionMesh::_process(const real_t delta) {}
-
-void EquirectangularProjectionMesh::_register_methods() {
-    register_method("_process", &EquirectangularProjectionMesh::_process);
-}
+void EquirectangularProjectionMesh::_register_methods() {}
 
 }  // namespace gast
 

@@ -34,8 +34,6 @@ public:
 
     void _init();
 
-    void _process(const real_t delta);
-
     static void _register_methods();
 
     // Mirrors src/main/java/org/godotengine/plugin/gast/GastNode#ProjectionMeshType
@@ -92,9 +90,7 @@ public:
         }
         this->render_on_top = enable;
         if (shader_material_ref.is_valid() && shader_material_ref->get_shader().is_valid()) {
-            String shader_code = shader_material_ref->get_shader()->get_code();
-            shader_code += kDisableDepthTestRenderMode;
-            shader_material_ref->get_shader()->set_code(shader_code);
+            shader_material_ref->get_shader()->set_code(this->generate_shader_code());
         }
         update_render_priority();
     }

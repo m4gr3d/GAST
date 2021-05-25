@@ -120,7 +120,7 @@ int GastNode::get_external_texture_id(int surface_index) {
     }
 
     Ref<ExternalTexture> external_texture = get_external_texture(surface_index);
-    int tex_id = external_texture.ptr() == nullptr ? kInvalidTexId
+    int tex_id = external_texture.is_null() ? kInvalidTexId
                                              : external_texture->get_external_texture_id();
     ALOGV("Retrieved tex id %d", tex_id);
     return tex_id;

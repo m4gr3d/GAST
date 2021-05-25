@@ -21,8 +21,6 @@ public:
 
     void _init();
 
-    void _process(const real_t delta);
-
     static void _register_methods();
 
     inline void set_mesh_size(Vector2 mesh_size) {

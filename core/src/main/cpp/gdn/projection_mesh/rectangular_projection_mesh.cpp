@@ -31,7 +31,6 @@ RectangularProjectionMesh::RectangularProjectionMesh():
 RectangularProjectionMesh::~RectangularProjectionMesh() = default;
 
 void RectangularProjectionMesh::_register_methods() {
-    register_method("_process", &RectangularProjectionMesh::_process);
     register_method("set_size", &RectangularProjectionMesh::set_mesh_size);
     register_method("get_size", &RectangularProjectionMesh::get_mesh_size);
     register_method("set_curved", &RectangularProjectionMesh::set_curved);
@@ -79,8 +78,6 @@ void RectangularProjectionMesh::update_projection_mesh() {
 }
 
 void RectangularProjectionMesh::_init() {}
-
-void RectangularProjectionMesh::_process(const real_t delta) {}
 
 }  // namespace gast
 

@@ -19,14 +19,11 @@ public:
 
     void _init();
 
-    void _process(const real_t delta);
-
     static void _register_methods();
-
-    void update_projection_mesh();
 
 private:
     String generate_shader_code() override;
+    void update_projection_mesh();
 };
 
 }  // namespace gast

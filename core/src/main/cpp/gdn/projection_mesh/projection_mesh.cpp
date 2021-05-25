@@ -15,6 +15,8 @@ const float kDefaultAlpha = 1;
 }  // namespace
 
 ProjectionMesh::~ProjectionMesh() {
+    reset_mesh();
+    reset_external_texture();
     mesh_instance = nullptr;
 };
 
@@ -31,11 +33,7 @@ ProjectionMesh::ProjectionMesh() : ProjectionMesh(ProjectionMeshType::RECTANGULA
 
 void ProjectionMesh::_init() {}
 
-void ProjectionMesh::_process(const real_t delta) {}
-
-void ProjectionMesh::_register_methods() {
-    register_method("_process", &ProjectionMesh::_process);
-}
+void ProjectionMesh::_register_methods() {}
 
 }  // namespace gast
 
