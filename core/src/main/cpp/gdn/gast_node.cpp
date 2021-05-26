@@ -194,7 +194,7 @@ void GastNode::update_mesh_dimensions_and_collision_shape() {
     Array mesh_surface_array;
     if (projection_mesh_type == ProjectionMeshType::RECTANGULAR) {
         if (is_curved()) {
-            primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
             mesh_surface_array = create_curved_screen_surface_array(
                     mesh_size, kCurvedScreenRadius, kCurvedScreenResolution);
         } else {
@@ -276,8 +276,7 @@ void GastNode::update_collision_shape() {
         collision_shape->set_shape(Ref<Resource>());
     } else {
         if (is_curved()) {
-            // TODO: Use `create_trimesh_shape()` instead after resolving why the shape doesn't detect collisions.
-            collision_shape->set_shape(mesh->create_convex_shape());
+            collision_shape->set_shape(mesh->create_trimesh_shape());
         } else {
             collision_shape->set_shape(mesh->create_convex_shape());
         }
