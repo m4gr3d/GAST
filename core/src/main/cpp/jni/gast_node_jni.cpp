@@ -196,6 +196,13 @@ JNI_METHOD(nativeGetProjectionMesh)(JNIEnv *, jobject, jlong node_pointer) {
     return to_pointer(gast_node->get_projection_mesh());
 }
 
+JNIEXPORT jint JNICALL
+JNI_METHOD(nativeGetProjectionMeshType)(JNIEnv *, jobject, jlong node_pointer) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL_V(gast_node, ProjectionMesh::ProjectionMeshType::RECTANGULAR);
+    return gast_node->get_projection_mesh_type();
+}
+
 JNIEXPORT void JNICALL
 JNI_METHOD(nativeSetProjectionMesh)(JNIEnv *, jobject, jlong node_pointer,
                                     jint projection_mesh_type) {

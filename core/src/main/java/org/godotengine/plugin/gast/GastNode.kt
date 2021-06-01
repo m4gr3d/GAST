@@ -8,6 +8,7 @@ import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
 import androidx.annotation.RequiresApi
+import org.godotengine.plugin.gast.projectionmesh.EquirectangularProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import java.util.BitSet
@@ -35,6 +36,8 @@ class GastNode @JvmOverloads constructor(
     private var nodePointer: Long
     val nodePath get() = nativeGetNodePath(nodePointer)
 
+    private var projectionMeshPool : HashMap<Long, ProjectionMesh> = hashMapOf()
+
     // Mirrors enum ProjectionMeshType in src/main/cpp/gdn/gast_node.h
     enum class ProjectionMeshType {
         RECTANGULAR,
@@ -61,23 +64,44 @@ class GastNode @JvmOverloads constructor(
     }
 
     fun getProjectionMesh() : ProjectionMesh {
-        return ProjectionMesh(nativeGetProjectionMesh(nodePointer), nodePointer)
-    }
+        checkIfReleased();
+        val meshPointer = nativeGetProjectionMesh(nodePointer)
 
-    fun getRectangularProjectionMesh() : RectangularProjectionMesh? {
-        if (!getProjectionMesh().isRectangular()) {
-            return null
+        if (projectionMeshPool.containsKey(meshPointer)) {
+            return projectionMeshPool.getValue(meshPointer)
         }
-        return RectangularProjectionMesh(nativeGetProjectionMesh(nodePointer), nodePointer)
+
+        when(getProjectionMeshType()) {
+            ProjectionMeshType.RECTANGULAR ->
+                projectionMeshPool[meshPointer] =
+                    RectangularProjectionMesh(meshPointer, nodePointer)
+            ProjectionMeshType.EQUIRECTANGULAR ->
+                projectionMeshPool[meshPointer] =
+                    EquirectangularProjectionMesh(meshPointer, nodePointer)
+            else -> {
+                TODO("Mesh type unimplemented")
+            }
+        }
+
+        return projectionMeshPool.getValue(meshPointer)
     }
 
     private external fun nativeGetProjectionMesh(nodePointer: Long) : Long
 
+    fun getProjectionMeshType() : ProjectionMeshType {
+        checkIfReleased()
+        return ProjectionMeshType.values()[nativeGetProjectionMeshType(nodePointer)]
+    }
+
+    private external fun nativeGetProjectionMeshType(nodePointer: Long) : Int
+
     fun setProjectionMesh(projectionMeshType: ProjectionMeshType) {
+        checkIfReleased()
         setProjectionMesh(projectionMeshType.ordinal)
     }
 
-    fun setProjectionMesh(projectionMeshType: Int) {
+    private fun setProjectionMesh(projectionMeshType: Int) {
+        checkIfReleased()
         nativeSetProjectionMesh(nodePointer, projectionMeshType)
     }
 

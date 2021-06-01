@@ -102,7 +102,7 @@ class GastFrameLayout(
         ) {
             gastNode?.setSurfaceTextureSize(widthInPixels, heightInPixels) ?: return
             gastManager?.runOnRenderThread {
-                if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
+                if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
                     val projectionMesh : RectangularProjectionMesh =
                         gastNode?.getProjectionMesh() as RectangularProjectionMesh
                     projectionMesh.setMeshSize(

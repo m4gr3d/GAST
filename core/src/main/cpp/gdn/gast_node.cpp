@@ -43,19 +43,11 @@ void GastNode::_register_methods() {
 
     register_method("set_collidable", &GastNode::set_collidable);
     register_method("is_collidable", &GastNode::is_collidable);
-    register_method("set_gaze_tracking", &GastNode::set_gaze_tracking);
-    register_method("is_gaze_tracking", &GastNode::is_gaze_tracking);
-    register_method("set_render_on_top", &GastNode::set_render_on_top);
-    register_method("is_render_on_top", &GastNode::is_render_on_top);
 
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
 
     register_property<GastNode, bool>("collidable", &GastNode::set_collidable,
                                       &GastNode::is_collidable, kDefaultCollidable);
-    register_property<GastNode, bool>("gaze_tracking", &GastNode::set_gaze_tracking,
-                                      &GastNode::is_gaze_tracking, kDefaultGazeTracking);
-    register_property<GastNode, bool>("render_on_top", &GastNode::set_render_on_top,
-                                      &GastNode::is_render_on_top, kDefaultRenderOnTop);
 }
 
 void GastNode::_init() {

@@ -161,6 +161,7 @@ public:
 
  private:
     ProjectionMeshType projection_mesh_type;
+
     MeshInstance *mesh_instance;
     Ref<ShaderMaterial> shader_material_ref;
     Ref<Shape> collision_shape_ref;

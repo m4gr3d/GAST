@@ -4,27 +4,25 @@ class RectangularProjectionMesh(meshPointer: Long, nodePointer : Long)
     : ProjectionMesh(meshPointer, nodePointer) {
 
     fun setMeshSize(width: Float, height: Float) {
-        nativeSetMeshSize(getMeshPointer(), width, height)
-        updateGastNodeFromProjectionMesh()
+        nativeSetMeshSize(meshPointer, nodePointer, width, height)
     }
 
-    private external fun nativeSetMeshSize(meshPointer: Long, width: Float, height: Float)
+    private external fun nativeSetMeshSize(meshPointer: Long, nodePointer: Long, width: Float, height: Float)
 
     fun setCurved(curved : Boolean) {
-        nativeSetCurved(getMeshPointer(), curved)
-        updateGastNodeFromProjectionMesh()
+        nativeSetCurved(meshPointer, nodePointer, curved)
     }
 
-    private external fun nativeSetCurved(meshPointer: Long, curved: Boolean)
+    private external fun nativeSetCurved(meshPointer: Long, nodePointer: Long, curved: Boolean)
 
     fun getGradientHeightRatio(): Float {
-        return getGradientHeightRatio(getMeshPointer())
+        return getGradientHeightRatio(meshPointer)
     }
 
     private external fun getGradientHeightRatio(meshPointer: Long): Float
 
     fun setGradientHeightRatio(ratio: Float) {
-        setGradientHeightRatio(getMeshPointer(), ratio)
+        setGradientHeightRatio(meshPointer, ratio)
     }
 
     private external fun setGradientHeightRatio(meshPointer: Long, ratio: Float)

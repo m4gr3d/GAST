@@ -106,6 +106,10 @@ public:
         return this->projection_mesh;
     }
 
+    inline ProjectionMesh::ProjectionMeshType get_projection_mesh_type() {
+        return projection_mesh->get_projection_mesh_type();
+    }
+
     inline void set_render_on_top(bool enable) {
         projection_mesh->set_render_on_top(enable);
     }

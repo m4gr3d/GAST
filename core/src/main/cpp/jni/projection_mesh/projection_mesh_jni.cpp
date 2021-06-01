@@ -29,49 +29,35 @@ extern "C" {
 
 JNIEXPORT jboolean JNICALL JNI_METHOD(isGazeTracking)(JNIEnv *, jobject, jlong mesh_pointer) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL_V(mesh, kDefaultGazeTracking);
     return mesh->is_gaze_tracking();
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(setGazeTracking)(JNIEnv *, jobject, jlong mesh_pointer, jboolean gaze_tracking) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL(mesh);
     mesh->set_gaze_tracking(gaze_tracking);
 }
 
 JNIEXPORT jboolean JNICALL JNI_METHOD(isRenderOnTop)(JNIEnv *, jobject, jlong mesh_pointer) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL_V(mesh, kDefaultRenderOnTop);
     return mesh->is_render_on_top();
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong mesh_pointer, jboolean render_on_top) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL(mesh);
     mesh->set_render_on_top(render_on_top);
 }
 
 JNIEXPORT void JNICALL
 JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong mesh_pointer, jfloat alpha) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL(mesh);
     mesh->set_alpha(alpha);
-}
-
-JNIEXPORT jboolean JNICALL
-JNI_METHOD(nativeIsRectangular)(JNIEnv *, jobject, jlong mesh_pointer) {
-    ProjectionMesh *mesh = from_pointer(mesh_pointer);
-    return mesh->is_rectangular_projection_mesh();
-}
-
-JNIEXPORT jboolean JNICALL
-JNI_METHOD(nativeIsEquirectangular)(JNIEnv *, jobject, jlong mesh_pointer) {
-    ProjectionMesh *mesh = from_pointer(mesh_pointer);
-    return mesh->is_equirectangular_projection_mesh();
-}
-
-JNIEXPORT void JNICALL
-JNI_METHOD(updateGastNodeFromProjectionMesh)(JNIEnv *, jobject, jlong node_pointer) {
-    GastNode *gast_node = reinterpret_cast<GastNode *>(node_pointer);
-    ERR_FAIL_NULL(gast_node);
-    gast_node->setup_projection_mesh();
 }
 
 }

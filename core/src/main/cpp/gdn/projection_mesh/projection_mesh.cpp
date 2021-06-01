@@ -33,7 +33,21 @@ ProjectionMesh::ProjectionMesh() : ProjectionMesh(ProjectionMeshType::RECTANGULA
 
 void ProjectionMesh::_init() {}
 
-void ProjectionMesh::_register_methods() {}
+void ProjectionMesh::_register_methods() {
+    register_method("set_gaze_tracking", &ProjectionMesh::set_gaze_tracking);
+    register_method("is_gaze_tracking", &ProjectionMesh::is_gaze_tracking);
+    register_method("set_render_on_top", &ProjectionMesh::set_render_on_top);
+    register_method("is_render_on_top", &ProjectionMesh::is_render_on_top);
+
+    register_property<ProjectionMesh, bool>(
+            "gaze_tracking",
+            &ProjectionMesh::set_gaze_tracking,
+            &ProjectionMesh::is_gaze_tracking, kDefaultGazeTracking);
+    register_property<ProjectionMesh, bool>(
+            "render_on_top",
+            &ProjectionMesh::set_render_on_top,
+            &ProjectionMesh::is_render_on_top, kDefaultRenderOnTop);
+}
 
 }  // namespace gast
 

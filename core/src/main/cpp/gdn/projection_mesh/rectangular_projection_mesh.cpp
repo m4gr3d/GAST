@@ -15,6 +15,7 @@ const float kCurvedScreenRadius = 6.0f;
 const size_t kCurvedScreenResolution = 20;
 const bool kDefaultCurveValue = false;
 const float kDefaultGradientHeightRatio = 0.0f;
+const Vector2 kDefaultMeshSize = Vector2(2.0, 1.125);
 }  // namespace
 
 RectangularProjectionMesh::RectangularProjectionMesh(Vector2 mesh_size, bool is_curved) :
@@ -26,7 +27,7 @@ RectangularProjectionMesh::RectangularProjectionMesh(Vector2 mesh_size, bool is_
 }
 
 RectangularProjectionMesh::RectangularProjectionMesh():
-        RectangularProjectionMesh(get_default_mesh_size(), /* is_curved */ false) {}
+        RectangularProjectionMesh(kDefaultMeshSize, /* is_curved */ false) {}
 
 RectangularProjectionMesh::~RectangularProjectionMesh() = default;
 
@@ -42,7 +43,7 @@ void RectangularProjectionMesh::_register_methods() {
 
     register_property<RectangularProjectionMesh, Vector2>("size",
             &RectangularProjectionMesh::set_mesh_size, &RectangularProjectionMesh::get_mesh_size,
-            get_default_mesh_size());
+            kDefaultMeshSize);
     register_property<RectangularProjectionMesh, bool>("curved",
             &RectangularProjectionMesh::set_curved, &RectangularProjectionMesh::get_curved,
             kDefaultCurveValue);

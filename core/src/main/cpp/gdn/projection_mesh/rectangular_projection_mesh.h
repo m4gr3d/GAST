@@ -51,7 +51,6 @@ public:
       Vector2 relative_collision_point = kInvalidCoordinate;
 
       // Normalize the collision point.
-      // TODO: A rectangular projection mesh is a quad so we only worry about the x,y coordinates
       Vector2 node_size = get_mesh_size();
       if (node_size.width > 0 && node_size.height > 0) {
           float max_x = node_size.width / 2;
@@ -85,10 +84,6 @@ private:
     Vector2 mesh_size;
     bool is_curved;
     float gradient_height_ratio;
-
-    static inline Vector2 get_default_mesh_size() {
-        return Vector2(2.0, 1.125);
-    }
 
     void update_projection_mesh();
 };

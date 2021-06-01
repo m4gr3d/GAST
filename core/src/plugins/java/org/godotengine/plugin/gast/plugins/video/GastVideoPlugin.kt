@@ -158,7 +158,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     @UsedByGodot
     fun setVideoScreenCurved(curved: Boolean) {
         runOnRenderThread {
-            if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
+            if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
                 val projectionMesh: RectangularProjectionMesh =
                     gastNode?.getProjectionMesh() as RectangularProjectionMesh
                 projectionMesh.setCurved(curved)
@@ -176,7 +176,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     @UsedByGodot
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
-            if (gastNode?.getProjectionMesh()?.isRectangular() == true) {
+            if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
                 val projectionMesh: RectangularProjectionMesh =
                     gastNode?.getProjectionMesh() as RectangularProjectionMesh
                 projectionMesh.setMeshSize(width, height)
