@@ -29,9 +29,7 @@ void EquirectangularProjectionMesh::update_projection_mesh() {
                     kEquirectSphereMeshBandCount,
                     kEquirectSphereMeshSectorCount));
     set_mesh(mesh);
-    // TODO: Use `create_trimesh_shape()` instead after resolving why the shape doesn't detect
-    // collisions.
-    set_collision_shape(mesh->create_convex_shape());
+    set_collision_shape(mesh->create_trimesh_shape());
 
     Shader *shader = Shader::_new();
     shader->set_custom_defines(kShaderCustomDefines);

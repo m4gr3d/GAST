@@ -57,18 +57,17 @@ void RectangularProjectionMesh::update_projection_mesh() {
     ArrayMesh *mesh = ArrayMesh::_new();
     if (is_curved) {
         mesh->add_surface_from_arrays(
-                Mesh::PRIMITIVE_TRIANGLE_STRIP,
+                Mesh::PRIMITIVE_TRIANGLES,
                 create_curved_screen_surface_array(
                         mesh_size, kCurvedScreenRadius, kCurvedScreenResolution));
+        set_collision_shape(mesh->create_trimesh_shape());
     } else {
         QuadMesh *quad_mesh = QuadMesh::_new();
         quad_mesh->set_size(mesh_size);
         mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, quad_mesh->get_mesh_arrays());
+        set_collision_shape(mesh->create_convex_shape());
     }
     set_mesh(mesh);
-    // TODO: Use `create_trimesh_shape()` for curved instead after resolving why the shape doesn't
-    //  detect collisions.
-    set_collision_shape(mesh->create_convex_shape());
 
     Shader *shader = Shader::_new();
     shader->set_custom_defines(kShaderCustomDefines);

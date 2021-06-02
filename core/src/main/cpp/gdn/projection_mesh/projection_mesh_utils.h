@@ -89,32 +89,39 @@ static inline Array create_curved_screen_surface_array(
         }
     }
 
-    uint32_t vertex_offset = 0;
     for (size_t row = 0; row < vertical_resolution - 1; row++) {
-        // Add last index from the previous row another time to produce a degenerate triangle.
-        if (row > 0) {
-            int last_index = indices[indices.size() - 1];
-            indices.append(last_index);
+        for (size_t col = 0; col < horizontal_resolution - 1; col++) {
+            uint32_t offset = col + row * horizontal_resolution;
+
+            /*
+             Our vertex array contains the list of all vertices grouped by rows.
+             For example, for row_count = 2 (= col_count = horizontal_resolution):
+                [(A {index=0}, B {index=1}), (C {index=2}, D {index=3})]
+
+             To generate the triangles in clockwise winding order, we need the following sequence:
+
+             C ---- D
+             |\     |
+             |  \   |
+             |    \ |
+             A ---- B
+
+             vertices => [A,C,B], [B,C,D]
+             indices  => [0,2,1], [1,2,3]
+
+             ==> First triangle: offset, offset + horizontal_resolution, offset + 1
+             ==> Second triangle: offset + 1, offset + horizontal_resolution, offset + horizontal_resolution + 1
+             */
+            // Add the first triangle
+            indices.append(offset);
+            indices.append(offset + horizontal_resolution);
+            indices.append(offset + 1);
+
+            // Add the second triangle
+            indices.append(offset + 1);
+            indices.append(offset + horizontal_resolution);
+            indices.append(offset + horizontal_resolution + 1);
         }
-
-        for (size_t col = 0; col < horizontal_resolution; col++) {
-            // Add indices for this vertex and the vertex beneath it.
-            indices.append(vertex_offset);
-            indices.append(static_cast<uint32_t>(vertex_offset + horizontal_resolution));
-
-            // Move to the vertex in the next column.
-            if (col < horizontal_resolution - 1) {
-                // Move from left-to-right on even rows, right-to-left on odd rows.
-                if (row % 2 == 0) {
-                    vertex_offset++;
-                } else {
-                    vertex_offset--;
-                }
-            }
-        }
-
-        // Move to the vertex in the next row.
-        vertex_offset = vertex_offset + static_cast<int>(horizontal_resolution);
     }
 
     arr[Mesh::ARRAY_VERTEX] = vertices;
