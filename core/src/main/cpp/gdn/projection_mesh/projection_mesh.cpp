@@ -9,8 +9,6 @@
 namespace gast {
 
 namespace {
-const bool kDefaultGazeTracking = false;
-const bool kDefaultRenderOnTop = false;
 const float kDefaultAlpha = 1;
 }  // namespace
 

@@ -97,12 +97,7 @@ class GastNode @JvmOverloads constructor(
 
     fun setProjectionMesh(projectionMeshType: ProjectionMeshType) {
         checkIfReleased()
-        setProjectionMesh(projectionMeshType.ordinal)
-    }
-
-    private fun setProjectionMesh(projectionMeshType: Int) {
-        checkIfReleased()
-        nativeSetProjectionMesh(nodePointer, projectionMeshType)
+        nativeSetProjectionMesh(nodePointer, projectionMeshType.ordinal)
     }
 
     private external fun nativeSetProjectionMesh(nodePointer: Long, projectionMeshType: Int)

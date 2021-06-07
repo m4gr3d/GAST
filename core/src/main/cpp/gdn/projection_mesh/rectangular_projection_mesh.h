@@ -10,6 +10,7 @@ namespace gast {
 namespace {
 using namespace godot;
 const Vector2 kDefaultMeshSize = Vector2(2.0, 1.125);
+const float kDefaultGradientHeightRatio = 0.0f;
 }
 
 class RectangularProjectionMesh : public ProjectionMesh {
@@ -30,6 +31,7 @@ public:
         }
         this->mesh_size = mesh_size;
         update_projection_mesh();
+        update_listener();
     }
 
     inline Vector2 get_mesh_size() {
@@ -42,6 +44,7 @@ public:
         }
         this->is_curved = is_curved;
         update_projection_mesh();
+        update_listener();
     }
 
     inline bool get_curved() {
@@ -87,6 +90,13 @@ private:
     float gradient_height_ratio;
 
     void update_projection_mesh();
+
+    inline void update_listener() {
+        auto *listener = get_projection_mesh_listener();
+        if (listener) {
+            listener->on_mesh_update();
+        }
+    }
 };
 
 }  // namespace gast

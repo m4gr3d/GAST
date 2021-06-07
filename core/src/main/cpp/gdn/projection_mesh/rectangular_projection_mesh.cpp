@@ -14,11 +14,10 @@ namespace {
 const float kCurvedScreenRadius = 6.0f;
 const size_t kCurvedScreenResolution = 20;
 const bool kDefaultCurveValue = false;
-const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
 RectangularProjectionMesh::RectangularProjectionMesh(Vector2 mesh_size, bool is_curved) :
-        ProjectionMesh() {
+        ProjectionMesh(ProjectionMesh::ProjectionMeshType::RECTANGULAR) {
     this->mesh_size = mesh_size;
     this->is_curved = is_curved;
     this->gradient_height_ratio = kDefaultGradientHeightRatio;

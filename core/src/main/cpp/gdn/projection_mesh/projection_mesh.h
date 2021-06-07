@@ -23,6 +23,8 @@ const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
 const char *kGastNodeAlphaParamName = "node_alpha";
 const int kDefaultSurfaceIndex = 0;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
+const bool kDefaultGazeTracking = false;
+const bool kDefaultRenderOnTop = false;
 }
 
 class ProjectionMesh : public Resource {
@@ -155,13 +157,22 @@ public:
         set_external_texture(Ref<Resource>());
     }
 
-  virtual Vector2 get_relative_collision_point(Vector3 local_collision_point) {
+    virtual Vector2 get_relative_collision_point(Vector3 local_collision_point) {
         return kInvalidCoordinate;
+    }
+
+    class ProjectionMeshListener {
+    public:
+        virtual void on_mesh_update() = 0;
+    };
+
+    inline void set_projection_mesh_listener(ProjectionMeshListener *listener) {
+        this->projection_mesh_listener = listener;
     }
 
  private:
     ProjectionMeshType projection_mesh_type;
-
+    ProjectionMeshListener *projection_mesh_listener;
     MeshInstance *mesh_instance;
     Ref<ShaderMaterial> shader_material_ref;
     Ref<Shape> collision_shape_ref;
@@ -203,6 +214,10 @@ protected:
             shader_code += kDisableDepthTestRenderMode;
         }
         return shader_code;
+    }
+
+    inline ProjectionMeshListener *get_projection_mesh_listener() {
+        return this->projection_mesh_listener;
     }
 };
 

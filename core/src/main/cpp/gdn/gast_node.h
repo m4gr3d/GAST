@@ -30,9 +30,6 @@ using namespace godot;
 constexpr int kInvalidTexId = -1;
 constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
-const bool kDefaultGazeTracking = false;
-const bool kDefaultRenderOnTop = false;
-const float kDefaultGradientHeightRatio = 0.0f;
 }  // namespace
 
 /// Script for a GAST node. Enables GAST specific logic and processing.
@@ -84,6 +81,7 @@ public:
         }
 
         projection_mesh->reset_external_texture();
+        projection_mesh->set_projection_mesh_listener(nullptr);
 
         switch(projection_mesh_type) {
             default:
@@ -100,6 +98,7 @@ public:
         }
 
         setup_projection_mesh();
+        projection_mesh->set_projection_mesh_listener(&mesh_listener);
     }
 
     inline ProjectionMesh* get_projection_mesh() {
@@ -185,10 +184,23 @@ private:
 
     void reset_mesh_and_collision_shape();
 
+    class GastNodeMeshUpdateListener : public ProjectionMesh::ProjectionMeshListener {
+    public:
+        GastNodeMeshUpdateListener(GastNode *node) : gast_node(node) {}
+
+        inline void on_mesh_update() override {
+            gast_node->setup_projection_mesh();
+        }
+
+    private:
+        GastNode *gast_node;
+    };
+
     bool collidable;
     ProjectionMeshPool projection_mesh_pool;
     ProjectionMesh *projection_mesh;
     Ref<ExternalTexture> external_texture;
+    GastNodeMeshUpdateListener mesh_listener;
 };
 
 }  // namespace gast
