@@ -14,6 +14,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.extension.GastExtension
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -157,7 +158,11 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     @UsedByGodot
     fun setVideoScreenCurved(curved: Boolean) {
         runOnRenderThread {
-            gastNode?.setCurved(curved)
+            if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
+                val projectionMesh: RectangularProjectionMesh =
+                    gastNode?.getProjectionMesh() as RectangularProjectionMesh
+                projectionMesh.setCurved(curved)
+            }
         }
     }
 
@@ -171,7 +176,11 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     @UsedByGodot
     fun setVideoScreenSize(width: Float, height: Float) {
         runOnRenderThread {
-            gastNode?.updateSize(width, height)
+            if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
+                val projectionMesh: RectangularProjectionMesh =
+                    gastNode?.getProjectionMesh() as RectangularProjectionMesh
+                projectionMesh.setMeshSize(width, height)
+            }
         }
     }
 

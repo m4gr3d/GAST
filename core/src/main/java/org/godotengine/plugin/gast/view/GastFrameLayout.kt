@@ -11,6 +11,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 
 class GastFrameLayout(
     context: Context,
@@ -101,10 +102,13 @@ class GastFrameLayout(
         ) {
             gastNode?.setSurfaceTextureSize(widthInPixels, heightInPixels) ?: return
             gastManager?.runOnRenderThread {
-                gastNode?.updateSize(
-                    fromPixelsToGodotDimensions(context, width.toFloat()),
-                    fromPixelsToGodotDimensions(context, height.toFloat())
-                )
+                if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
+                    val projectionMesh : RectangularProjectionMesh =
+                        gastNode?.getProjectionMesh() as RectangularProjectionMesh
+                    projectionMesh.setMeshSize(
+                        fromPixelsToGodotDimensions(context, width.toFloat()),
+                        fromPixelsToGodotDimensions(context, height.toFloat()))
+                }
             } ?: return
 
             Log.d(TAG, "Updating texture size to X - $widthInPixels, Y - $heightInPixels")

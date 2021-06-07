@@ -8,6 +8,9 @@ import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
 import androidx.annotation.RequiresApi
+import org.godotengine.plugin.gast.projectionmesh.EquirectangularProjectionMesh
+import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import java.util.BitSet
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -33,6 +36,8 @@ class GastNode @JvmOverloads constructor(
     private var nodePointer: Long
     val nodePath get() = nativeGetNodePath(nodePointer)
 
+    private var projectionMeshPool : HashMap<Long, ProjectionMesh> = hashMapOf()
+
     // Mirrors enum ProjectionMeshType in src/main/cpp/gdn/gast_node.h
     enum class ProjectionMeshType {
         RECTANGULAR,
@@ -57,6 +62,45 @@ class GastNode @JvmOverloads constructor(
 
         gastManager.registerGastRenderListener(this)
     }
+
+    fun getProjectionMesh() : ProjectionMesh {
+        checkIfReleased();
+        val meshPointer = nativeGetProjectionMesh(nodePointer)
+
+        if (projectionMeshPool.containsKey(meshPointer)) {
+            return projectionMeshPool.getValue(meshPointer)
+        }
+
+        when(getProjectionMeshType()) {
+            ProjectionMeshType.RECTANGULAR ->
+                projectionMeshPool[meshPointer] =
+                    RectangularProjectionMesh(meshPointer, nodePointer)
+            ProjectionMeshType.EQUIRECTANGULAR ->
+                projectionMeshPool[meshPointer] =
+                    EquirectangularProjectionMesh(meshPointer, nodePointer)
+            else -> {
+                TODO("Mesh type unimplemented")
+            }
+        }
+
+        return projectionMeshPool.getValue(meshPointer)
+    }
+
+    private external fun nativeGetProjectionMesh(nodePointer: Long) : Long
+
+    fun getProjectionMeshType() : ProjectionMeshType {
+        checkIfReleased()
+        return ProjectionMeshType.values()[nativeGetProjectionMeshType(nodePointer)]
+    }
+
+    private external fun nativeGetProjectionMeshType(nodePointer: Long) : Int
+
+    fun setProjectionMesh(projectionMeshType: ProjectionMeshType) {
+        checkIfReleased()
+        nativeSetProjectionMesh(nodePointer, projectionMeshType.ordinal)
+    }
+
+    private external fun nativeSetProjectionMesh(nodePointer: Long, projectionMeshType: Int)
 
     companion object {
         private val TAG = GastNode::class.java.simpleName
@@ -286,20 +330,6 @@ class GastNode @JvmOverloads constructor(
 
     private external fun isGastNodeCollidable(nodePointer: Long): Boolean
 
-    fun isCurved(): Boolean {
-        checkIfReleased()
-        return isGastNodeCurved(nodePointer)
-    }
-
-    private external fun isGastNodeCurved(nodePointer: Long): Boolean
-
-    fun setCurved(curved: Boolean) {
-        checkIfReleased()
-        setGastNodeCurved(nodePointer, curved)
-    }
-
-    private external fun setGastNodeCurved(nodePointer: Long, curved: Boolean)
-
     fun isGazeTracking(): Boolean {
         checkIfReleased()
         return isGazeTracking(nodePointer)
@@ -376,30 +406,6 @@ class GastNode @JvmOverloads constructor(
 
     private external fun setCollisionMasks(nodePointer: Long, masks: Long)
 
-    fun getGradientHeightRatio(): Float {
-        checkIfReleased()
-        return getGastNodeGradientHeightRatio(nodePointer)
-    }
-
-    private external fun getGastNodeGradientHeightRatio(nodePointer: Long): Float
-
-    fun setGradientHeightRatio(ratio: Float) {
-        checkIfReleased()
-        setGastNodeGradientHeightRatio(nodePointer, ratio)
-    }
-
-    private external fun setGastNodeGradientHeightRatio(nodePointer: Long, ratio: Float)
-
-    /**
-     * Update the size of the Gast node.
-     */
-    fun updateSize(width: Float, height: Float) {
-        checkIfReleased()
-        updateGastNodeSize(nodePointer, width, height)
-    }
-
-    private external fun updateGastNodeSize(nodePointer: Long, width: Float, height: Float)
-
     /**
      * Update the node's opacity.
      */
@@ -471,15 +477,4 @@ class GastNode @JvmOverloads constructor(
             counter = updateTextureImageCounter.decrementAndGet()
         }
     }
-
-    /**
-     * Updates the node's projection type.
-     */
-    fun setProjectionMeshType(projectionMeshType: ProjectionMeshType) {
-        checkIfReleased()
-        nativeSetProjectionMeshType(nodePointer, projectionMeshType.ordinal)
-    }
-
-    private external fun nativeSetProjectionMeshType(nodePointer: Long, projectionMeshType: Int)
-
 }

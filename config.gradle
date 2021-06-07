@@ -4,6 +4,6 @@ ext.versions = [
     minSdk             : 18,
     targetSdk          : 30,
     buildTools         : '30.0.1',
-    kotlinVersion      : '1.4.31',
+    kotlinVersion      : '1.5.0',
     ndkVersion         : "21.4.7075529"
 ]
