@@ -60,4 +60,11 @@ JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong mesh_pointer, jfloat alpha) {
     mesh->set_alpha(alpha);
 }
 
+JNIEXPORT void JNICALL
+JNI_METHOD(setStereoMode)(JNIEnv *, jobject, jlong mesh_pointer, jint stereo_mode) {
+    ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL(mesh);
+    mesh->set_stereo_mode(static_cast<StereoMode>(stereo_mode));
+}
+
 }

@@ -144,8 +144,9 @@ public:
         return stereo_mode;
     }
 
-    inline void set_stereo_mode() {
-        // TODO: Implement
+    inline void set_stereo_mode(StereoMode stereo_mode) {
+        this->stereo_mode = stereo_mode;
+        update_sampling_transforms();
     }
 
     inline void reset_mesh() {
@@ -209,7 +210,7 @@ protected:
     }
 
     virtual inline String generate_shader_code() {
-        String shader_code = kMonoShaderCode;
+        String shader_code = kShaderCode;
         if (is_render_on_top()) {
             shader_code += kDisableDepthTestRenderMode;
         }
@@ -218,6 +219,16 @@ protected:
 
     inline ProjectionMeshListener *get_projection_mesh_listener() {
         return this->projection_mesh_listener;
+    }
+
+    inline void update_sampling_transforms() {
+        if (shader_material_ref.is_valid()) {
+            SamplingTransforms sampling_transforms = get_sampling_transforms(stereo_mode);
+            shader_material_ref->set_shader_param(
+                    kGastLeftEyeSamplingTransformName, sampling_transforms.left);
+            shader_material_ref->set_shader_param(
+                    kGastRightEyeSamplingTransformName, sampling_transforms.right);
+        }
     }
 };
 
