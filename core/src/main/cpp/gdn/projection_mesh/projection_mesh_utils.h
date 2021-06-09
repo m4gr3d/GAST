@@ -15,14 +15,86 @@ enum class StereoMode {
     kModeCount,
 };
 
-const char *kMonoShaderCode = R"GAST_SHADER(
+struct StereoModeDisplayParameters {
+    Vector2 texture_scale = Vector2(1.0, 1.0);
+    Vector2 left_texture_offset = Vector2(0.0, 0.0);
+    Vector2 right_texture_offset = Vector2(0.0, 0.0);
+};
+
+struct SamplingTransforms {
+    Transform left;
+    Transform right;
+};
+
+Transform get_transform_from_translation(Vector2 translation) {
+    auto transform = Transform();
+    transform.translate(translation.x, translation.y, 0);
+    return transform;
+}
+
+Transform get_transform_from_scale(Vector2 scale) {
+    auto transform = Transform();
+    transform.scale(Vector3(scale.x, scale.y, 1));
+    return transform;
+}
+
+StereoModeDisplayParameters get_stereo_mode_display_parameters(StereoMode stereo_mode) {
+    StereoModeDisplayParameters parameters;
+    switch (stereo_mode) {
+        case StereoMode::kMono:
+            parameters.texture_scale = Vector2(1.0, 1.0);
+            parameters.left_texture_offset = Vector2(0.0, 0.0);
+            parameters.right_texture_offset = Vector2(0.0, 0.0);
+            break;
+        case StereoMode::kTopBottom: {
+            parameters.texture_scale = Vector2(1.0, 0.5);
+            parameters.left_texture_offset = Vector2(0.0, 0.0);
+            parameters.right_texture_offset = Vector2(0.0, 0.5);
+            break;
+        }
+        case StereoMode::kLeftRight: {
+            parameters.texture_scale = Vector2(0.5, 1.0);
+            parameters.left_texture_offset = Vector2(0.0, 0.0);
+            parameters.right_texture_offset = Vector2(0.5, 0.0);
+            break;
+        }
+        case StereoMode::kModeCount: {
+            break;
+        }
+    }
+    return parameters;
+}
+
+SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
+    StereoModeDisplayParameters stereo_mode_display_params =
+            get_stereo_mode_display_parameters(stereo_mode);
+
+    Transform texture_scale_transform = get_transform_from_scale(
+            stereo_mode_display_params.texture_scale);
+    Transform left_texture_offset_transform = get_transform_from_translation(
+            stereo_mode_display_params.left_texture_offset);
+    Transform right_texture_offset_transform = get_transform_from_translation(
+            stereo_mode_display_params.right_texture_offset);
+
+    Transform left_sampling_transform = left_texture_offset_transform * texture_scale_transform;
+    Transform right_sampling_transform =
+            right_texture_offset_transform * texture_scale_transform;
+
+    SamplingTransforms sampling_transforms;
+    sampling_transforms.left = left_sampling_transform;
+    sampling_transforms.right = right_sampling_transform;
+    return sampling_transforms;
+}
+
+const char *kShaderCode = R"GAST_SHADER(
 shader_type spatial;
 render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
 
 uniform samplerExternalOES gast_texture;
+uniform mat4 left_eye_sampling_transform;
+uniform mat4 right_eye_sampling_transform;
 uniform bool enable_billboard;
 uniform float gradient_height_ratio;
-uniform float node_alpha = 1.0;
 
 void vertex() {
 	if (enable_billboard) {
@@ -31,8 +103,25 @@ void vertex() {
 }
 
 void fragment() {
-	vec4 texture_color = texture(gast_texture, UV);
-	float target_alpha = COLOR.a * texture_color.a * node_alpha;
+    // Find world camera position (different for each eye)
+    vec3 world_camera = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // Find projection position
+    vec3 world_projection = ((PROJECTION_MATRIX * CAMERA_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // Find difference between projection and camera on X-Axis
+    vec3 diff = world_camera - world_projection;
+    float x_diff = diff.x;
+
+    vec2 new_uv = UV;
+    if(x_diff <= 0.0f) {
+        // Right Eye
+        new_uv = (right_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
+    } else {
+        // Left Eye
+        new_uv = (left_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
+    }
+
+	vec4 texture_color = texture(gast_texture, new_uv);
+	float target_alpha = COLOR.a * texture_color.a;
 	if (gradient_height_ratio >= 0.05) {
 		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
 		target_alpha = target_alpha * gradient_mask;
@@ -40,11 +129,12 @@ void fragment() {
 	ALPHA = target_alpha;
 	ALBEDO = texture_color.rgb * target_alpha;
 }
-
 )GAST_SHADER";
 
 const char *kDisableDepthTestRenderMode = "render_mode depth_test_disable;";
 const char *kCullFrontRenderMode = "render_mode cull_front;";
+const char *kGastLeftEyeSamplingTransformName = "left_eye_sampling_transform";
+const char *kGastRightEyeSamplingTransformName = "right_eye_sampling_transform";
 
 const char *kShaderCustomDefines = R"GAST_DEFINES(
 #ifdef ANDROID_ENABLED

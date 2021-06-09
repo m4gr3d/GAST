@@ -71,6 +71,7 @@ void RectangularProjectionMesh::update_projection_mesh() {
     shader->set_custom_defines(kShaderCustomDefines);
     shader->set_code(generate_shader_code());
     set_shader(shader);
+    update_sampling_transforms();
 
     get_mesh_instance()->set_surface_material(kDefaultSurfaceIndex, get_shader_material());
 }
