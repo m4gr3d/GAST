@@ -62,10 +62,8 @@ void GastNode::_enter_tree() {
     // Create the external texture
     external_texture = Ref<ExternalTexture>(ExternalTexture::_new());
 
-    projection_mesh =
-            projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
-    setup_projection_mesh();
-    projection_mesh->set_projection_mesh_listener(&mesh_listener);
+    // Initialize the projection mesh. We default to a rectangular one.
+    set_projection_mesh(ProjectionMesh::ProjectionMeshType::RECTANGULAR);
 }
 
 void GastNode::_exit_tree() {

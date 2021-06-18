@@ -76,12 +76,15 @@ public:
     }
 
     inline void set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
-        if (projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
+        if (projection_mesh &&
+            projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
             return;
         }
 
-        projection_mesh->reset_external_texture();
-        projection_mesh->set_projection_mesh_listener(nullptr);
+        if (projection_mesh) {
+            projection_mesh->reset_external_texture();
+            projection_mesh->set_projection_mesh_listener(nullptr);
+        }
 
         switch(projection_mesh_type) {
             default:
