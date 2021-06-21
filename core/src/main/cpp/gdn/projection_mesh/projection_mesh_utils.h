@@ -1,6 +1,13 @@
 #ifndef PROJECTION_MESH_UTILS_H
 #define PROJECTION_MESH_UTILS_H
 
+#define GL_POINTS                         0x0000
+#define GL_LINES                          0x0001
+#define GL_TRIANGLES                      0x0004
+#define GL_TRIANGLE_STRIP                 0x0005
+#define GL_TRIANGLE_FAN                   0x0006
+
+#include "gen/ArrayMesh.hpp"
 #include "gen/Mesh.hpp"
 
 namespace gast {
@@ -290,6 +297,48 @@ static inline Array create_spherical_surface_array(
     arr[Mesh::ARRAY_TEX_UV] = uvs;
     arr[Mesh::ARRAY_INDEX] = indices;
     return arr;
+}
+
+static inline ArrayMesh* create_array_mesh(ArrayMesh *mesh, int num_vertices, float *vertices,
+                                           float *texture_coords, int draw_mode) {
+    Array mesh_array = Array();
+    mesh_array.resize(Mesh::ARRAY_MAX);
+    PoolVector3Array mesh_verts = PoolVector3Array();
+    PoolVector2Array mesh_uvs = PoolVector2Array();
+    for (int i = 0; i < num_vertices; i++) {
+        int vertex_index = i * 3;
+        int uv_index = i * 2;
+        mesh_verts.append(
+                Vector3(vertices[vertex_index], vertices[vertex_index + 1],
+                        vertices[vertex_index + 2]));
+        mesh_uvs.append(
+                Vector2(texture_coords[uv_index], texture_coords[uv_index + 1]));
+    }
+    mesh_array[Mesh::ARRAY_VERTEX] = mesh_verts;
+    mesh_array[Mesh::ARRAY_TEX_UV] = mesh_uvs;
+    int64_t primitive;
+    switch (draw_mode) {
+        case GL_POINTS:
+            primitive = Mesh::PRIMITIVE_POINTS;
+            break;
+        case GL_LINES:
+            primitive = Mesh::PRIMITIVE_LINES;
+            break;
+        case GL_TRIANGLES:
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
+            break;
+        case GL_TRIANGLE_FAN:
+            primitive = Mesh::PRIMITIVE_TRIANGLE_FAN;
+            break;
+        case GL_TRIANGLE_STRIP:
+            primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
+            break;
+        default:
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
+            break;
+    }
+    mesh->add_surface_from_arrays(primitive, mesh_array);
+    return mesh;
 }
 
 }  // namespace gast

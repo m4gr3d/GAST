@@ -8,6 +8,7 @@ import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
 import androidx.annotation.RequiresApi
+import org.godotengine.plugin.gast.projectionmesh.CustomProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.EquirectangularProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
@@ -78,8 +79,8 @@ class GastNode @JvmOverloads constructor(
             ProjectionMeshType.EQUIRECTANGULAR ->
                 projectionMeshPool[meshPointer] =
                     EquirectangularProjectionMesh(meshPointer, nodePointer)
-            else -> {
-                TODO("Mesh type unimplemented")
+            ProjectionMeshType.MESH -> {
+                projectionMeshPool[meshPointer] = CustomProjectionMesh(meshPointer, nodePointer)
             }
         }
 
@@ -141,6 +142,7 @@ class GastNode @JvmOverloads constructor(
 
             surfaceTexture = SurfaceTexture(texId)
             surfaceTexture?.setOnFrameAvailableListener(this)
+
         }
 
         if (surface == null) {
@@ -443,7 +445,12 @@ class GastNode @JvmOverloads constructor(
         updateGastNodeLocalScale(nodePointer, xScale, yScale, zScale)
     }
 
-    private external fun updateGastNodeLocalScale(nodePointer: Long, xScale: Float, yScale: Float, zScale: Float)
+    private external fun updateGastNodeLocalScale(
+        nodePointer: Long,
+        xScale: Float,
+        yScale: Float,
+        zScale: Float
+    )
 
     /**
      * Rotate the Gast node relative to its parent.

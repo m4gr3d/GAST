@@ -19,8 +19,11 @@
 #include <gen/ShaderMaterial.hpp>
 #include <gen/StaticBody.hpp>
 
+#include "gdn/projection_mesh/custom_projection_mesh.h"
+#include "gdn/projection_mesh/equirectangular_projection_mesh.h"
 #include "gdn/projection_mesh/projection_mesh.h"
 #include "gdn/projection_mesh/projection_mesh_pool.h"
+#include "gdn/projection_mesh/rectangular_projection_mesh.h"
 #include "utils.h"
 
 namespace gast {
@@ -95,6 +98,8 @@ public:
                 projection_mesh =
                     projection_mesh_pool.get_or_create_projection_mesh<EquirectangularProjectionMesh>();
                 break;
+            case ProjectionMesh::ProjectionMeshType::MESH:
+                projection_mesh = projection_mesh_pool.get_or_create_projection_mesh<CustomProjectionMesh>();
         }
 
         setup_projection_mesh();

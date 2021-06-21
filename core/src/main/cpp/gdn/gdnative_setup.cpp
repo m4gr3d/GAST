@@ -18,6 +18,7 @@ void GDN_EXPORT godot_nativescript_init(void *handle) {
     godot::register_class<gast::ProjectionMesh>();
     godot::register_class<gast::RectangularProjectionMesh>();
     godot::register_class<gast::EquirectangularProjectionMesh>();
+    godot::register_class<gast::CustomProjectionMesh>();
 }
 
 void GDN_EXPORT godot_nativescript_terminate(void *handle) {

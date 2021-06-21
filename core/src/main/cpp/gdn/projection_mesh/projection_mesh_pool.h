@@ -3,8 +3,7 @@
 
 #include <map>
 
-#include "equirectangular_projection_mesh.h"
-#include "rectangular_projection_mesh.h"
+#include "projection_mesh.h"
 
 namespace gast {
 

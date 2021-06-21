@@ -230,6 +230,13 @@ protected:
                     kGastRightEyeSamplingTransformName, sampling_transforms.right);
         }
     }
+
+    inline void update_listener() {
+        auto *listener = get_projection_mesh_listener();
+        if (listener) {
+            listener->on_mesh_update();
+        }
+    }
 };
 
 }  // namespace gast
