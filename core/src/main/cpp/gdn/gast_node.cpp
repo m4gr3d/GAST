@@ -12,6 +12,7 @@
 #include <gen/Input.hpp>
 #include <gen/InputEventScreenDrag.hpp>
 #include <gen/InputEventScreenTouch.hpp>
+#include <gen/InputMap.hpp>
 #include <gen/Material.hpp>
 #include <gen/Mesh.hpp>
 #include <gen/Node.hpp>
@@ -195,6 +196,8 @@ void GastNode::_process(const real_t delta) {
 bool
 GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_collision_point) {
     Input *input = Input::get_singleton();
+    InputMap *input_map = InputMap::get_singleton();
+
     String node_path = get_path();
 
     float x_percent = relative_collision_point.x;
@@ -202,17 +205,30 @@ GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_co
 
     // Check for click actions
     String ray_cast_click_action = get_click_action_from_node_name(ray_cast_name);
-    const bool press_in_progress = input->is_action_pressed(ray_cast_click_action);
+    bool press_in_progress = false;
+    bool hovering = true;
 
-    if (input->is_action_just_pressed(ray_cast_click_action)) {
-        GastManager::get_singleton_instance()->on_render_input_press(node_path, ray_cast_name,
-                                                                     x_percent, y_percent);
-    } else if (input->is_action_just_released(ray_cast_click_action)) {
-        GastManager::get_singleton_instance()->on_render_input_release(node_path, ray_cast_name,
-                                                                       x_percent, y_percent);
-    } else {
-        GastManager::get_singleton_instance()->on_render_input_hover(node_path, ray_cast_name,
-                                                                     x_percent, y_percent);
+    if (input_map->has_action(ray_cast_click_action)) {
+        press_in_progress = input->is_action_pressed(ray_cast_click_action);
+
+        if (input->is_action_just_pressed(ray_cast_click_action)) {
+            hovering = false;
+            GastManager::get_singleton_instance()->on_render_input_press(
+                    node_path, ray_cast_name,
+                    x_percent, y_percent);
+        } else if (input->is_action_just_released(ray_cast_click_action)) {
+            hovering = false;
+            GastManager::get_singleton_instance()->on_render_input_release(
+                    node_path, ray_cast_name,
+                    x_percent, y_percent);
+        }
+    }
+    if (hovering) {
+        GastManager::get_singleton_instance()->on_render_input_hover(
+                node_path,
+                ray_cast_name,
+                x_percent,
+                y_percent);
     }
 
     // Check for scrolling actions
@@ -225,11 +241,13 @@ GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_co
             ray_cast_name);
     String ray_cast_horizontal_right_scroll_action = get_horizontal_right_scroll_action_from_node_name(
             ray_cast_name);
-    if (input->is_action_pressed(ray_cast_horizontal_left_scroll_action)) {
+    if (input_map->has_action(ray_cast_horizontal_left_scroll_action) && input->is_action_pressed
+            (ray_cast_horizontal_left_scroll_action)) {
         did_scroll = true;
         horizontal_scroll_delta = -input->get_action_strength(
                 ray_cast_horizontal_left_scroll_action);
-    } else if (input->is_action_pressed(ray_cast_horizontal_right_scroll_action)) {
+    } else if (input_map->has_action(ray_cast_horizontal_right_scroll_action) &&
+            input->is_action_pressed(ray_cast_horizontal_right_scroll_action)) {
         did_scroll = true;
         horizontal_scroll_delta = input->get_action_strength(
                 ray_cast_horizontal_right_scroll_action);
@@ -240,10 +258,12 @@ GastNode::handle_ray_cast_input(const String &ray_cast_name, Vector2 relative_co
             ray_cast_name);
     String ray_cast_vertical_up_scroll_action = get_vertical_up_scroll_action_from_node_name(
             ray_cast_name);
-    if (input->is_action_pressed(ray_cast_vertical_down_scroll_action)) {
+    if (input_map->has_action(ray_cast_vertical_down_scroll_action) && input->is_action_pressed
+            (ray_cast_vertical_down_scroll_action)) {
         did_scroll = true;
         vertical_scroll_delta = -input->get_action_strength(ray_cast_vertical_down_scroll_action);
-    } else if (input->is_action_pressed(ray_cast_vertical_up_scroll_action)) {
+    } else if (input_map->has_action(ray_cast_vertical_up_scroll_action) && input->is_action_pressed
+            (ray_cast_vertical_up_scroll_action)) {
         did_scroll = true;
         vertical_scroll_delta = input->get_action_strength(ray_cast_vertical_up_scroll_action);
     }

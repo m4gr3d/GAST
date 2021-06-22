@@ -10,7 +10,7 @@ var ovr_init_config = null;
 var ovr_performance = null;
 
 # some of the Oculus VrAPI constants are defined in this file. Have a look into it to learn more
-var ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new();
+var ovrVrApiTypes = null
 
 var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
 var gast = null
@@ -67,8 +67,10 @@ func _initialize_ovr_mobile_arvr_interface():
 	if !arvr_interface:
 		print("Couldn't find OVRMobile interface")
 	else:
+		ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new()
+		
 		# the init config needs to be done before arvr_interface.initialize()
-		ovr_init_config = load("res://addons/godot_ovrmobile/OvrInitConfig.gdns");
+		ovr_init_config = load("res://addons/godot_ovrmobile/OvrInitConfig.gdns")
 		if (ovr_init_config):
 			ovr_init_config = ovr_init_config.new()
 			ovr_init_config.set_render_target_size_multiplier(1) # setting to 1 here is the default

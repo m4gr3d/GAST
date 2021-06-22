@@ -7,6 +7,7 @@
 #include <gen/Engine.hpp>
 #include <gen/Input.hpp>
 #include <gen/InputEventAction.hpp>
+#include <gen/InputMap.hpp>
 #include <gen/MainLoop.hpp>
 #include <gen/Object.hpp>
 #include <gen/Viewport.hpp>
@@ -229,8 +230,13 @@ void GastManager::check_for_monitored_input_actions() {
         return;
     }
 
+    InputMap *input_map = InputMap::get_singleton();
     Input *input = Input::get_singleton();
     for (auto const& action : input_actions_to_monitor_) {
+        if (!input_map->has_action(action)) {
+            continue;
+        }
+
         InputPressState press_state = kInvalid;
 
         if (input->is_action_just_pressed(action)) {

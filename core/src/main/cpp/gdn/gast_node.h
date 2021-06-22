@@ -87,6 +87,7 @@ public:
         }
 
         switch(projection_mesh_type) {
+            case ProjectionMesh::ProjectionMeshType::MESH:
             default:
                 ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
                       projection_mesh_type);
