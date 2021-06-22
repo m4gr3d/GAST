@@ -62,5 +62,5 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     // Dependencies for the `plugins` flavor
-    pluginsImplementation("com.google.android.exoplayer:exoplayer:2.11.3")
+    pluginsImplementation("com.google.android.exoplayer:exoplayer:2.14.1")
 }

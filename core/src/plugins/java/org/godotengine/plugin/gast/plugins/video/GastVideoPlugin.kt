@@ -56,7 +56,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
     override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
         when (reason) {
 
-            Player.DISCONTINUITY_REASON_PERIOD_TRANSITION, Player.DISCONTINUITY_REASON_SEEK -> {
+            Player.DISCONTINUITY_REASON_AUTO_TRANSITION, Player.DISCONTINUITY_REASON_SEEK -> {
                 // TODO: use to detect when switching video in a playlist
             }
             else -> {
