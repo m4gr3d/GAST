@@ -3,11 +3,10 @@ package org.godotengine.plugin.gast.samples.edittext
 import android.os.Bundle
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPluginRegistry
-import org.godotengine.godot.xr.XRMode
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
-import java.util.Arrays
 
 /**
  * Initialize and render an EditText view in a VR environment.
@@ -48,7 +47,10 @@ class EditTextFragment : Godot() {
         gastNode.setGazeTracking(true)
 
         val messageGastNode = GastNode(getGastManager(), "MessageContainer")
-        messageGastNode.setCurved(true)
+        val projectionMesh = messageGastNode.getProjectionMesh()
+        if (projectionMesh is RectangularProjectionMesh) {
+            projectionMesh.setCurved(true)
+        }
 
         runOnUiThread {
             editTextWrapperView?.initialize(getGastManager(), gastNode)

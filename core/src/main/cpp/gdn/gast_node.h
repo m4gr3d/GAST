@@ -201,7 +201,7 @@ private:
 
     bool collidable;
     ProjectionMeshPool projection_mesh_pool;
-    ProjectionMesh *projection_mesh;
+    ProjectionMesh *projection_mesh = nullptr;
     Ref<ExternalTexture> external_texture;
     GastNodeMeshUpdateListener mesh_listener;
 };
