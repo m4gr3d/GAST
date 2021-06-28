@@ -105,20 +105,14 @@ void GastNode::update_collision_shape() {
     }
 }
 
-int GastNode::get_external_texture_id(int surface_index) {
-    if (surface_index == kInvalidSurfaceIndex) {
-        // Default to the first one
-        surface_index = kDefaultSurfaceIndex;
-    }
-
-    Ref<ExternalTexture> external_texture = get_external_texture(surface_index);
+int GastNode::get_external_texture_id() {
     int tex_id = external_texture.is_null() ? kInvalidTexId
                                              : external_texture->get_external_texture_id();
     ALOGV("Retrieved tex id %d", tex_id);
     return tex_id;
 }
 
-Ref<ExternalTexture> GastNode::get_external_texture(int surface_index) {
+Ref<ExternalTexture> GastNode::get_external_texture() {
     return external_texture;
 }
 
