@@ -66,7 +66,7 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
 
     private fun isInitialized() = gastNode != null && !gastNode!!.isReleased()
 
-    private fun setVideoNodePath(parentNodePath: String) {
+    private fun setVideoNodePath(parentNodePath: String, nodeName: String) {
         if (TextUtils.isEmpty(parentNodePath)) {
             Log.e(TAG, "Invalid parent node path value: $parentNodePath")
             return
@@ -77,6 +77,10 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
                 gastNode?.updateParent(parentNodePath)
             } else {
                 gastNode = GastNode(gastManager, parentNodePath)
+            }
+
+            if (nodeName.isNotBlank()) {
+                gastNode?.setName(nodeName)
             }
 
             runOnUiThread {
@@ -131,8 +135,8 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
      */
     @Suppress("unused")
     @UsedByGodot
-    fun preparePlayer(parentNodePath: String, videoRawNames: Array<String>) {
-        setVideoNodePath(parentNodePath)
+    fun preparePlayer(parentNodePath: String, nodeName: String, videoRawNames: Array<String>) {
+        setVideoNodePath(parentNodePath, nodeName)
         setVideoSource(videoRawNames)
     }
 

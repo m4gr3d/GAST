@@ -104,7 +104,6 @@ class GastNode @JvmOverloads constructor(
 
     companion object {
         private val TAG = GastNode::class.java.simpleName
-        private const val INVALID_SURFACE_INDEX = -1
         private const val INVALID_TEX_ID = 0
         private const val INVALID_NODE_POINTER = 0L;
         private const val RELEASED_PATH = ""
@@ -244,16 +243,12 @@ class GastNode @JvmOverloads constructor(
     /**
      * Get the texture id for the Gast node with the given path.
      */
-    @JvmOverloads
-    fun getTextureId(surfaceIndex: Int = INVALID_SURFACE_INDEX): Int {
+    fun getTextureId(): Int {
         checkIfReleased()
-        return getTextureId(nodePointer, surfaceIndex)
+        return getTextureId(nodePointer)
     }
 
-    private external fun getTextureId(
-        nodePointer: Long,
-        surfaceIndex: Int
-    ): Int
+    private external fun getTextureId(nodePointer: Long): Int
 
     /**
      * Update the node's name.

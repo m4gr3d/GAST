@@ -28,7 +28,6 @@ namespace gast {
 namespace {
 using namespace godot;
 constexpr int kInvalidTexId = -1;
-constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
 }  // namespace
 
@@ -57,7 +56,9 @@ public:
 
     void _notification(const int64_t what);
 
-    int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
+    Ref<ExternalTexture> get_external_texture();
+
+    int get_external_texture_id();
 
     inline void set_collidable(bool collidable) {
         if (this->collidable == collidable) {
@@ -181,8 +182,6 @@ private:
         // Replace the '/' character with a '_' character
         return node_name.replace("/", "_") + "_down_scroll";
     }
-
-    Ref<ExternalTexture> get_external_texture(int surface_index);
 
     void update_collision_shape();
 

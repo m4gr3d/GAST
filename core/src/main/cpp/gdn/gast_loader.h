@@ -3,6 +3,8 @@
 
 #include <core/Godot.hpp>
 #include <core/String.hpp>
+#include <core/Ref.hpp>
+#include <gen/ExternalTexture.hpp>
 #include <gen/Reference.hpp>
 
 namespace gast {
@@ -32,6 +34,8 @@ public:
     void shutdown();
 
     void on_physics_process();
+
+    Ref<ExternalTexture> get_external_texture(const String gast_node_path);
 
     void emitHoverEvent(const String &node_path, const String &event_origin_id, float x_percent,
                         float y_percent);

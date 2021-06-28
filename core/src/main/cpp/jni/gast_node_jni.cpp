@@ -73,10 +73,10 @@ JNI_METHOD(updateGastNodeParent)(JNIEnv *env, jobject, jlong node_pointer,
 }
 
 JNIEXPORT jint JNICALL
-JNI_METHOD(getTextureId)(JNIEnv *, jobject, jlong node_pointer, jint surface_index) {
+JNI_METHOD(getTextureId)(JNIEnv *, jobject, jlong node_pointer) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL_V(gast_node, kInvalidTexId);
-    return gast_node->get_external_texture_id(surface_index);
+    return gast_node->get_external_texture_id();
 }
 
 JNIEXPORT void JNICALL
