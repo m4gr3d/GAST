@@ -166,7 +166,6 @@ Node *GastManager::get_node(const godot::String &node_path) {
 
 GastNode
 *GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
-    ALOGV("Retrieving node's parent with path %s", get_node_tag(parent_node_path));
     Node *parent_node = get_node(parent_node_path);
     if (!parent_node) {
         ALOGE("Unable to retrieve parent node with path %s",
@@ -178,7 +177,6 @@ GastNode
 
     // Check if we have one already setup in the reusable pool, otherwise create a new one.
     if (reusable_pool_.empty()) {
-        ALOGV("Creating a new Gast node.");
         // Creating a new static body node
         gast_node = GastNode::_new();
     } else {
@@ -191,11 +189,9 @@ GastNode
     gast_node->add_to_group(kGastNodeGroupName);
 
     if (gast_node->get_parent() != nullptr) {
-        ALOGV("Removing Gast node parent.");
         gast_node->get_parent()->remove_child(gast_node);
     }
 
-    ALOGV("Adding the Gast node to the parent node.");
     if (empty_parent) {
         remove_all_children_from_node(parent_node);
     }
@@ -428,7 +424,7 @@ bool GastManager::update_gast_node_parent(GastNode *node,
     if (node->get_parent() != nullptr) {
         String parent_node_path = node->get_parent()->get_path();
         if (parent_node_path == new_parent_node_path) {
-            ALOGV("Current parent is same as newly proposed one.");
+            ALOGW("Current parent is same as newly proposed one.");
             return false;
         }
     }

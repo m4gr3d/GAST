@@ -50,16 +50,12 @@ void GastNode::_register_methods() {
 }
 
 void GastNode::_init() {
-    ALOGV("Initializing GastNode class.");
-
     // Add a CollisionShape to the static body node
     CollisionShape *collision_shape = CollisionShape::_new();
     add_child(collision_shape);
 }
 
 void GastNode::_enter_tree() {
-    ALOGV("Entering tree for %s.", get_node_tag(*this));
-
     // Create the external texture
     external_texture = Ref<ExternalTexture>(ExternalTexture::_new());
 
@@ -68,7 +64,6 @@ void GastNode::_enter_tree() {
 }
 
 void GastNode::_exit_tree() {
-    ALOGV("Exiting tree.");
     reset_mesh_and_collision_shape();
 }
 
@@ -108,7 +103,6 @@ void GastNode::update_collision_shape() {
 int GastNode::get_external_texture_id() {
     int tex_id = external_texture.is_null() ? kInvalidTexId
                                              : external_texture->get_external_texture_id();
-    ALOGV("Retrieved tex id %d", tex_id);
     return tex_id;
 }
 
