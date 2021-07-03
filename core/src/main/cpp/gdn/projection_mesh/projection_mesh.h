@@ -25,6 +25,8 @@ const int kDefaultSurfaceIndex = 0;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const bool kDefaultGazeTracking = false;
 const bool kDefaultRenderOnTop = false;
+const bool kDefaultUvOriginIsBottomLeft = false;
+const StereoMode kDefaultStereoMode = StereoMode::kMono;
 }
 
 class ProjectionMesh : public Resource {
@@ -55,6 +57,10 @@ public:
 
     inline bool is_equirectangular_projection_mesh() const {
         return get_projection_mesh_type() == ProjectionMeshType::EQUIRECTANGULAR;
+    }
+
+    inline bool is_custom_projection_mesh() const {
+        return get_projection_mesh_type() == ProjectionMeshType::MESH;
     }
 
     inline MeshInstance* get_mesh_instance() {
@@ -171,6 +177,10 @@ public:
         this->projection_mesh_listener = listener;
     }
 
+    inline void set_uv_origin_is_bottom_left(bool uv_origin_is_bottom_left) {
+        this->uv_origin_is_bottom_left = uv_origin_is_bottom_left;
+    }
+
  private:
     ProjectionMeshType projection_mesh_type;
     ProjectionMeshListener *projection_mesh_listener;
@@ -180,6 +190,7 @@ public:
     StereoMode stereo_mode;
     bool render_on_top;
     bool gaze_tracking;
+    bool uv_origin_is_bottom_left;
     float alpha;
 
 protected:
@@ -210,7 +221,12 @@ protected:
     }
 
     virtual inline String generate_shader_code() {
-        String shader_code = kShaderCode;
+        String shader_code;
+        if (is_custom_projection_mesh()) {
+            shader_code = kShaderCodeCustomMesh;
+        } else {
+            shader_code = kShaderCode;
+        }
         if (is_render_on_top()) {
             shader_code += kDisableDepthTestRenderMode;
         }
@@ -223,7 +239,8 @@ protected:
 
     inline void update_sampling_transforms() {
         if (shader_material_ref.is_valid()) {
-            SamplingTransforms sampling_transforms = get_sampling_transforms(stereo_mode);
+            SamplingTransforms sampling_transforms =
+                    get_sampling_transforms(stereo_mode, uv_origin_is_bottom_left);
             shader_material_ref->set_shader_param(
                     kGastLeftEyeSamplingTransformName, sampling_transforms.left);
             shader_material_ref->set_shader_param(

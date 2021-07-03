@@ -25,7 +25,8 @@ ProjectionMesh::ProjectionMesh(ProjectionMesh::ProjectionMeshType projection_mes
         gaze_tracking(kDefaultGazeTracking),
         render_on_top(kDefaultRenderOnTop),
         alpha(kDefaultAlpha),
-        stereo_mode(StereoMode::kMono) {}
+        stereo_mode(kDefaultStereoMode),
+        uv_origin_is_bottom_left(kDefaultUvOriginIsBottomLeft) {}
 
 ProjectionMesh::ProjectionMesh() : ProjectionMesh(ProjectionMeshType::RECTANGULAR) {}
 

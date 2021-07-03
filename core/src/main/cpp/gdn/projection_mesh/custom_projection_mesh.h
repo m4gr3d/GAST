@@ -8,6 +8,7 @@ namespace gast {
 
 namespace {
 using namespace godot;
+const char* kIsLeftEyeMeshUniform = "is_left_eye_mesh";
 }
 
 class CustomProjectionMesh : public ProjectionMesh {
@@ -25,11 +26,17 @@ public:
                          float *texture_coords_left, int draw_mode_int_left,
                          int num_vertices_right, float *vertices_right,
                          float *texture_coords_right, int draw_mode_int_right,
-                         int mesh_stereo_mode_int);
+                         int mesh_stereo_mode_int, bool uv_origin_is_bottom_left);
+
+    inline MeshInstance *get_right_mesh_instance() {
+        return right_mesh_instance;
+    }
 
 private:
+    MeshInstance *right_mesh_instance;
+    Ref<ShaderMaterial> right_shader_material_ref;
+
     String generate_shader_code() override;
-    void setup_default_projection_mesh();
 };
 
 }  // namespace gast

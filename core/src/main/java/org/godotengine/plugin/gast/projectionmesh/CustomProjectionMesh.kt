@@ -8,7 +8,8 @@ class CustomProjectionMesh(meshPointer: Long, nodePointer : Long) : ProjectionMe
                       verticesRight: FloatArray?,
                       textureCoordsRight: FloatArray?,
                       glDrawModeRight: Int?,
-                      stereoMode: Int) {
+                      stereoMode: Int,
+                      uvOriginIsBottomLeft: Boolean) {
         if (verticesRight == null || textureCoordsRight == null || glDrawModeRight == null) {
             nativeSetCustomMesh(
                 meshPointer,
@@ -18,7 +19,8 @@ class CustomProjectionMesh(meshPointer: Long, nodePointer : Long) : ProjectionMe
                 vertices,
                 textureCoords,
                 glDrawMode,
-                stereoMode)
+                stereoMode,
+                uvOriginIsBottomLeft)
         } else {
             nativeSetCustomMesh(
                 meshPointer,
@@ -28,7 +30,8 @@ class CustomProjectionMesh(meshPointer: Long, nodePointer : Long) : ProjectionMe
                 verticesRight,
                 textureCoordsRight,
                 glDrawModeRight,
-                stereoMode)
+                stereoMode,
+                uvOriginIsBottomLeft)
         }
     }
 
@@ -39,5 +42,6 @@ class CustomProjectionMesh(meshPointer: Long, nodePointer : Long) : ProjectionMe
                                              verticesRight: FloatArray,
                                              textureCoordsRight: FloatArray,
                                              glDrawModeRight: Int,
-                                             stereoMode: Int)
+                                             stereoMode: Int,
+                                             uvOriginIsBottomLeft: Boolean)
 }

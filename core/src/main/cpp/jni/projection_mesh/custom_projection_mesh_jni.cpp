@@ -27,7 +27,7 @@ JNIEXPORT void JNICALL JNI_METHOD(nativeSetCustomMesh)(
         JNIEnv *env, jobject, jlong mesh_pointer, jfloatArray vertices_left,
         jfloatArray texture_coords_left, jint draw_mode_int_left,
         jfloatArray vertices_right, jfloatArray texture_coords_right,
-        jint draw_mode_int_right, jint mesh_stereo_mode_int) {
+        jint draw_mode_int_right, jint mesh_stereo_mode_int, jboolean uv_origin_is_bottom_left) {
     CustomProjectionMesh *projection_mesh = from_pointer(mesh_pointer);
     ERR_FAIL_NULL(projection_mesh);
     jfloat *vertices_left_jfloat = env->GetFloatArrayElements(vertices_left, nullptr);
@@ -38,7 +38,8 @@ JNIEXPORT void JNICALL JNI_METHOD(nativeSetCustomMesh)(
                                      texture_coords_left_jfloat, draw_mode_int_left,
                                      env->GetArrayLength(vertices_right) / 3U,
                                      vertices_right_jfloat, texture_coords_right_jfloat,
-                                     draw_mode_int_right, mesh_stereo_mode_int);
+                                     draw_mode_int_right, mesh_stereo_mode_int,
+                                     uv_origin_is_bottom_left);
 }
 
 }

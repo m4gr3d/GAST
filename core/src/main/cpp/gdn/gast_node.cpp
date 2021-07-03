@@ -88,6 +88,10 @@ void GastNode::setup_projection_mesh() {
     }
     projection_mesh->set_external_texture(external_texture);
     collisionShape->add_child(projection_mesh->get_mesh_instance());
+    if (projection_mesh->get_projection_mesh_type() == ProjectionMesh::ProjectionMeshType::MESH) {
+        auto *custom_projection_mesh = Object::cast_to<CustomProjectionMesh>(projection_mesh);
+        collisionShape->add_child(custom_projection_mesh->get_right_mesh_instance());
+    }
     update_collision_shape();
     projection_mesh->update_render_priority();
 }

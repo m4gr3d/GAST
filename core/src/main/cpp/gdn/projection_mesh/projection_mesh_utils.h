@@ -45,6 +45,18 @@ Transform get_transform_from_scale(Vector2 scale) {
     return transform;
 }
 
+Transform get_transform_from_translation(Vector3 translation) {
+    auto transform = Transform();
+    transform.translate(translation.x, translation.y, translation.z);
+    return transform;
+}
+
+Transform get_transform_from_scale(Vector3 scale) {
+    auto transform = Transform();
+    transform.scale(Vector3(scale.x, scale.y, scale.z));
+    return transform;
+}
+
 StereoModeDisplayParameters get_stereo_mode_display_parameters(StereoMode stereo_mode) {
     StereoModeDisplayParameters parameters;
     switch (stereo_mode) {
@@ -72,7 +84,7 @@ StereoModeDisplayParameters get_stereo_mode_display_parameters(StereoMode stereo
     return parameters;
 }
 
-SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
+SamplingTransforms get_sampling_transforms(StereoMode stereo_mode, bool uv_origin_is_bottom_left) {
     StereoModeDisplayParameters stereo_mode_display_params =
             get_stereo_mode_display_parameters(stereo_mode);
 
@@ -87,10 +99,21 @@ SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
     Transform right_sampling_transform =
             right_texture_offset_transform * texture_scale_transform;
 
+    if (uv_origin_is_bottom_left) {
+        Transform flipYTransform = get_transform_from_translation(Vector3(0, 1, 0)) *
+                                   get_transform_from_scale(Vector3(1, -1, 1));
+        left_sampling_transform = left_sampling_transform * flipYTransform;
+        right_sampling_transform = right_sampling_transform * flipYTransform;
+    }
+
     SamplingTransforms sampling_transforms;
     sampling_transforms.left = left_sampling_transform;
     sampling_transforms.right = right_sampling_transform;
     return sampling_transforms;
+}
+
+SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
+    return get_sampling_transforms(stereo_mode, /* uv_origin_is_bottom_left= */ false);
 }
 
 const char *kShaderCode = R"GAST_SHADER(
@@ -128,6 +151,61 @@ void fragment() {
     }
 
 	vec4 texture_color = texture(gast_texture, new_uv);
+	float target_alpha = COLOR.a * texture_color.a;
+	if (gradient_height_ratio >= 0.05) {
+		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
+		target_alpha = target_alpha * gradient_mask;
+	}
+	ALPHA = target_alpha;
+	ALBEDO = texture_color.rgb * target_alpha;
+}
+)GAST_SHADER";
+
+const char *kShaderCodeCustomMesh = R"GAST_SHADER(
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
+
+uniform samplerExternalOES gast_texture;
+uniform mat4 left_eye_sampling_transform;
+uniform mat4 right_eye_sampling_transform;
+uniform bool enable_billboard;
+uniform float gradient_height_ratio;
+uniform bool is_left_eye_mesh;
+
+void vertex() {
+	if (enable_billboard) {
+		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
+	}
+}
+
+void fragment() {
+    // Find world camera position (different for each eye)
+    vec3 world_camera = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // Find projection position
+    vec3 world_projection = ((PROJECTION_MATRIX * CAMERA_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // Find difference between projection and camera on X-Axis
+    vec3 diff = world_camera - world_projection;
+    float x_diff = diff.x;
+
+    vec2 new_uv = UV;
+    if(x_diff <= 0.0f) {
+        // Right Eye
+        new_uv = (right_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
+    } else {
+        // Left Eye
+        new_uv = (left_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
+    }
+
+	vec4 texture_color = texture(gast_texture, new_uv);
+
+    if(x_diff <= 0.0f && is_left_eye_mesh) {
+        // Right eye, left eye mesh - should be transparent.
+        texture_color = vec4(0.0, 0.0, 0.0, 0.0);
+    } else if (x_diff > 0.0f && !is_left_eye_mesh) {
+        // Left eye, right eye mesh - should be transparent.
+        texture_color = vec4(0.0, 0.0, 0.0, 0.0);
+    }
+
 	float target_alpha = COLOR.a * texture_color.a;
 	if (gradient_height_ratio >= 0.05) {
 		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
