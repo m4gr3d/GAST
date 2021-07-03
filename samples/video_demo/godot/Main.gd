@@ -10,7 +10,7 @@ var ovr_init_config = null;
 var ovr_performance = null;
 
 # some of the Oculus VrAPI constants are defined in this file. Have a look into it to learn more
-var ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new();
+var ovrVrApiTypes = null
 
 var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
 var gast = null
@@ -18,7 +18,10 @@ var gast_video_plugin = null
 
 var curved = false
 
+onready var second_screen: MeshInstance = $SecondScreen
+
 func _ready():
+	_initialize_second_screen_shader()
 	_initialize_ovr_mobile_arvr_interface()
 	gast = gast_loader.new()
 	gast.initialize()
@@ -27,7 +30,7 @@ func _ready():
 	if Engine.has_singleton("gast-video"):
 		print("Setting video player...")
 		gast_video_plugin = Engine.get_singleton("gast-video")
-		gast_video_plugin.preparePlayer("/root/Main/VideoContainer", ["flight"])
+		gast_video_plugin.preparePlayer("/root/Main/VideoContainer", "video-player", ["flight"])
 		gast_video_plugin.play()
 		gast_video_plugin.setRepeatMode(2)
 		gast_video_plugin.setVideoScreenSize(3.54, 2)
@@ -38,10 +41,43 @@ func _ready():
 func _process(delta_t):
 	_check_inputs()
 	_check_and_perform_runtime_config()
+	_setup_second_screen()
 
 
 func _physics_process(delta_t):
 	gast.on_physics_process()
+
+
+func _initialize_second_screen_shader():
+	var shader_material : ShaderMaterial = second_screen.get_surface_material(0)
+	var shader : Shader = shader_material.shader
+	print("Setting shader custom defines")
+	shader.custom_defines = """#ifdef ANDROID_ENABLED
+	#extension GL_OES_EGL_image_external : enable
+	#extension GL_OES_EGL_image_external_essl3 : enable
+	#else
+	#define samplerExternalOES sampler2D
+	#endif"""
+
+
+var _check_for_external_texture = false
+func _setup_second_screen():
+	if (_check_for_external_texture):
+		return
+
+	print("Checking for external texture.")
+	var external_texture: ExternalTexture = gast.get_external_texture("video-player")
+	if (external_texture == null):
+		return
+
+	print("Valid external texture with id " + str(external_texture.get_external_texture_id()))
+	_check_for_external_texture = true
+
+	# Setup the second screen
+	second_screen.visible = true
+	var shader_material : ShaderMaterial = second_screen.get_surface_material(0)
+	print("Setting shader params.")
+	shader_material.set_shader_param("external_texture", external_texture)
 
 
 func _check_inputs():
@@ -67,8 +103,10 @@ func _initialize_ovr_mobile_arvr_interface():
 	if !arvr_interface:
 		print("Couldn't find OVRMobile interface")
 	else:
+		ovrVrApiTypes = load("res://addons/godot_ovrmobile/OvrVrApiTypes.gd").new()
+
 		# the init config needs to be done before arvr_interface.initialize()
-		ovr_init_config = load("res://addons/godot_ovrmobile/OvrInitConfig.gdns");
+		ovr_init_config = load("res://addons/godot_ovrmobile/OvrInitConfig.gdns")
 		if (ovr_init_config):
 			ovr_init_config = ovr_init_config.new()
 			ovr_init_config.set_render_target_size_multiplier(1) # setting to 1 here is the default

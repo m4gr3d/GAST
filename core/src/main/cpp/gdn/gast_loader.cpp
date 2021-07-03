@@ -21,6 +21,7 @@ void GastLoader::_register_methods() {
     register_method("initialize", &GastLoader::initialize);
     register_method("shutdown", &GastLoader::shutdown);
     register_method("on_physics_process", &GastLoader::on_physics_process);
+    register_method("get_external_texture", &GastLoader::get_external_texture);
 
     // Register signals
     Dictionary common_event_args;
@@ -50,6 +51,14 @@ void GastLoader::shutdown() {
 
 void GastLoader::on_physics_process() {
     GastManager::get_singleton_instance()->on_physics_process();
+}
+
+Ref<ExternalTexture> GastLoader::get_external_texture(const String gast_node_path) {
+    GastNode* gast_node = GastManager::get_singleton_instance()->get_gast_node(gast_node_path);
+    if (!gast_node) {
+        return nullptr;
+    }
+    return gast_node->get_external_texture();
 }
 
 void

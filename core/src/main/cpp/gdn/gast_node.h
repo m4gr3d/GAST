@@ -31,7 +31,6 @@ namespace gast {
 namespace {
 using namespace godot;
 constexpr int kInvalidTexId = -1;
-constexpr int kInvalidSurfaceIndex = -1;
 const bool kDefaultCollidable = true;
 }  // namespace
 
@@ -60,7 +59,9 @@ public:
 
     void _notification(const int64_t what);
 
-    int get_external_texture_id(int surface_index = kInvalidSurfaceIndex);
+    Ref<ExternalTexture> get_external_texture();
+
+    int get_external_texture_id();
 
     inline void set_collidable(bool collidable) {
         if (this->collidable == collidable) {
@@ -79,14 +80,18 @@ public:
     }
 
     inline void set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
-        if (projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
+        if (projection_mesh &&
+            projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
             return;
         }
 
-        projection_mesh->reset_external_texture();
-        projection_mesh->set_projection_mesh_listener(nullptr);
+        if (projection_mesh) {
+            projection_mesh->reset_external_texture();
+            projection_mesh->set_projection_mesh_listener(nullptr);
+        }
 
         switch(projection_mesh_type) {
+            case ProjectionMesh::ProjectionMeshType::MESH:
             default:
                 ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
                       projection_mesh_type);
@@ -183,8 +188,6 @@ private:
         return node_name.replace("/", "_") + "_down_scroll";
     }
 
-    Ref<ExternalTexture> get_external_texture(int surface_index);
-
     void update_collision_shape();
 
     void reset_mesh_and_collision_shape();
@@ -203,7 +206,7 @@ private:
 
     bool collidable;
     ProjectionMeshPool projection_mesh_pool;
-    ProjectionMesh *projection_mesh;
+    ProjectionMesh *projection_mesh = nullptr;
     Ref<ExternalTexture> external_texture;
     GastNodeMeshUpdateListener mesh_listener;
 };
