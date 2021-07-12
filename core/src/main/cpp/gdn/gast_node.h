@@ -87,11 +87,13 @@ public:
 
         if (projection_mesh) {
             projection_mesh->reset_external_texture();
+            if (projection_mesh->is_custom_projection_mesh()) {
+                projection_mesh->reset_mesh();
+            }
             projection_mesh->set_projection_mesh_listener(nullptr);
         }
 
         switch(projection_mesh_type) {
-            case ProjectionMesh::ProjectionMeshType::MESH:
             default:
                 ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
                       projection_mesh_type);

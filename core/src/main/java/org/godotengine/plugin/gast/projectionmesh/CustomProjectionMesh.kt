@@ -2,6 +2,7 @@ package org.godotengine.plugin.gast.projectionmesh
 
 class CustomProjectionMesh(meshPointer: Long, nodePointer : Long) : ProjectionMesh(meshPointer, nodePointer) {
 
+    // TODO: Add docs for this method.
     fun setCustomMesh(vertices: FloatArray,
                       textureCoords: FloatArray,
                       glDrawMode: Int,

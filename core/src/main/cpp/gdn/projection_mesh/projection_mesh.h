@@ -155,12 +155,12 @@ public:
         update_sampling_transforms();
     }
 
-    inline void reset_mesh() {
+    virtual inline void reset_mesh() {
         mesh_instance->set_mesh(Ref<Resource>());
         collision_shape_ref = Ref<Resource>();
     }
 
-    inline void reset_external_texture() {
+    virtual inline void reset_external_texture() {
         set_external_texture(Ref<Resource>());
     }
 

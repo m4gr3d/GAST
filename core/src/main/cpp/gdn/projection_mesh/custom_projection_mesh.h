@@ -36,6 +36,18 @@ private:
     MeshInstance *right_mesh_instance;
     Ref<ShaderMaterial> right_shader_material_ref;
 
+    inline void reset_mesh() override {
+        ProjectionMesh::reset_mesh();
+        right_mesh_instance->set_mesh(Ref<Resource>());
+    }
+
+    inline void reset_external_texture() override {
+        ProjectionMesh::reset_external_texture();
+        if (right_shader_material_ref.is_valid()) {
+            right_shader_material_ref->set_shader_param(kGastTextureParamName, Ref<Resource>());
+        }
+    }
+
     String generate_shader_code() override;
 };
 

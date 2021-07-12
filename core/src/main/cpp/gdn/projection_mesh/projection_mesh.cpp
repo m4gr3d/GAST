@@ -13,6 +13,7 @@ const float kDefaultAlpha = 1;
 }  // namespace
 
 ProjectionMesh::~ProjectionMesh() {
+    // TODO: shouldn't call virtual methods from here
     reset_mesh();
     reset_external_texture();
     mesh_instance = nullptr;
