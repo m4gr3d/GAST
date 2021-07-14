@@ -32,6 +32,12 @@ sealed class ProjectionMesh(protected val meshPointer : Long, protected val node
 
     private external fun updateAlpha(meshPointer: Long, alpha: Float)
 
+    fun setHasTransparency(hasTransparency: Boolean) {
+        setHasTransparency(meshPointer, hasTransparency)
+    }
+
+    private external fun setHasTransparency(meshPointer: Long, hasTransparency: Boolean)
+
     /**
      * @param stereoMode int representation of stereo mode, see StereoMode enum in
      * src/main/cpp/gdn/projection_mesh/projection_mesh_utils.h. This reflects the

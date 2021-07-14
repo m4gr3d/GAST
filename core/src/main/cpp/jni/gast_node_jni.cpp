@@ -164,6 +164,12 @@ JNIEXPORT void JNICALL JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong node_poi
     gast_node->set_alpha(alpha);
 }
 
+JNIEXPORT void JNICALL JNI_METHOD(setHasTransparency)(JNIEnv *, jobject, jlong node_pointer, jboolean has_transparency) {
+    GastNode *gast_node = from_pointer(node_pointer);
+    ERR_FAIL_NULL(gast_node);
+    gast_node->set_has_transparency(has_transparency);
+}
+
 JNIEXPORT void JNICALL
 JNI_METHOD(updateGastNodeLocalTranslation)(JNIEnv *, jobject, jlong node_pointer,
                                            jfloat x_translation, jfloat y_translation,

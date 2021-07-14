@@ -25,6 +25,7 @@ const int kDefaultSurfaceIndex = 0;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const bool kDefaultGazeTracking = false;
 const bool kDefaultRenderOnTop = false;
+const bool kDefaultHasTransparency = true;
 // This threshold is used to help determine when we should enable transparency in the shader.
 const float kAlphaThreshold = 0.94f;
 }
@@ -150,6 +151,14 @@ public:
         shader_material_ref->set_shader_param(kGastNodeAlphaParamName, alpha);
     }
 
+    inline void set_has_transparency(bool has_transparency) {
+        if (this->has_transparency == has_transparency) {
+            return;
+        }
+        this->has_transparency = has_transparency;
+        update_shader_code();
+    }
+
     inline StereoMode get_stereo_mode() {
         return stereo_mode;
     }
@@ -191,10 +200,11 @@ public:
     bool render_on_top;
     bool gaze_tracking;
     float alpha;
+    bool has_transparency;
 
 protected:
     virtual bool should_use_alpha_shader_code() {
-        return alpha < kAlphaThreshold || is_render_on_top();
+        return has_transparency || alpha < kAlphaThreshold || is_render_on_top();
     }
 
     ProjectionMesh(ProjectionMeshType projection_mesh_type);
