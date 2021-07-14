@@ -8,6 +8,74 @@ namespace gast {
 namespace {
 using namespace godot;
 
+const float kGradientHeightRatioThreshold = 0.05;
+
+const char *kBaseShaderCode = R"GAST_SHADER(
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
+
+uniform samplerExternalOES gast_texture;
+uniform mat4 left_eye_sampling_transform;
+uniform mat4 right_eye_sampling_transform;
+uniform bool enable_billboard;
+uniform float gradient_height_ratio;
+uniform float node_alpha = 1.0;
+
+void vertex() {
+	if (enable_billboard) {
+		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
+	}
+}
+
+void fragment() {
+    // Find world camera position (different for each eye)
+    vec3 world_camera = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // Find projection position
+    vec3 world_projection = ((PROJECTION_MATRIX * CAMERA_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // Find difference between projection and camera on X-Axis
+    vec3 diff = world_camera - world_projection;
+    float x_diff = diff.x;
+
+    vec2 new_uv = UV;
+    if(x_diff <= 0.0f) {
+        // Right Eye
+        new_uv = (right_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
+    } else {
+        // Left Eye
+        new_uv = (left_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
+    }
+
+	vec4 texture_color = texture(gast_texture, new_uv);
+	float target_alpha = COLOR.a * texture_color.a * node_alpha;
+
+    // $gradient_height_ratio_threashold is updated with the threshold value.
+	if (gradient_height_ratio >= $gradient_height_ratio_threshold) {
+		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
+		target_alpha = target_alpha * gradient_mask;
+	}
+
+    // $alpha_variable is dynamically updated based on whether transparency is needed.
+    // - When transparency is off, it's set to `target_alpha`, turning into a no-op
+    // - When transparency is on, it's set to `ALPHA`
+	$alpha_variable = target_alpha;
+	ALBEDO = texture_color.rgb * target_alpha;
+}
+)GAST_SHADER";
+
+const char *kDisableDepthTestRenderMode = "render_mode depth_test_disable;";
+const char *kCullFrontRenderMode = "render_mode cull_front;";
+const char *kGastLeftEyeSamplingTransformName = "left_eye_sampling_transform";
+const char *kGastRightEyeSamplingTransformName = "right_eye_sampling_transform";
+
+const char *kShaderCustomDefines = R"GAST_DEFINES(
+#ifdef ANDROID_ENABLED
+#extension GL_OES_EGL_image_external : enable
+#extension GL_OES_EGL_image_external_essl3 : enable
+#else
+#define samplerExternalOES sampler2D
+#endif
+)GAST_DEFINES";
+
 enum class StereoMode {
     kMono,
     kTopBottom,
@@ -85,67 +153,14 @@ SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
     sampling_transforms.right = right_sampling_transform;
     return sampling_transforms;
 }
-
-const char *kShaderCode = R"GAST_SHADER(
-shader_type spatial;
-render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
-
-uniform samplerExternalOES gast_texture;
-uniform mat4 left_eye_sampling_transform;
-uniform mat4 right_eye_sampling_transform;
-uniform bool enable_billboard;
-uniform float gradient_height_ratio;
-
-void vertex() {
-	if (enable_billboard) {
-		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
-	}
-}
-
-void fragment() {
-    // Find world camera position (different for each eye)
-    vec3 world_camera = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-    // Find projection position
-    vec3 world_projection = ((PROJECTION_MATRIX * CAMERA_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-    // Find difference between projection and camera on X-Axis
-    vec3 diff = world_camera - world_projection;
-    float x_diff = diff.x;
-
-    vec2 new_uv = UV;
-    if(x_diff <= 0.0f) {
-        // Right Eye
-        new_uv = (right_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
-    } else {
-        // Left Eye
-        new_uv = (left_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
-    }
-
-	vec4 texture_color = texture(gast_texture, new_uv);
-	float target_alpha = COLOR.a * texture_color.a;
-	if (gradient_height_ratio >= 0.05) {
-		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
-		target_alpha = target_alpha * gradient_mask;
-	}
-	ALPHA = target_alpha;
-	ALBEDO = texture_color.rgb * target_alpha;
-}
-)GAST_SHADER";
-
-const char *kDisableDepthTestRenderMode = "render_mode depth_test_disable;";
-const char *kCullFrontRenderMode = "render_mode cull_front;";
-const char *kGastLeftEyeSamplingTransformName = "left_eye_sampling_transform";
-const char *kGastRightEyeSamplingTransformName = "right_eye_sampling_transform";
-
-const char *kShaderCustomDefines = R"GAST_DEFINES(
-#ifdef ANDROID_ENABLED
-#extension GL_OES_EGL_image_external : enable
-#extension GL_OES_EGL_image_external_essl3 : enable
-#else
-#define samplerExternalOES sampler2D
-#endif
-)GAST_DEFINES";
 }  // namespace
 
+static inline String get_base_shader_code(bool use_alpha) {
+    Dictionary dict;
+    dict["alpha_variable"] = use_alpha ? "ALPHA" : "target_alpha";
+    dict["gradient_height_ratio_threshold"] = String::num_real(kGradientHeightRatioThreshold);
+    return String(kBaseShaderCode).format(dict, "$_") ;
+}
 
 static inline Array create_curved_screen_surface_array(
         Vector2 mesh_size, float curved_screen_radius, size_t curved_screen_resolution) {

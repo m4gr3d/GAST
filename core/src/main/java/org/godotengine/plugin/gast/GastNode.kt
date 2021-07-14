@@ -412,6 +412,16 @@ class GastNode @JvmOverloads constructor(
     private external fun updateAlpha(nodePointer: Long, alpha: Float)
 
     /**
+     * Specifies whether this node has transparent section. Defaults to true.
+     */
+    fun setHasTransparency(hasTransparency: Boolean) {
+        checkIfReleased()
+        setHasTransparency(nodePointer, hasTransparency)
+    }
+
+    private external fun setHasTransparency(nodePointer: Long, hasTransparency: Boolean)
+
+    /**
      * Translate the Gast node relative to its parent.
      */
     fun updateLocalTranslation(

@@ -84,6 +84,12 @@ public:
                 kGastGradientHeightRatioParamName, gradient_height_ratio);
     }
 
+protected:
+    bool should_use_alpha_shader_code() override {
+        return ProjectionMesh::should_use_alpha_shader_code()
+        || (gradient_height_ratio >= kGradientHeightRatioThreshold);
+    }
+
 private:
     Vector2 mesh_size;
     bool is_curved;

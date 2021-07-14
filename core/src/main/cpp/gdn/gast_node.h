@@ -134,6 +134,10 @@ public:
         projection_mesh->set_alpha(alpha);
     }
 
+    inline void set_has_transparency(bool has_transparency) {
+        projection_mesh->set_has_transparency(has_transparency);
+    }
+
     static inline RayCast *get_ray_cast_from_variant(Variant variant) {
         RayCast *ray_cast = Object::cast_to<RayCast>(variant);
         return ray_cast;

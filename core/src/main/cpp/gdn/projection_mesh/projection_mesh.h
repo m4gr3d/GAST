@@ -25,6 +25,9 @@ const int kDefaultSurfaceIndex = 0;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const bool kDefaultGazeTracking = false;
 const bool kDefaultRenderOnTop = false;
+const bool kDefaultHasTransparency = true;
+// This threshold is used to help determine when we should enable transparency in the shader.
+const float kAlphaThreshold = 0.94f;
 }
 
 class ProjectionMesh : public Resource {
@@ -91,10 +94,17 @@ public:
             return;
         }
         this->render_on_top = enable;
-        if (shader_material_ref.is_valid() && shader_material_ref->get_shader().is_valid()) {
-            shader_material_ref->get_shader()->set_code(this->generate_shader_code());
-        }
+        update_shader_code();
         update_render_priority();
+    }
+
+    inline void update_shader_code() {
+        if (shader_material_ref.is_valid() && shader_material_ref->get_shader().is_valid()) {
+            String shader_code = this->generate_shader_code();
+            if (shader_material_ref->get_shader()->get_code() != shader_code) {
+                shader_material_ref->get_shader()->set_code(shader_code);
+            }
+        }
     }
 
     inline bool is_render_on_top() {
@@ -137,7 +147,16 @@ public:
             return;
         }
         this->alpha = alpha;
+        update_shader_code();
         shader_material_ref->set_shader_param(kGastNodeAlphaParamName, alpha);
+    }
+
+    inline void set_has_transparency(bool has_transparency) {
+        if (this->has_transparency == has_transparency) {
+            return;
+        }
+        this->has_transparency = has_transparency;
+        update_shader_code();
     }
 
     inline StereoMode get_stereo_mode() {
@@ -181,8 +200,13 @@ public:
     bool render_on_top;
     bool gaze_tracking;
     float alpha;
+    bool has_transparency;
 
 protected:
+    virtual bool should_use_alpha_shader_code() {
+        return has_transparency || alpha < kAlphaThreshold || is_render_on_top();
+    }
+
     ProjectionMesh(ProjectionMeshType projection_mesh_type);
 
     inline void set_shader(Ref<Shader> shader) {
@@ -210,7 +234,7 @@ protected:
     }
 
     virtual inline String generate_shader_code() {
-        String shader_code = kShaderCode;
+        String shader_code = get_base_shader_code(should_use_alpha_shader_code());
         if (is_render_on_top()) {
             shader_code += kDisableDepthTestRenderMode;
         }

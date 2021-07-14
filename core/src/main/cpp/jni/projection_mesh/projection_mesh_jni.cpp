@@ -61,6 +61,13 @@ JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong mesh_pointer, jfloat alpha) {
 }
 
 JNIEXPORT void JNICALL
+JNI_METHOD(setHasTransparency)(JNIEnv *, jobject, jlong mesh_pointer, jboolean has_transparency) {
+    ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL(mesh);
+    mesh->set_has_transparency(has_transparency);
+}
+
+JNIEXPORT void JNICALL
 JNI_METHOD(setStereoMode)(JNIEnv *, jobject, jlong mesh_pointer, jint stereo_mode) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
     ERR_FAIL_NULL(mesh);
