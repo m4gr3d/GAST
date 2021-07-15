@@ -27,9 +27,7 @@
 
 namespace gast {
 
-GastNode::GastNode() : collidable(kDefaultCollidable),
-                       projection_mesh_pool(ProjectionMeshPool()),
-                       mesh_listener(GastNodeMeshUpdateListener(this)) {}
+GastNode::GastNode() : projection_mesh_pool(ProjectionMeshPool()) {}
 
 GastNode::~GastNode() = default;
 
@@ -40,20 +38,10 @@ void GastNode::_register_methods() {
     register_method("_process", &GastNode::_process);
     register_method("_notification", &GastNode::_notification);
 
-    register_method("set_collidable", &GastNode::set_collidable);
-    register_method("is_collidable", &GastNode::is_collidable);
-
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
-
-    register_property<GastNode, bool>("collidable", &GastNode::set_collidable,
-                                      &GastNode::is_collidable, kDefaultCollidable);
 }
 
-void GastNode::_init() {
-    // Add a CollisionShape to the static body node
-    CollisionShape *collision_shape = CollisionShape::_new();
-    add_child(collision_shape);
-}
+void GastNode::_init() {}
 
 void GastNode::_enter_tree() {
     // Create the external texture
@@ -67,36 +55,69 @@ void GastNode::_exit_tree() {
     reset_mesh_and_collision_shape();
 }
 
+void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
+    if (projection_mesh &&
+        projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
+        return;
+    }
+
+    ProjectionMesh *previous_projection_mesh = nullptr;
+    if (projection_mesh) {
+        previous_projection_mesh = projection_mesh;
+        projection_mesh->reset_external_texture();
+
+        // Remove the collision shapes from the current projection mesh
+        for (int i = 0; i < projection_mesh->get_mesh_count(); i++) {
+            CollisionShape *collision_shape = projection_mesh->get_collision_shape(i);
+            if (collision_shape) {
+                remove_child(collision_shape);
+            }
+        }
+    }
+
+    switch(projection_mesh_type) {
+        case ProjectionMesh::ProjectionMeshType::MESH:
+        default:
+            ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
+                  projection_mesh_type);
+        case ProjectionMesh::ProjectionMeshType::RECTANGULAR:
+            projection_mesh =
+                    projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
+            break;
+        case ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR:
+            projection_mesh =
+                    projection_mesh_pool.get_or_create_projection_mesh<EquirectangularProjectionMesh>();
+            break;
+    }
+
+    projection_mesh->set_external_texture(external_texture);
+    for (int i = 0; i < projection_mesh->get_mesh_count(); i++) {
+        CollisionShape *collision_shape = projection_mesh->get_collision_shape(i);
+        if (collision_shape) {
+            add_child(collision_shape);
+        }
+    }
+
+    if (previous_projection_mesh) {
+        // Update the projection mesh's properties
+        projection_mesh->update_properties(previous_projection_mesh);
+    }
+
+    update_collision_shape();
+    projection_mesh->update_render_priority();
+}
+
 void GastNode::reset_mesh_and_collision_shape() {
     // Unset the GAST mesh resource
-    projection_mesh->reset_mesh();
+    projection_mesh->reset_meshes();
     projection_mesh->reset_external_texture();
     // Unset the box shape resource
     update_collision_shape();
 }
 
-void GastNode::setup_projection_mesh() {
-    CollisionShape *collisionShape = get_collision_shape();
-    for (int i = 0; i < collisionShape->get_child_count(); i++) {
-        collisionShape->remove_child(collisionShape->get_child(i));
-    }
-    projection_mesh->set_external_texture(external_texture);
-    collisionShape->add_child(projection_mesh->get_mesh_instance());
-    update_collision_shape();
-    projection_mesh->update_render_priority();
-}
-
 void GastNode::update_collision_shape() {
-    CollisionShape *collision_shape = get_collision_shape();
-    if (!collision_shape) {
-        ALOGW("Unable to retrieve collision shape for %s. Aborting...", get_node_tag(*this));
-        return;
-    }
-
-    if (!is_visible_in_tree() || !collidable || projection_mesh->get_mesh_instance() == nullptr) {
-        collision_shape->set_shape(Ref<Resource>());
-    } else {
-        collision_shape->set_shape(projection_mesh->get_collision_shape());
+    if (projection_mesh) {
+        projection_mesh->update_collision_shapes();
     }
 }
 
@@ -273,10 +294,11 @@ bool GastNode::intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3
     }
 
     // Get the mesh's aabb
-    MeshInstance *mesh_instance = projection_mesh->get_mesh_instance();
-    if (!mesh_instance) {
+    if (projection_mesh->get_mesh_count() <= 0) {
         return false;
     }
+
+    MeshInstance *mesh_instance = projection_mesh->get_mesh_instance(0);
 
     AABB mesh_aabb = mesh_instance->get_aabb();
     Vector3 aabb_global_position = mesh_instance->to_global(mesh_aabb.position);

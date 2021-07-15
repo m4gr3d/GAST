@@ -11,12 +11,12 @@ namespace {
 const float kEquirectSphereSize = 1.0f;
 const size_t kEquirectSphereMeshBandCount = 80;
 const size_t kEquirectSphereMeshSectorCount = 80;
+const int kMeshIndex = 0;
+const int kMeshCount = 1;
 }  // namespace
 
 EquirectangularProjectionMesh::EquirectangularProjectionMesh() :
-        ProjectionMesh(ProjectionMeshType::EQUIRECTANGULAR) {
-    update_projection_mesh();
-}
+        ProjectionMesh(ProjectionMeshType::EQUIRECTANGULAR) {}
 
 EquirectangularProjectionMesh::~EquirectangularProjectionMesh() = default;
 
@@ -28,16 +28,18 @@ void EquirectangularProjectionMesh::update_projection_mesh() {
                     kEquirectSphereSize,
                     kEquirectSphereMeshBandCount,
                     kEquirectSphereMeshSectorCount));
-    set_mesh(mesh);
-    set_collision_shape(mesh->create_trimesh_shape());
+    set_mesh(kMeshIndex, mesh);
+    set_collision_shape(kMeshIndex, mesh->create_trimesh_shape());
 
     Shader *shader = Shader::_new();
     shader->set_custom_defines(kShaderCustomDefines);
     shader->set_code(generate_shader_code());
-    set_shader(shader);
+    set_shader(kMeshIndex, shader);
     update_sampling_transforms();
+}
 
-    get_mesh_instance()->set_surface_material(kDefaultSurfaceIndex, get_shader_material());
+int EquirectangularProjectionMesh::get_mesh_count() const {
+    return kMeshCount;
 }
 
 String EquirectangularProjectionMesh::generate_shader_code() {
@@ -47,9 +49,14 @@ String EquirectangularProjectionMesh::generate_shader_code() {
     return shader_code;
 }
 
-void EquirectangularProjectionMesh::_init() {}
+void EquirectangularProjectionMesh::_init() {
+    ProjectionMesh::_init();
+    update_projection_mesh();
+}
 
-void EquirectangularProjectionMesh::_register_methods() {}
+void EquirectangularProjectionMesh::_register_methods() {
+    ProjectionMesh::_register_methods();
+}
 
 }  // namespace gast
 

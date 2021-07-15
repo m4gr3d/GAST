@@ -21,9 +21,12 @@ public:
 
     static void _register_methods();
 
-private:
+    int get_mesh_count() const override;
+
+protected:
     String generate_shader_code() override;
-    void update_projection_mesh();
+
+    void update_projection_mesh() override;
 };
 
 }  // namespace gast
