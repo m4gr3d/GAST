@@ -38,16 +38,6 @@ internal class InputDispatcher private constructor() : Runnable {
     override fun run() {
 
         when (eventData) {
-            is ActionEventData -> {
-                val actionEventData = eventData as ActionEventData
-                for (listener in gastInputListeners) {
-                    listener.onMainInputAction(
-                        actionEventData.action,
-                        actionEventData.pressState,
-                        actionEventData.strength
-                    )
-                }
-            }
 
             is HoverEventData -> {
                 val hoverEventData = eventData as HoverEventData

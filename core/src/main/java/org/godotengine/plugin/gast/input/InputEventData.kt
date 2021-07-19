@@ -1,39 +1,38 @@
 package org.godotengine.plugin.gast.input
 
-internal sealed class InputEventData()
-
-internal data class ActionEventData(
-    val action: String,
-    val pressState: GastInputListener.InputPressState,
-    val strength: Float
-) : InputEventData()
-
-internal data class HoverEventData(
+internal sealed class InputEventData(
     val nodePath: String,
     val pointerId: String,
     val xPercent: Float,
     val yPercent: Float
-) : InputEventData()
+)
 
-internal data class PressEventData(
-    val nodePath: String,
-    val pointerId: String,
-    val xPercent: Float,
-    val yPercent: Float
-) : InputEventData()
+internal class HoverEventData(
+    nodePath: String,
+    pointerId: String,
+    xPercent: Float,
+    yPercent: Float
+) : InputEventData(nodePath, pointerId, xPercent, yPercent)
 
-internal data class ReleaseEventData(
-    val nodePath: String,
-    val pointerId: String,
-    val xPercent: Float,
-    val yPercent: Float
-) : InputEventData()
+internal class PressEventData(
+    nodePath: String,
+    pointerId: String,
+    xPercent: Float,
+    yPercent: Float
+) : InputEventData(nodePath, pointerId, xPercent, yPercent)
 
-internal data class ScrollEventData(
-    val nodePath: String,
-    val pointerId: String,
-    val xPercent: Float,
-    val yPercent: Float,
+internal class ReleaseEventData(
+    nodePath: String,
+    pointerId: String,
+    xPercent: Float,
+    yPercent: Float
+) : InputEventData(nodePath, pointerId, xPercent, yPercent)
+
+internal class ScrollEventData(
+    nodePath: String,
+    pointerId: String,
+    xPercent: Float,
+    yPercent: Float,
     val horizontalDelta: Float,
     val verticalDelta: Float
-) : InputEventData()
+) : InputEventData(nodePath, pointerId, xPercent, yPercent)
