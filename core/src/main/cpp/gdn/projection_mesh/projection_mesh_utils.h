@@ -1,6 +1,9 @@
 #ifndef PROJECTION_MESH_UTILS_H
 #define PROJECTION_MESH_UTILS_H
 
+#include <GLES3/gl3.h>
+
+#include "gen/ArrayMesh.hpp"
 #include "gen/Mesh.hpp"
 
 namespace gast {
@@ -21,6 +24,12 @@ uniform bool enable_billboard;
 uniform float gradient_height_ratio;
 uniform float node_alpha = 1.0;
 
+// Specifies which view index this shader should apply:
+// -1 for both
+// 0 for left
+// 1 for right
+uniform int shader_view_index = -1;
+
 void vertex() {
 	if (enable_billboard) {
 		MODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);
@@ -39,9 +48,19 @@ void fragment() {
     vec2 new_uv = UV;
     if(x_diff <= 0.0f) {
         // Right Eye
+        if (shader_view_index == 0) {
+            // Discarding since this shader should only render for the left (0) view index.
+            discard;
+            return;
+        }
         new_uv = (right_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
     } else {
         // Left Eye
+        if (shader_view_index == 1) {
+            // Discarding since this shader should only render for the right (1) view index.
+            discard;
+            return;
+        }
         new_uv = (left_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
     }
 
@@ -106,6 +125,18 @@ Transform get_transform_from_scale(Vector2 scale) {
     return transform;
 }
 
+Transform get_transform_from_translation(Vector3 translation) {
+    auto transform = Transform();
+    transform.translate(translation.x, translation.y, translation.z);
+    return transform;
+}
+
+Transform get_transform_from_scale(Vector3 scale) {
+    auto transform = Transform();
+    transform.scale(Vector3(scale.x, scale.y, scale.z));
+    return transform;
+}
+
 StereoModeDisplayParameters get_stereo_mode_display_parameters(StereoMode stereo_mode) {
     StereoModeDisplayParameters parameters;
     switch (stereo_mode) {
@@ -133,7 +164,8 @@ StereoModeDisplayParameters get_stereo_mode_display_parameters(StereoMode stereo
     return parameters;
 }
 
-SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
+SamplingTransforms
+get_sampling_transforms(StereoMode stereo_mode, bool uv_origin_is_bottom_left = false) {
     StereoModeDisplayParameters stereo_mode_display_params =
             get_stereo_mode_display_parameters(stereo_mode);
 
@@ -147,6 +179,13 @@ SamplingTransforms get_sampling_transforms(StereoMode stereo_mode) {
     Transform left_sampling_transform = left_texture_offset_transform * texture_scale_transform;
     Transform right_sampling_transform =
             right_texture_offset_transform * texture_scale_transform;
+
+    if (uv_origin_is_bottom_left) {
+        Transform flipYTransform = get_transform_from_translation(Vector3(0, 1, 0)) *
+                                   get_transform_from_scale(Vector3(1, -1, 1));
+        left_sampling_transform = left_sampling_transform * flipYTransform;
+        right_sampling_transform = right_sampling_transform * flipYTransform;
+    }
 
     SamplingTransforms sampling_transforms;
     sampling_transforms.left = left_sampling_transform;
@@ -305,6 +344,48 @@ static inline Array create_spherical_surface_array(
     arr[Mesh::ARRAY_TEX_UV] = uvs;
     arr[Mesh::ARRAY_INDEX] = indices;
     return arr;
+}
+
+static inline ArrayMesh* create_array_mesh(ArrayMesh *mesh, int num_vertices, float *vertices,
+                                           float *texture_coords, int draw_mode) {
+    Array mesh_array = Array();
+    mesh_array.resize(Mesh::ARRAY_MAX);
+    PoolVector3Array mesh_verts = PoolVector3Array();
+    PoolVector2Array mesh_uvs = PoolVector2Array();
+    for (int i = 0; i < num_vertices; i++) {
+        int vertex_index = i * 3;
+        int uv_index = i * 2;
+        mesh_verts.append(
+                Vector3(vertices[vertex_index], vertices[vertex_index + 1],
+                        vertices[vertex_index + 2]));
+        mesh_uvs.append(
+                Vector2(texture_coords[uv_index], texture_coords[uv_index + 1]));
+    }
+    mesh_array[Mesh::ARRAY_VERTEX] = mesh_verts;
+    mesh_array[Mesh::ARRAY_TEX_UV] = mesh_uvs;
+    int64_t primitive;
+    switch (draw_mode) {
+        case GL_POINTS:
+            primitive = Mesh::PRIMITIVE_POINTS;
+            break;
+        case GL_LINES:
+            primitive = Mesh::PRIMITIVE_LINES;
+            break;
+        case GL_TRIANGLES:
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
+            break;
+        case GL_TRIANGLE_FAN:
+            primitive = Mesh::PRIMITIVE_TRIANGLE_FAN;
+            break;
+        case GL_TRIANGLE_STRIP:
+            primitive = Mesh::PRIMITIVE_TRIANGLE_STRIP;
+            break;
+        default:
+            primitive = Mesh::PRIMITIVE_TRIANGLES;
+            break;
+    }
+    mesh->add_surface_from_arrays(primitive, mesh_array);
+    return mesh;
 }
 
 }  // namespace gast

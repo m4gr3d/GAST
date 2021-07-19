@@ -25,7 +25,8 @@ ProjectionMesh::ProjectionMesh(ProjectionMesh::ProjectionMeshType projection_mes
         alpha(kDefaultAlpha),
         has_transparency(kDefaultHasTransparency),
         stereo_mode(StereoMode::kMono),
-        collidable(kDefaultCollidable) {}
+        collidable(kDefaultCollidable),
+        uv_origin_is_bottom_left(kDefaultUvOriginIsBottomLeft) {}
 
 ProjectionMesh::ProjectionMesh() : ProjectionMesh(ProjectionMeshType::RECTANGULAR) {}
 
@@ -185,7 +186,8 @@ void ProjectionMesh::update_sampling_transforms() {
         return;
     }
 
-    SamplingTransforms sampling_transforms = get_sampling_transforms(stereo_mode);
+    SamplingTransforms sampling_transforms = get_sampling_transforms(stereo_mode,
+                                                                     uv_origin_is_bottom_left);
     for (int i = 0; i < mesh_count; i++) {
         ProjectionMeshData *mesh_data = projection_mesh_data_list[i];
 
@@ -235,16 +237,21 @@ void ProjectionMesh::update_render_priority() const {
     }
 }
 
-void ProjectionMesh::update_shader_param(const String& param, const Variant& value) const {
-    int mesh_count = get_mesh_count();
-    if (mesh_count <= 0) {
+void ProjectionMesh::update_shaders_param(const String& param, const Variant& value) const {
+    for (int i = 0; i < get_mesh_count(); i++) {
+        update_shader_param(i, param, value);
+    }
+}
+
+void ProjectionMesh::update_shader_param(int index, const String &param,
+                                         const Variant &value) const {
+    if (index < 0 || index >= get_mesh_count()) {
         return;
     }
 
-    for (auto mesh_data : projection_mesh_data_list) {
-        if (mesh_data->shader_material.is_valid()) {
-            mesh_data->shader_material->set_shader_param(param, value);
-        }
+    ProjectionMeshData *mesh_data = projection_mesh_data_list[index];
+    if (mesh_data->shader_material.is_valid()) {
+        mesh_data->shader_material->set_shader_param(param, value);
     }
 }
 

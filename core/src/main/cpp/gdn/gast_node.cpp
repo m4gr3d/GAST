@@ -76,7 +76,6 @@ void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection
     }
 
     switch(projection_mesh_type) {
-        case ProjectionMesh::ProjectionMeshType::MESH:
         default:
             ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
                   projection_mesh_type);
@@ -87,6 +86,9 @@ void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection
         case ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR:
             projection_mesh =
                     projection_mesh_pool.get_or_create_projection_mesh<EquirectangularProjectionMesh>();
+            break;
+        case ProjectionMesh::ProjectionMeshType::MESH:
+            projection_mesh = projection_mesh_pool.get_or_create_projection_mesh<CustomProjectionMesh>();
             break;
     }
 

@@ -19,6 +19,7 @@
 #include <gen/ShaderMaterial.hpp>
 #include <gen/StaticBody.hpp>
 
+#include "gdn/projection_mesh/custom_projection_mesh.h"
 #include "gdn/projection_mesh/projection_mesh.h"
 #include "gdn/projection_mesh/projection_mesh_pool.h"
 #include "utils.h"

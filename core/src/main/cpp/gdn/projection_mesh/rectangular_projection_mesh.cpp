@@ -127,7 +127,7 @@ void RectangularProjectionMesh::set_gradient_height_ratio(float ratio) {
         return;
     }
     this->gradient_height_ratio = std::min(1.0f, std::max(0.0f, ratio));
-    update_shader_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
+    update_shaders_param(kGastGradientHeightRatioParamName, gradient_height_ratio);
 }
 
 int RectangularProjectionMesh::get_mesh_count() const {
