@@ -28,7 +28,6 @@ namespace gast {
 namespace {
 using namespace godot;
 constexpr int kInvalidTexId = -1;
-const bool kDefaultCollidable = true;
 }  // namespace
 
 /// Script for a GAST node. Enables GAST specific logic and processing.
@@ -61,50 +60,14 @@ public:
     int get_external_texture_id();
 
     inline void set_collidable(bool collidable) {
-        if (this->collidable == collidable) {
-            return;
-        }
-        this->collidable = collidable;
-        update_collision_shape();
+        projection_mesh->set_collidable(collidable);
     }
 
     inline bool is_collidable() {
-        return collidable;
+        return projection_mesh->is_collidable();
     }
 
-    inline void set_projection_mesh(int projection_mesh_type) {
-        set_projection_mesh(static_cast<ProjectionMesh::ProjectionMeshType>(projection_mesh_type));
-    }
-
-    inline void set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
-        if (projection_mesh &&
-            projection_mesh_type == projection_mesh->get_projection_mesh_type()) {
-            return;
-        }
-
-        if (projection_mesh) {
-            projection_mesh->reset_external_texture();
-            projection_mesh->set_projection_mesh_listener(nullptr);
-        }
-
-        switch(projection_mesh_type) {
-            case ProjectionMesh::ProjectionMeshType::MESH:
-            default:
-                ALOGE("Projection mesh type %d unimplemented, falling back to RECTANGULAR.",
-                      projection_mesh_type);
-            case ProjectionMesh::ProjectionMeshType::RECTANGULAR:
-                projection_mesh =
-                    projection_mesh_pool.get_or_create_projection_mesh<RectangularProjectionMesh>();
-                break;
-            case ProjectionMesh::ProjectionMeshType::EQUIRECTANGULAR:
-                projection_mesh =
-                    projection_mesh_pool.get_or_create_projection_mesh<EquirectangularProjectionMesh>();
-                break;
-        }
-
-        setup_projection_mesh();
-        projection_mesh->set_projection_mesh_listener(&mesh_listener);
-    }
+    void set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type);
 
     inline ProjectionMesh* get_projection_mesh() {
         return this->projection_mesh;
@@ -151,15 +114,7 @@ public:
     // Returns true if the plane defined by this node intersects the given ray.
     bool intersects_ray(Vector3 ray_origin, Vector3 ray_direction, Vector3 *intersection);
 
-    void setup_projection_mesh();
-
 private:
-
-    inline CollisionShape *get_collision_shape() {
-        Node *node = get_child(0);
-        CollisionShape *collision_shape = Object::cast_to<CollisionShape>(node);
-        return collision_shape;
-    }
 
     static inline String get_click_action_from_node_name(const String &node_name) {
         // Replace the '/' character with a '_' character
@@ -191,23 +146,9 @@ private:
 
     void reset_mesh_and_collision_shape();
 
-    class GastNodeMeshUpdateListener : public ProjectionMesh::ProjectionMeshListener {
-    public:
-        GastNodeMeshUpdateListener(GastNode *node) : gast_node(node) {}
-
-        inline void on_mesh_update() override {
-            gast_node->setup_projection_mesh();
-        }
-
-    private:
-        GastNode *gast_node;
-    };
-
-    bool collidable;
     ProjectionMeshPool projection_mesh_pool;
     ProjectionMesh *projection_mesh = nullptr;
     Ref<ExternalTexture> external_texture;
-    GastNodeMeshUpdateListener mesh_listener;
 };
 
 }  // namespace gast

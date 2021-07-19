@@ -214,7 +214,7 @@ JNI_METHOD(nativeSetProjectionMesh)(JNIEnv *, jobject, jlong node_pointer,
                                     jint projection_mesh_type) {
     GastNode *gast_node = from_pointer(node_pointer);
     ERR_FAIL_NULL(gast_node);
-    gast_node->set_projection_mesh(projection_mesh_type);
+    gast_node->set_projection_mesh(static_cast<ProjectionMesh::ProjectionMeshType>(projection_mesh_type));
 }
 
 }
