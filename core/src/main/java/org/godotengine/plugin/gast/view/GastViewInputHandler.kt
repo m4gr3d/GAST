@@ -116,13 +116,6 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         )
     }
 
-    override fun onMainInputAction(
-        action: String,
-        pressState: GastInputListener.InputPressState,
-        strength: Float
-    ) {
-    }
-
     override fun onMainInputHover(
         nodePath: String,
         pointerId: String,
