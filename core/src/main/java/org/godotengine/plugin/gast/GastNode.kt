@@ -8,6 +8,7 @@ import android.os.Build
 import android.text.TextUtils
 import android.view.Surface
 import androidx.annotation.RequiresApi
+import org.godotengine.plugin.gast.projectionmesh.CustomProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.EquirectangularProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
@@ -78,8 +79,8 @@ class GastNode @JvmOverloads constructor(
             ProjectionMeshType.EQUIRECTANGULAR ->
                 projectionMeshPool[meshPointer] =
                     EquirectangularProjectionMesh(meshPointer, nodePointer)
-            else -> {
-                TODO("Mesh type unimplemented")
+            ProjectionMeshType.MESH -> {
+                projectionMeshPool[meshPointer] = CustomProjectionMesh(meshPointer, nodePointer)
             }
         }
 

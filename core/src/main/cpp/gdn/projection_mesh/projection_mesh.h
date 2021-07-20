@@ -31,6 +31,7 @@ const bool kDefaultRenderOnTop = false;
 const bool kDefaultHasTransparency = true;
 // This threshold is used to help determine when we should enable transparency in the shader.
 const float kAlphaThreshold = 0.94f;
+const bool kDefaultUvOriginIsBottomLeft = false;
 }
 
 class ProjectionMesh : public Resource {
@@ -55,6 +56,10 @@ public:
         return projection_mesh_type;
     }
 
+    bool is_custom_projection_mesh() const {
+        return get_projection_mesh_type() == ProjectionMeshType::MESH;
+    }
+
     bool is_rectangular_projection_mesh() const {
         return get_projection_mesh_type() == ProjectionMeshType::RECTANGULAR;
     }
@@ -64,7 +69,7 @@ public:
     }
 
     void set_external_texture(Ref<ExternalTexture> external_texture) {
-        update_shader_param(kGastTextureParamName, external_texture);
+        update_shaders_param(kGastTextureParamName, external_texture);
     }
 
     void set_render_on_top(bool enable) {
@@ -90,7 +95,7 @@ public:
         }
         this->gaze_tracking = gaze_tracking;
         update_render_priority();
-        update_shader_param(kGastEnableBillBoardParamName, gaze_tracking);
+        update_shaders_param(kGastEnableBillBoardParamName, gaze_tracking);
     }
 
     bool is_gaze_tracking() const {
@@ -105,7 +110,7 @@ public:
         }
         this->alpha = alpha;
         update_shader_code();
-        update_shader_param(kGastNodeAlphaParamName, alpha);
+        update_shaders_param(kGastNodeAlphaParamName, alpha);
     }
 
     void set_has_transparency(bool has_transparency) {
@@ -130,7 +135,19 @@ public:
     }
 
     void set_stereo_mode(StereoMode stereo_mode) {
+        if (this->stereo_mode == stereo_mode) {
+            return;
+        }
+
         this->stereo_mode = stereo_mode;
+        update_sampling_transforms();
+    }
+
+    void set_uv_origin_is_bottom_left(bool uv_origin_is_bottom_left) {
+        if (this->uv_origin_is_bottom_left == uv_origin_is_bottom_left) {
+            return;
+        }
+        this->uv_origin_is_bottom_left = uv_origin_is_bottom_left;
         update_sampling_transforms();
     }
 
@@ -166,7 +183,9 @@ protected:
         Ref<ShaderMaterial> shader_material;
     };
 
-    void update_shader_param(const String& param, const Variant& value) const;
+    void update_shaders_param(const String& param, const Variant& value) const;
+
+    void update_shader_param(int index, const String& param, const Variant& value) const;
 
     void update_shader_code();
 
@@ -191,6 +210,7 @@ private:
 
     bool render_on_top;
     bool gaze_tracking;
+    bool uv_origin_is_bottom_left;
     float alpha;
     bool has_transparency;
     bool collidable;
