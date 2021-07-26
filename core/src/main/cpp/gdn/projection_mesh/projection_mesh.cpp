@@ -255,5 +255,10 @@ void ProjectionMesh::update_shader_param(int index, const String &param,
     }
 }
 
+void ProjectionMesh::set_camera_uniforms(Vector3 camera_position, Vector3 camera_xaxis) const {
+    update_shaders_param(kCameraPositionParamName, camera_position);
+    update_shaders_param(kCameraXaxisParamName, camera_xaxis);
+}
+
 }  // namespace gast
 

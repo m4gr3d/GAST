@@ -147,6 +147,8 @@ private:
 
     void reset_mesh_and_collision_shape();
 
+    void update_projection_mesh_camera_uniforms();
+
     ProjectionMeshPool projection_mesh_pool;
     ProjectionMesh *projection_mesh = nullptr;
     Ref<ExternalTexture> external_texture;

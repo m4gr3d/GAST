@@ -187,6 +187,7 @@ void GastNode::_notification(const int64_t what) {
 }
 
 void GastNode::_process(const real_t delta) {
+    update_projection_mesh_camera_uniforms();
     if (is_gaze_tracking()) {
         Rect2 gaze_area = get_viewport()->get_visible_rect();
         Vector2 gaze_center_point = Vector2(gaze_area.position.x + gaze_area.size.x / 2.0,
@@ -326,6 +327,14 @@ Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point)
     } else {
         // TODO: Implement for other projection mesh types.
         return kInvalidCoordinate;
+    }
+}
+
+void GastNode::update_projection_mesh_camera_uniforms() {
+    if (projection_mesh) {
+        Transform camera_global_transform = get_viewport()->get_camera()->get_global_transform();
+        projection_mesh->set_camera_uniforms(
+            camera_global_transform.origin, camera_global_transform.basis.x.normalized());
     }
 }
 
