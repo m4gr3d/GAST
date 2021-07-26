@@ -178,9 +178,7 @@ public:
 
     virtual void update_properties(ProjectionMesh *projection_mesh);
 
-    void set_camera_position(Vector3 camera_position) const;
-
-    void set_camera_xaxis(Vector3 camera_xaxis) const;
+    void set_camera_uniforms(Vector3 camera_position, Vector3 camera_xaxis) const;
 
 protected:
     struct ProjectionMeshData {
