@@ -93,6 +93,7 @@ void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection
     }
 
     projection_mesh->set_external_texture(external_texture);
+    update_projection_mesh_camera();
     for (int i = 0; i < projection_mesh->get_mesh_count(); i++) {
         CollisionShape *collision_shape = projection_mesh->get_collision_shape(i);
         if (collision_shape) {
@@ -187,6 +188,7 @@ void GastNode::_notification(const int64_t what) {
 }
 
 void GastNode::_process(const real_t delta) {
+    update_projection_mesh_camera();
     if (is_gaze_tracking()) {
         Rect2 gaze_area = get_viewport()->get_visible_rect();
         Vector2 gaze_center_point = Vector2(gaze_area.position.x + gaze_area.size.x / 2.0,
@@ -326,6 +328,14 @@ Vector2 GastNode::get_relative_collision_point(Vector3 absolute_collision_point)
     } else {
         // TODO: Implement for other projection mesh types.
         return kInvalidCoordinate;
+    }
+}
+
+void GastNode::update_projection_mesh_camera() {
+    if (projection_mesh) {
+        Transform camera_global_transform = get_viewport()->get_camera()->get_global_transform();
+        projection_mesh->set_camera_position(camera_global_transform.origin);
+        projection_mesh->set_camera_xaxis(camera_global_transform.basis.x.normalized());
     }
 }
 
