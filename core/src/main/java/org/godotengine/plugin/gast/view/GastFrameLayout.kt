@@ -91,6 +91,8 @@ class GastFrameLayout(
         viewTreeObserver.removeOnPreDrawListener(onPreDrawListener)
         gastManager?.unregisterGastInputListener(inputHandler)
         this.gastNode = null
+        textureHeight = MIN_TEXTURE_DIMENSION
+        textureWidth = MIN_TEXTURE_DIMENSION
     }
 
     private fun updateTextureSizeIfNeeded() {

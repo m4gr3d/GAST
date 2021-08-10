@@ -56,6 +56,8 @@ public:
 
     void _notification(const int64_t what);
 
+    void reset();
+
     Ref<ExternalTexture> get_external_texture();
 
     int get_external_texture_id();
@@ -143,9 +145,9 @@ private:
         return node_name.replace("/", "_") + "_down_scroll";
     }
 
-    void update_collision_shape();
+    void remove_projection_mesh_collision_shapes();
 
-    void reset_mesh_and_collision_shape();
+    void update_collision_shape();
 
     void update_projection_mesh_camera_uniforms();
 

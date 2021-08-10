@@ -12,7 +12,7 @@ class ProjectionMeshPool {
 public:
     ProjectionMeshPool() = default;
     ~ProjectionMeshPool() {
-        projection_mesh_map.clear();
+        reset();
     }
 
     template<class T>
@@ -23,6 +23,10 @@ public:
             return projection_mesh;
         }
         return Object::cast_to<T>(projection_mesh_map[T::___get_class_name()]);
+    }
+
+    void reset() {
+        projection_mesh_map.clear();
     }
 
 private:

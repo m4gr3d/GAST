@@ -166,11 +166,14 @@ Node *GastManager::get_node(const godot::String &node_path) {
 
 GastNode
 *GastManager::acquire_and_bind_gast_node(const godot::String &parent_node_path, bool empty_parent) {
-    Node *parent_node = get_node(parent_node_path);
-    if (!parent_node) {
-        ALOGE("Unable to retrieve parent node with path %s",
-              get_node_tag(parent_node_path));
-        return nullptr;
+    Node *parent_node = nullptr;
+    if (!parent_node_path.empty()) {
+        parent_node = get_node(parent_node_path);
+        if (!parent_node) {
+            ALOGE("Unable to retrieve parent node with path %s",
+                  get_node_tag(parent_node_path));
+            return nullptr;
+        }
     }
 
     GastNode *gast_node;
@@ -180,6 +183,7 @@ GastNode
         // Creating a new static body node
         gast_node = GastNode::_new();
     } else {
+        ALOGV("Acquiring gast node from the pool.");
         gast_node = reusable_pool_.back();
         reusable_pool_.pop_back();
     }
@@ -192,11 +196,13 @@ GastNode
         gast_node->get_parent()->remove_child(gast_node);
     }
 
-    if (empty_parent) {
-        remove_all_children_from_node(parent_node);
+    if (parent_node) {
+        if (empty_parent) {
+            remove_all_children_from_node(parent_node);
+        }
+        parent_node->add_child(gast_node);
+        gast_node->set_owner(parent_node);
     }
-    parent_node->add_child(gast_node);
-    gast_node->set_owner(parent_node);
 
     return gast_node;
 }
@@ -215,8 +221,10 @@ void GastManager::unbind_and_release_gast_node(GastNode *gast_node) {
 
     // Remove the node from the GastNode group
     gast_node->remove_from_group(kGastNodeGroupName);
+    gast_node->reset();
 
     // Move the Gast node to the reusable pool.
+    ALOGV("Releasing gast node to the pool.");
     reusable_pool_.push_back(gast_node);
 }
 
@@ -430,11 +438,14 @@ bool GastManager::update_gast_node_parent(GastNode *node,
     }
 
     // Check if the new parent exists.
-    Node *new_parent = get_node(new_parent_node_path);
-    if (!new_parent) {
-        ALOGW("Unable to retrieve new parent node with path %s",
-              get_node_tag(new_parent_node_path));
-        return false;
+    Node *new_parent = nullptr;
+    if (!new_parent_node_path.empty()) {
+        new_parent = get_node(new_parent_node_path);
+        if (!new_parent) {
+            ALOGW("Unable to retrieve new parent node with path %s",
+                  get_node_tag(new_parent_node_path));
+            return false;
+        }
     }
 
     // Perform the update
@@ -442,11 +453,13 @@ bool GastManager::update_gast_node_parent(GastNode *node,
         node->get_parent()->remove_child(node);
     }
 
-    if (empty_parent) {
-        remove_all_children_from_node(new_parent);
+    if (new_parent) {
+        if (empty_parent) {
+            remove_all_children_from_node(new_parent);
+        }
+        new_parent->add_child(node);
+        node->set_owner(new_parent);
     }
-    new_parent->add_child(node);
-    node->set_owner(new_parent);
 
     return true;
 }

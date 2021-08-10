@@ -30,8 +30,8 @@ android {
     flavorDimensions "features"
     productFlavors {
         core {
-            versionCode 2500
-            versionName '0.25.0'
+            versionCode 2501
+            versionName '0.25.1'
         }
         plugins {
             versionCode 500

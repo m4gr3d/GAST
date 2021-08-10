@@ -9,7 +9,7 @@ namespace gast {
 
 namespace {
 using namespace godot;
-const Vector2 kDefaultMeshSize = Vector2(2.0, 1.125);
+const Vector2 kDefaultMeshSize = Vector2(0.0, 0.0);
 const float kDefaultGradientHeightRatio = 0.0f;
 }
 
