@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class GastNode @JvmOverloads constructor(
     private val gastManager: GastManager,
-    private var parentNodePath: String,
+    private var parentNodePath: String = "",
     emptyParent: Boolean = false
 ) : SurfaceTexture.OnFrameAvailableListener, GastRenderListener {
 
@@ -47,10 +47,6 @@ class GastNode @JvmOverloads constructor(
     }
 
     init {
-        if (TextUtils.isEmpty(parentNodePath)) {
-            throw IllegalArgumentException("Invalid parent node path value: $parentNodePath")
-        }
-
         nodePointer = acquireAndBindGastNode(parentNodePath, emptyParent)
         if (nodePointer == INVALID_NODE_POINTER) {
             throw IllegalStateException("Unable to initialize node")
@@ -270,12 +266,8 @@ class GastNode @JvmOverloads constructor(
     fun updateParent(newParentNodePath: String, emptyParent: Boolean = false) {
         checkIfReleased()
         if (parentNodePath != newParentNodePath) {
-            if (TextUtils.isEmpty(newParentNodePath)) {
-                throw IllegalArgumentException("Invalid parent node path value: $newParentNodePath")
-            } else {
-                if (updateGastNodeParent(nodePointer, newParentNodePath, emptyParent)) {
-                    parentNodePath = newParentNodePath;
-                }
+            if (updateGastNodeParent(nodePointer, newParentNodePath, emptyParent)) {
+                parentNodePath = newParentNodePath;
             }
         }
     }

@@ -29,7 +29,9 @@ namespace gast {
 
 GastNode::GastNode() : projection_mesh_pool(ProjectionMeshPool()) {}
 
-GastNode::~GastNode() = default;
+GastNode::~GastNode() {
+    reset();
+}
 
 void GastNode::_register_methods() {
     register_method("_enter_tree", &GastNode::_enter_tree);
@@ -41,9 +43,7 @@ void GastNode::_register_methods() {
     register_method("get_external_texture_id", &GastNode::get_external_texture_id);
 }
 
-void GastNode::_init() {}
-
-void GastNode::_enter_tree() {
+void GastNode::_init() {
     // Create the external texture
     external_texture = Ref<ExternalTexture>(ExternalTexture::_new());
 
@@ -51,8 +51,36 @@ void GastNode::_enter_tree() {
     set_projection_mesh(ProjectionMesh::ProjectionMeshType::RECTANGULAR);
 }
 
+void GastNode::_enter_tree() {
+    update_collision_shape();
+}
+
 void GastNode::_exit_tree() {
-    reset_mesh_and_collision_shape();
+    update_collision_shape();
+}
+
+void GastNode::reset() {
+    remove_projection_mesh_collision_shapes();
+    projection_mesh = nullptr;
+    projection_mesh_pool.reset();
+
+    set_projection_mesh(ProjectionMesh::ProjectionMeshType::RECTANGULAR);
+}
+
+void GastNode::remove_projection_mesh_collision_shapes() {
+    if (projection_mesh) {
+        projection_mesh->reset_external_texture();
+
+        // Remove the collision shapes from the current projection mesh
+        for (int i = 0; i < projection_mesh->get_mesh_count(); i++) {
+            CollisionShape *collision_shape = projection_mesh->get_collision_shape(i);
+            if (collision_shape) {
+                remove_child(collision_shape);
+            }
+        }
+
+        update_collision_shape();
+    }
 }
 
 void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection_mesh_type) {
@@ -64,15 +92,7 @@ void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection
     ProjectionMesh *previous_projection_mesh = nullptr;
     if (projection_mesh) {
         previous_projection_mesh = projection_mesh;
-        projection_mesh->reset_external_texture();
-
-        // Remove the collision shapes from the current projection mesh
-        for (int i = 0; i < projection_mesh->get_mesh_count(); i++) {
-            CollisionShape *collision_shape = projection_mesh->get_collision_shape(i);
-            if (collision_shape) {
-                remove_child(collision_shape);
-            }
-        }
+        remove_projection_mesh_collision_shapes();
     }
 
     switch(projection_mesh_type) {
@@ -107,14 +127,6 @@ void GastNode::set_projection_mesh(ProjectionMesh::ProjectionMeshType projection
 
     update_collision_shape();
     projection_mesh->update_render_priority();
-}
-
-void GastNode::reset_mesh_and_collision_shape() {
-    // Unset the GAST mesh resource
-    projection_mesh->reset_meshes();
-    projection_mesh->reset_external_texture();
-    // Unset the box shape resource
-    update_collision_shape();
 }
 
 void GastNode::update_collision_shape() {

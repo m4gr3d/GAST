@@ -50,7 +50,7 @@ JNI_METHOD(unbindAndReleaseGastNode)(JNIEnv *, jobject, jlong node_pointer) {
 JNIEXPORT jstring JNICALL JNI_METHOD(nativeGetNodePath)(JNIEnv *env, jobject, jlong node_pointer) {
     String node_path = String("");
     GastNode *gast_node = from_pointer(node_pointer);
-    if (gast_node) {
+    if (gast_node && gast_node->is_inside_tree()) {
         node_path = gast_node->get_path();
     }
 
