@@ -34,7 +34,7 @@ void CustomProjectionMesh::set_custom_mesh(int num_vertices_left, float *vertice
                                            int mesh_stereo_mode_int, bool uv_origin_is_bottom_left) {
     // Common to all meshes
     Shader *shader = Shader::_new();
-    shader->set_custom_defines(kShaderCustomDefines);
+    shader->set_custom_defines(String(kShaderCustomDefines) + String(kShaderHighpFloatDefines));
     shader->set_code(generate_shader_code());
 
     set_uv_origin_is_bottom_left(uv_origin_is_bottom_left);
@@ -54,7 +54,6 @@ void CustomProjectionMesh::set_custom_mesh(int num_vertices_left, float *vertice
     set_mesh(kRightMeshIndex, right_mesh);
     set_collision_shape(kRightMeshIndex, right_mesh->create_trimesh_shape());
     set_shader(kRightMeshIndex, shader);
-//    right_shader_material_ref = get_shader_material()->duplicate(/* subresources= */ true);
     update_shader_param(kRightMeshIndex, kShaderViewIndexUniform, /* right view index */ 1);
 }
 

@@ -96,6 +96,11 @@ const char *kShaderCustomDefines = R"GAST_DEFINES(
 #define samplerExternalOES sampler2D
 #endif
 )GAST_DEFINES";
+const char *kShaderHighpFloatDefines = R"GAST_DEFINES(
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+#define USE_HIGHP_PRECISION
+#endif
+)GAST_DEFINES";
 
 enum class StereoMode {
     kMono,
