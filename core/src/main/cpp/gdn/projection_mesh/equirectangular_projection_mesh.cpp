@@ -32,7 +32,7 @@ void EquirectangularProjectionMesh::update_projection_mesh() {
     set_collision_shape(kMeshIndex, mesh->create_trimesh_shape());
 
     Shader *shader = Shader::_new();
-    shader->set_custom_defines(kShaderCustomDefines);
+    shader->set_custom_defines(String(kShaderCustomDefines) + String(kShaderHighpFloatDefines));
     shader->set_code(generate_shader_code());
     set_shader(kMeshIndex, shader);
     update_sampling_transforms();
