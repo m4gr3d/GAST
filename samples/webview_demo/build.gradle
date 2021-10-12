@@ -20,6 +20,7 @@ android {
         targetSdkVersion versions.targetSdk
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
 
         missingDimensionStrategy 'features', 'plugins'
     }
@@ -55,7 +56,8 @@ dependencies {
     // Common dependencies
     implementation project(path: ':core')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlinVersion}"
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation "androidx.multidex:multidex:$versions.multidex_version"
+    implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation(fileTree(dir: "../../libs", include: ["godot-lib*.aar"]))
 
     // Dependencies for the `ovr` flavor

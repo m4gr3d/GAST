@@ -3,6 +3,7 @@
 
 #include <GLES3/gl3.h>
 
+#include "core/Math.hpp"
 #include "gen/ArrayMesh.hpp"
 #include "gen/Mesh.hpp"
 
@@ -289,8 +290,8 @@ static inline Array create_spherical_surface_array(
     float longitude_end = 180.f * degrees_to_radians;
     float latitude_start = -90.f * degrees_to_radians;
     float latitude_end = 90.f * degrees_to_radians;
-    band_count = std::max(static_cast<size_t>(2), band_count);
-    sector_count = std::max(static_cast<size_t>(3), sector_count);
+    band_count = Math::max(static_cast<size_t>(2), band_count);
+    sector_count = Math::max(static_cast<size_t>(3), sector_count);
 
     const size_t vertices_per_ring = sector_count + 1;
     const size_t vertices_per_band = band_count + 1;
