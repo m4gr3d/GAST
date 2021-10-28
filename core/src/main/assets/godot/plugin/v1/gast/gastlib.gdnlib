@@ -8,5 +8,8 @@ reloadable=false
 [entry]
 
 Android.arm64-v8a="res://godot/plugin/v1/gast/libgast.so"
+Android.armeabi-v7a="res://godot/plugin/v1/gast/libgast.so"
+Android.x86="res://godot/plugin/v1/gast/libgast.so"
+Android.x86_64="res://godot/plugin/v1/gast/libgast.so"
 
 [dependencies]
