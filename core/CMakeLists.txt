@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
 
-# Supported android abi is arm64-v8a
-if (NOT (ANDROID_ABI STREQUAL "arm64-v8a"))
-    set(ANDROID_ABI "arm64-v8a")
-endif (NOT (ANDROID_ABI STREQUAL "arm64-v8a"))
-
 # Default android platform is android-24
 if (NOT ANDROID_PLATFORM)
     set(ANDROID_PLATFORM "android-24")
