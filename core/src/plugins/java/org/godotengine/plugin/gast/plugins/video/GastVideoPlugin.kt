@@ -49,10 +49,6 @@ class GastVideoPlugin(godot: Godot) : GastExtension(godot), Player.EventListener
         playing.set(isPlaying)
     }
 
-    override fun onPlayerError(error: ExoPlaybackException) {
-        Log.e(TAG, error.message, error)
-    }
-
     override fun onPositionDiscontinuity(@Player.DiscontinuityReason reason: Int) {
         when (reason) {
 
