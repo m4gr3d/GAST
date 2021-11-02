@@ -16,9 +16,8 @@ import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 class GastFrameLayout(
     context: Context,
     attrs: AttributeSet?,
-    @AttrRes defStyleAttr: Int,
-    @StyleRes defStyleRes: Int
-) : FrameLayout(context, attrs, defStyleAttr, defStyleRes) {
+    @AttrRes defStyleAttr: Int
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val inputHandler: GastViewInputHandler = GastViewInputHandler(this)
     private val onPreDrawListener = ViewTreeObserver.OnPreDrawListener {
@@ -30,12 +29,6 @@ class GastFrameLayout(
 
     private var textureWidth = MIN_TEXTURE_DIMENSION
     private var textureHeight = MIN_TEXTURE_DIMENSION
-
-    constructor(
-        context: Context,
-        attrs: AttributeSet?,
-        @AttrRes defStyleAttr: Int
-    ) : this(context, attrs, defStyleAttr, 0)
 
     constructor(
         context: Context,
