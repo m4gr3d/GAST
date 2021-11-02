@@ -4,6 +4,12 @@ ext.versions = [
     minSdk             : 18,
     targetSdk          : 30,
     buildTools         : '30.0.3',
-    kotlinVersion      : '1.5.10',
-    ndkVersion         : "21.4.7075529"
+    kotlinVersion      : '1.5.20',
+    ndkVersion         : "21.4.7075529",
+    javaVersion        : JavaVersion.VERSION_1_8,
+    kotlinJvmTarget    : '1.8',
+    coreVersionCode    : 2603,
+    coreVersionName    : '0.26.3',
+    pluginsVersionCode : 500,
+    pluginsVersionName : '0.5.0',
 ]

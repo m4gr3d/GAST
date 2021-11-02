@@ -26,12 +26,12 @@ android {
     flavorDimensions "features"
     productFlavors {
         core {
-            versionCode 2602
-            versionName '0.26.2'
+            versionCode versions.coreVersionCode
+            versionName versions.coreVersionName
         }
         plugins {
-            versionCode 500
-            versionName "0.5.0"
+            versionCode versions.pluginsVersionCode
+            versionName versions.pluginsVersionName
         }
     }
 
@@ -42,11 +42,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = versions.kotlinJvmTarget
     }
 }
 
@@ -58,5 +58,5 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     // Dependencies for the `plugins` flavor
-    pluginsImplementation("com.google.android.exoplayer:exoplayer:2.14.1")
+    pluginsImplementation("com.google.android.exoplayer:exoplayer:2.15.1")
 }
