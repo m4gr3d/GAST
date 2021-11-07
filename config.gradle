@@ -9,8 +9,8 @@ ext.versions = [
     javaVersion        : JavaVersion.VERSION_1_8,
     kotlinJvmTarget    : '1.8',
     multidex_version   : "2.0.1",
-    coreVersionCode    : 2603,
-    coreVersionName    : '0.26.3',
-    pluginsVersionCode : 500,
-    pluginsVersionName : '0.5.0',
+    coreVersionCode    : 2700,
+    coreVersionName    : '0.27.0',
+    pluginsVersionCode : 600,
+    pluginsVersionName : '0.6.0',
 ]
