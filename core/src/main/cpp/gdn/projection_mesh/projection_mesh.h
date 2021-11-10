@@ -3,7 +3,6 @@
 
 #include <core/Ref.hpp>
 #include <core/Vector2.hpp>
-#include <core/Vector3.hpp>
 #include <gen/CollisionShape.hpp>
 #include <gen/ExternalTexture.hpp>
 #include <gen/MeshInstance.hpp>
@@ -24,8 +23,6 @@ const char *kGastTextureParamName = "gast_texture";
 const char *kGastEnableBillBoardParamName = "enable_billboard";
 const char *kGastGradientHeightRatioParamName = "gradient_height_ratio";
 const char *kGastNodeAlphaParamName = "node_alpha";
-const char *kCameraPositionParamName = "camera_position";
-const char *kCameraXaxisParamName = "camera_xaxis";
 const int kDefaultSurfaceIndex = 0;
 const Vector2 kInvalidCoordinate = Vector2(-1, -1);
 const bool kDefaultCollidable = true;
@@ -177,8 +174,6 @@ public:
     void update_collision_shapes() const;
 
     virtual void update_properties(ProjectionMesh *projection_mesh);
-
-    void set_camera_uniforms(Vector3 camera_position, Vector3 camera_xaxis) const;
 
 protected:
     struct ProjectionMeshData {

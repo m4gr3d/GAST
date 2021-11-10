@@ -24,8 +24,6 @@ uniform mat4 right_eye_sampling_transform;
 uniform bool enable_billboard;
 uniform float gradient_height_ratio;
 uniform float node_alpha = 1.0;
-uniform vec3 camera_position;
-uniform vec3 camera_xaxis;
 
 // Specifies which view index this shader should apply:
 // -1 for both
@@ -40,16 +38,8 @@ void vertex() {
 }
 
 void fragment() {
-    // Find world camera position (different for each eye)
-    vec3 world_camera = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-    // Find projection position
-    vec3 world_projection = camera_position;
-    // Find difference between projection and camera on X-Axis
-    vec3 diff = world_camera - world_projection;
-    float diff_dot = dot(camera_xaxis, diff);
-
     vec2 new_uv = UV;
-    if(diff_dot > 0.0f) {
+    if (VIEW_INDEX == VIEW_RIGHT) {
         // Right Eye
         if (shader_view_index == 0) {
             // Discarding since this shader should only render for the left (0) view index.
