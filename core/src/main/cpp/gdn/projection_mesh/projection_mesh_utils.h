@@ -24,6 +24,8 @@ uniform mat4 right_eye_sampling_transform;
 uniform bool enable_billboard;
 uniform float gradient_height_ratio;
 uniform float node_alpha = 1.0;
+// Used to simulate a scrim on the gast texture by lowering the brightness value
+uniform float scrim_brightness = 1.0;
 
 // Specifies which view index this shader should apply:
 // -1 for both
@@ -70,7 +72,7 @@ void fragment() {
     // - When transparency is off, it's set to `target_alpha`, turning into a no-op
     // - When transparency is on, it's set to `ALPHA`
 	$alpha_variable = target_alpha;
-	ALBEDO = texture_color.rgb * target_alpha;
+	ALBEDO = texture_color.rgb * scrim_brightness * target_alpha;
 }
 )GAST_SHADER";
 
