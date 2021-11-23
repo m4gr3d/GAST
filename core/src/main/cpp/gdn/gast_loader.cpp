@@ -22,6 +22,7 @@ void GastLoader::_register_methods() {
     register_method("shutdown", &GastLoader::shutdown);
     register_method("on_physics_process", &GastLoader::on_physics_process);
     register_method("get_external_texture", &GastLoader::get_external_texture);
+    register_method("get_shader_materials", &GastLoader::get_shader_materials);
 
     // Register signals
     Dictionary common_event_args;
@@ -59,6 +60,16 @@ Ref<ExternalTexture> GastLoader::get_external_texture(const String gast_node_pat
         return nullptr;
     }
     return gast_node->get_external_texture();
+}
+
+Array GastLoader::get_shader_materials(const String gast_node_path) {
+    GastNode* gast_node = GastManager::get_singleton_instance()->get_gast_node(gast_node_path);
+    if (!gast_node) {
+        Array result;
+        return result;
+    }
+
+    return gast_node->get_shader_materials();
 }
 
 void

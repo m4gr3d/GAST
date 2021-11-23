@@ -1,6 +1,7 @@
 #ifndef GAST_NODE_H
 #define GAST_NODE_H
 
+#include <core/Array.hpp>
 #include <core/Godot.hpp>
 #include <core/Ref.hpp>
 #include <core/Vector2.hpp>
@@ -59,6 +60,8 @@ public:
     void reset();
 
     Ref<ExternalTexture> get_external_texture();
+
+    Array get_shader_materials();
 
     int get_external_texture_id();
 

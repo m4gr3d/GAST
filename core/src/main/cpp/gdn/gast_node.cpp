@@ -145,6 +145,14 @@ Ref<ExternalTexture> GastNode::get_external_texture() {
     return external_texture;
 }
 
+Array GastNode::get_shader_materials() {
+    if (!projection_mesh) {
+        Array result;
+        return result;
+    }
+    return projection_mesh->get_shader_materials();
+}
+
 void GastNode::_input_event(const godot::Object *camera,
                             const godot::Ref<godot::InputEvent> event,
                             const godot::Vector3 click_position,
