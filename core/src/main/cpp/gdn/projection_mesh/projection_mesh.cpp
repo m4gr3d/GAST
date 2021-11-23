@@ -125,6 +125,25 @@ MeshInstance *ProjectionMesh::get_mesh_instance(int index) const {
     return mesh_data->mesh_instance;
 }
 
+Array ProjectionMesh::get_shader_materials() const {
+    Array shader_materials;
+    int mesh_count = get_mesh_count();
+    if (mesh_count <= 0) {
+        return shader_materials;
+    }
+
+    for (int i = 0; i < mesh_count; i++) {
+        ProjectionMeshData *mesh_data = projection_mesh_data_list[i];
+
+        Ref<ShaderMaterial> shader_material = mesh_data->shader_material;
+        if (shader_material.is_valid() && shader_material->get_shader().is_valid()) {
+            shader_materials.push_back(shader_material);
+        }
+    }
+
+    return shader_materials;
+}
+
 void ProjectionMesh::set_mesh(int index, const Ref<Mesh>& mesh) const {
     if (0 > index || index >= get_mesh_count()) {
         ALOGE("Cannot set Mesh, invalid MeshInstance index: %d.", index);

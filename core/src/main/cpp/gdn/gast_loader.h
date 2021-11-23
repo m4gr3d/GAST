@@ -1,6 +1,7 @@
 #ifndef GAST_LOADER_H
 #define GAST_LOADER_H
 
+#include <core/Array.hpp>
 #include <core/Godot.hpp>
 #include <core/String.hpp>
 #include <core/Ref.hpp>
@@ -36,6 +37,8 @@ public:
     void on_physics_process();
 
     Ref<ExternalTexture> get_external_texture(const String gast_node_path);
+
+    Array get_shader_materials(const String gast_node_path);
 
     void emitHoverEvent(const String &node_path, const String &event_origin_id, float x_percent,
                         float y_percent);

@@ -1,6 +1,7 @@
 #ifndef PROJECTION_MESH_H
 #define PROJECTION_MESH_H
 
+#include <core/Array.hpp>
 #include <core/Ref.hpp>
 #include <core/Vector2.hpp>
 #include <gen/CollisionShape.hpp>
@@ -170,6 +171,8 @@ public:
     CollisionShape * get_collision_shape(int index) const;
 
     MeshInstance *get_mesh_instance(int index) const;
+
+    Array get_shader_materials() const;
 
     void update_collision_shapes() const;
 

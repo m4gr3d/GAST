@@ -79,15 +79,26 @@ func _setup_second_screen():
 	print("Setting shader params.")
 	shader_material.set_shader_param("external_texture", external_texture)
 
+func _update_shader_material_scrim_brightness(brightness : float):
+	print("Updating shader material scrim brightness to " + str(brightness))
+	var shader_materials : Array = gast.get_shader_materials("video-player")
+	if (shader_materials == null or shader_materials.empty()):
+		print("Unable to retrieve shader materials")
+		return
+
+	for shader_material in shader_materials:
+		shader_material.set_shader_param("scrim_brightness", brightness)
 
 func _check_inputs():
 	if Input.is_action_pressed("ui_cancel"):
 		if gast_video_plugin.isPlaying():
 			print("Pausing playback")
 			gast_video_plugin.pause()
+			_update_shader_material_scrim_brightness(0.5)
 		else:
 			print("Resuming playback")
 			gast_video_plugin.play()
+			_update_shader_material_scrim_brightness(1.0)
 
 
 func _on_gast_release_input_event(node_path: String, event_origin_id: String, x_percent: float, y_percent: float):
