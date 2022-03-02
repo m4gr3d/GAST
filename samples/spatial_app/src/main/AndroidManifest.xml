@@ -11,11 +11,11 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="density|keyboard|keyboardHidden|navigation|screenLayout|screenSize|uiMode|smallestScreenSize|layoutDirection|locale"
+            android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:resizeableActivity="false"
-            android:screenOrientation="fullSensor"
+            android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
 
             <!-- Enables Oculus mobile overlays. -->

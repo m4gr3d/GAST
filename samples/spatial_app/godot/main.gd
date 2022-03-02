@@ -8,10 +8,20 @@ var start_passthrough = false
 export (NodePath) var viewport = null
 
 func _ready():
-	#_initialise_openxr_interface()
+	if (_is_xr_enabled()):
+		_initialise_openxr_interface()
+	else:
+		print("Skipping OpenXR initialization")
 	gast = gast_loader.new()
 	gast.initialize()
 
+func _is_xr_enabled():
+	var appPlugin = Engine.get_singleton("GastAppPlugin")
+	if (appPlugin):
+		return appPlugin.isXREnabled()
+	else:
+		print("App plugin is not available")
+	return true
 
 func _process(delta_t):
 	_check_and_perform_runtime_config()

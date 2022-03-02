@@ -30,10 +30,10 @@ class EditTextFragment : Godot() {
         // Any view we want to render in VR needs to be added as a child to the containerView in
         // order to be hooked to the view lifecycle events.
         layoutInflater.inflate(R.layout.edittext_layout, containerView)
-        editTextWrapperView = containerView.findViewById(R.id.edittext_wrapper_view)
+        editTextWrapperView = containerView?.findViewById(R.id.edittext_wrapper_view)
 
         layoutInflater.inflate(R.layout.message_layout, containerView)
-        messageWrapperView = containerView.findViewById(R.id.message_wrapper_view)
+        messageWrapperView = containerView?.findViewById(R.id.message_wrapper_view)
     }
 
     // Signals that the Godot engine render loop has started. This is invoked on the render thread.
