@@ -13,4 +13,6 @@ ext.versions = [
     coreVersionName    : '0.29.0', // Also update 'core/src/main/AndroidManifest.xml#versionName' value
     pluginsVersionCode : 600,
     pluginsVersionName : '0.6.0',
+    xrappVersionCode   : 100,
+    xrappVersionName   : '0.1.0',
 ]

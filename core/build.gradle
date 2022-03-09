@@ -33,6 +33,10 @@ android {
             versionCode versions.pluginsVersionCode
             versionName versions.pluginsVersionName
         }
+        xrapp {
+            versionCode versions.xrappVersionCode
+            versionName versions.xrappVersionName
+        }
     }
 
     libraryVariants.all { variant ->
@@ -59,4 +63,7 @@ dependencies {
 
     // Dependencies for the `plugins` flavor
     pluginsImplementation("com.google.android.exoplayer:exoplayer:2.15.1")
+
+    // Dependencies for the 'xrapp' flavor
+    xrappCompileOnly(fileTree(dir: "../libs", include: ["godotopenxr*.aar"]))
 }
