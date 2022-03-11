@@ -8,4 +8,6 @@ class MainActivity : GastActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
+
+    override fun isXREnabled() = true
 }
