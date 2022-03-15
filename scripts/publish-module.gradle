@@ -1,0 +1,98 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+group = ossrhGroupId
+version = versions.versionName
+
+afterEvaluate {
+    publishing {
+        publications {
+            coreRelease(MavenPublication) {
+                from components.coreRelease
+
+                // The coordinates of the library, being set from variables that
+                // we'll set up later
+                groupId ossrhGroupId
+                artifactId CORE_PUBLISH_ARTIFACT_ID
+                version versions.coreVersionName
+
+                // Mostly self-explanatory metadata
+                pom {
+                    name = CORE_PUBLISH_ARTIFACT_ID
+                    description = 'Godot Android Streaming Texture (GAST) Library'
+                    url = 'https://github.com/m4gr3d/GAST#readme'
+                    licenses {
+                        license {
+                            name = 'MIT License'
+                            url = 'https://github.com/m4gr3d/GAST/blob/master/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'm4gr3d'
+                            name = 'Fredia Huya-Kouadio'
+                            email = 'fhuyakou@gmail.com'
+                        }
+                        // Add all other devs here...
+                    }
+
+                    // Version control info - if you're using GitHub, follow the
+                    // format as seen here
+                    scm {
+                        connection = 'scm:git:github.com/m4gr3d/GAST.git'
+                        developerConnection = 'scm:git:ssh://github.com/m4gr3d/GAST.git'
+                        url = 'https://github.com/m4gr3d/GAST/tree/master'
+                    }
+                }
+            }
+
+            xrappRelease(MavenPublication) {
+                from components.xrappRelease
+
+                // The coordinates of the library, being set from variables that
+                // we'll set up later
+                groupId ossrhGroupId
+                artifactId XRAPP_PUBLISH_ARTIFACT_ID
+                version versions.xrappVersionName
+
+                // Mostly self-explanatory metadata
+                pom {
+                    name = XRAPP_PUBLISH_ARTIFACT_ID
+                    description = 'GAST XRApp Library'
+                    url = 'https://github.com/m4gr3d/GAST#readme'
+                    licenses {
+                        license {
+                            name = 'MIT License'
+                            url = 'https://github.com/m4gr3d/GAST/blob/master/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'm4gr3d'
+                            name = 'Fredia Huya-Kouadio'
+                            email = 'fhuyakou@gmail.com'
+                        }
+                        // Add all other devs here...
+                    }
+
+                    // Version control info - if you're using GitHub, follow the
+                    // format as seen here
+                    scm {
+                        connection = 'scm:git:github.com/m4gr3d/GAST.git'
+                        developerConnection = 'scm:git:ssh://github.com/m4gr3d/GAST.git'
+                        url = 'https://github.com/m4gr3d/GAST/tree/master'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(
+        rootProject.ext["signing.keyId"],
+        rootProject.ext["signing.key"],
+        rootProject.ext["signing.password"],
+    )
+    sign publishing.publications
+}

@@ -46,7 +46,6 @@ void fragment() {
         if (shader_view_index == 0) {
             // Discarding since this shader should only render for the left (0) view index.
             discard;
-            return;
         }
         new_uv = (right_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
     } else {
@@ -54,7 +53,6 @@ void fragment() {
         if (shader_view_index == 1) {
             // Discarding since this shader should only render for the right (1) view index.
             discard;
-            return;
         }
         new_uv = (left_eye_sampling_transform * vec4(UV.x, UV.y, 0.0, 1.0)).xy;
     }
@@ -62,7 +60,7 @@ void fragment() {
 	vec4 texture_color = texture(gast_texture, new_uv);
 	float target_alpha = COLOR.a * texture_color.a * node_alpha;
 
-    // $gradient_height_ratio_threashold is updated with the threshold value.
+    // $gradient_height_ratio_threshold is updated with the threshold value.
 	if (gradient_height_ratio >= $gradient_height_ratio_threshold) {
 		float gradient_mask = min((1.0 - UV.y) / gradient_height_ratio, 1.0);
 		target_alpha = target_alpha * gradient_mask;
