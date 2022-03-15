@@ -19,6 +19,18 @@ android {
         missingDimensionStrategy 'features', 'xrapp'
     }
 
+    flavorDimensions "xrMode"
+    productFlavors {
+        ovr {
+            applicationIdSuffix ".ovr"
+            versionNameSuffix "-ovr"
+        }
+        pancake {
+            applicationIdSuffix ".pancake"
+            versionNameSuffix "-pancake"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
