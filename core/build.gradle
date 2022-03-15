@@ -1,6 +1,8 @@
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
+apply from: "../scripts/publish-module.gradle"
+
 android {
     buildToolsVersion = versions.buildTools
     compileSdkVersion versions.compileSdk
@@ -33,6 +35,10 @@ android {
             versionCode versions.pluginsVersionCode
             versionName versions.pluginsVersionName
         }
+        xrapp {
+            versionCode versions.xrappVersionCode
+            versionName versions.xrappVersionName
+        }
     }
 
     libraryVariants.all { variant ->
@@ -48,15 +54,31 @@ android {
     kotlinOptions {
         jvmTarget = versions.kotlinJvmTarget
     }
+
+    // TODO: Enable when issues with AGP 7.1+ are resolved (https://github.com/GodotVR/godot_openxr/issues/187).
+//    publishing {
+//        singleVariant("coreRelease") {
+//            withSourcesJar()
+//            withJavadocJar()
+//        }
+
+    //        singleVariant("xrappRelease") {
+//            withSourcesJar()
+//            withJavadocJar()
+//        }
+//    }
 }
 
 dependencies {
     // Common dependencies
-    compileOnly(fileTree(dir: "../libs", include: ["godot-lib*.aar"]))
+    implementation "io.github.m4gr3d:godot:${versions.godotVersion}"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlinVersion}"
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     // Dependencies for the `plugins` flavor
     pluginsImplementation("com.google.android.exoplayer:exoplayer:2.15.1")
+
+    // Dependencies for the 'xrapp' flavor
+    xrappImplementation "io.github.m4gr3d:godot-openxr:${versions.godotOpenXRVersion}"
 }

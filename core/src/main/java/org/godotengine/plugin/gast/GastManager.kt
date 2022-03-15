@@ -6,6 +6,7 @@ import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import org.godotengine.godot.Godot
@@ -50,7 +51,7 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
     /**
      * Root parent for all GAST views.
      */
-    val rootView = FrameLayout(activity!!)
+    var rootView : FrameLayout? = null
 
     companion object {
         private val TAG = GastManager::class.java.simpleName
@@ -64,12 +65,19 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
         updateMonitoredInputActions()
     }
 
-    override fun onMainCreate(activity: Activity) = rootView
+    override fun onMainCreate(activity: Activity): View? {
+        rootView = FrameLayout(activity)
+        return rootView
+    }
 
     override fun onMainDestroy() {
         Log.d(TAG, "Shutting down $pluginName manager")
+
+        // Ensure the 'rootView' is properly reset
+        rootView = null
+
         runOnRenderThread {
-            initialized.set(false);
+            initialized.set(false)
             shutdown()
         }
     }
