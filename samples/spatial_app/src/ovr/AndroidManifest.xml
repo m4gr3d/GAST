@@ -1,10 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.godotengine.plugin.gast.samples.spatialapp">
 
-    <uses-feature
-        android:glEsVersion="0x00020000"
-        android:required="true" />
-
     <application
         android:name="androidx.multidex.MultiDexApplication"
         android:icon="@mipmap/ic_launcher"
@@ -28,9 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <meta-data
-                android:name="com.oculus.vr.focusaware"
-                android:value="true" />
         </activity>
     </application>
 

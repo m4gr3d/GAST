@@ -3,8 +3,10 @@ package org.godotengine.plugin.gast.xrapp
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout.LayoutParams
 import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
@@ -17,6 +19,7 @@ import org.godotengine.godot.xr.XRMode
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
+import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
 import java.util.*
 import kotlin.system.exitProcess
@@ -118,6 +121,20 @@ abstract class GastActivity : FragmentActivity(), GodotHost {
             (view.parent as ViewGroup).removeView(view)
         }
 
+        // Setup the layout params for the container view
+        val viewLayoutParams = view.layoutParams
+        val containerLayoutParams =
+            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER)
+        if (viewLayoutParams == null || viewLayoutParams.width == LayoutParams.MATCH_PARENT) {
+            containerLayoutParams.width =
+                resources.getDimensionPixelSize(R.dimen.default_container_width)
+        }
+
+        if (viewLayoutParams == null || viewLayoutParams.height == LayoutParams.MATCH_PARENT) {
+            containerLayoutParams.height =
+                resources.getDimensionPixelSize(R.dimen.default_container_height)
+        }
+
         val containerView = getGastContainerView()
 
         if (gastFrameLayout != null) {
@@ -134,7 +151,7 @@ abstract class GastActivity : FragmentActivity(), GodotHost {
                 addView(view)
             }
         }
-        containerView?.addView(gastFrameLayout, 0)
+        containerView?.addView(gastFrameLayout, 0, containerLayoutParams)
     }
 
     @CallSuper
@@ -149,6 +166,10 @@ abstract class GastActivity : FragmentActivity(), GodotHost {
         super.onGodotMainLoopStarted()
 
         val gastNode = GastNode(getGastManager(), "GastActivityContainer")
+        val projectionMesh = gastNode.getProjectionMesh()
+        if (projectionMesh is RectangularProjectionMesh) {
+            projectionMesh.setCurved(false)
+        }
 
         runOnUiThread {
             gastFrameLayout?.initialize(getGastManager(), gastNode)

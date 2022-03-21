@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=2]
+
+[sub_resource type="SpatialMaterial" id=5]
+flags_unshaded = true
+params_cull_mode = 1
+albedo_color = Color( 0, 0, 0, 1 )
+
+[sub_resource type="SphereMesh" id=6]
+material = SubResource( 5 )
+radius = 0.02
+height = 0.04
+
+[sub_resource type="SpatialMaterial" id=7]
+flags_unshaded = true
+
+[sub_resource type="SphereMesh" id=8]
+material = SubResource( 7 )
+radius = 0.015
+height = 0.03
+
+[node name="RayReticle" type="MeshInstance"]
+mesh = SubResource( 6 )
+material/0 = null
+
+[node name="Center" type="MeshInstance" parent="."]
+mesh = SubResource( 8 )
+material/0 = null

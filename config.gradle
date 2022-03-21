@@ -10,14 +10,14 @@ ext {
         javaVersion        : JavaVersion.VERSION_1_8,
         kotlinJvmTarget    : '1.8',
         multidex_version   : "2.0.1",
-        coreVersionCode    : 3000, // Also update 'core/src/main/AndroidManifest.xml#versionCode' value
-        coreVersionName    : '0.30.0', // Also update 'core/src/main/AndroidManifest.xml#versionName' value
+        coreVersionCode    : 3001, // Also update 'core/src/main/AndroidManifest.xml#versionCode' value
+        coreVersionName    : '0.30.1', // Also update 'core/src/main/AndroidManifest.xml#versionName' value
         pluginsVersionCode : 600,
         pluginsVersionName : '0.6.0',
-        xrappVersionCode   : 100,
-        xrappVersionName   : '0.1.0',
-        godotVersion       : '3.5.0.beta',
-        godotOpenXRVersion : '1.3.0.beta',
+        xrappVersionCode   : 101,
+        xrappVersionName   : '0.1.1',
+        godotVersion       : '3.4.3.stable',
+        godotOpenXRVersion : '1.3.0.beta3',
     ]
 
     PUBLISH_ARTIFACT_ID = 'gast'

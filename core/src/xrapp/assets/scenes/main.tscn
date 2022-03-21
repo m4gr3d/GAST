@@ -1,0 +1,113 @@
+[gd_scene load_steps=16 format=2]
+
+[ext_resource path="res://scripts/main.gd" type="Script" id=1]
+[ext_resource path="res://scenes/ray_reticle.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scripts/ray_cast_with_reticle.gd" type="Script" id=3]
+[ext_resource path="res://scenes/left_quest2_controller.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/right_quest2_contoller.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scripts/controller.gd" type="Script" id=6]
+
+[sub_resource type="SpatialMaterial" id=16]
+flags_unshaded = true
+albedo_color = Color( 0.952941, 0.917647, 0.87451, 1 )
+
+[sub_resource type="CylinderMesh" id=13]
+material = SubResource( 16 )
+top_radius = 0.0
+bottom_radius = 0.01
+height = 0.04
+
+[sub_resource type="SpatialMaterial" id=17]
+flags_unshaded = true
+albedo_color = Color( 0.952941, 0.917647, 0.87451, 1 )
+
+[sub_resource type="CylinderMesh" id=14]
+material = SubResource( 17 )
+top_radius = 0.0
+bottom_radius = 0.01
+height = 0.04
+
+[sub_resource type="CylinderMesh" id=7]
+top_radius = 6.0
+bottom_radius = 6.0
+height = 0.001
+
+[sub_resource type="Gradient" id=11]
+offsets = PoolRealArray( 0, 0.594156 )
+
+[sub_resource type="GradientTexture" id=12]
+gradient = SubResource( 11 )
+
+[sub_resource type="SpatialMaterial" id=10]
+flags_unshaded = true
+flags_vertex_lighting = true
+flags_disable_ambient_light = true
+albedo_texture = SubResource( 12 )
+
+[sub_resource type="ConvexPolygonShape" id=15]
+points = PoolVector3Array( 1.33997, -0.0309569, 5.90768, -0.609185, -0.0309569, -6.03046, -1.0342, -0.0309569, -5.96907, -5.96907, -0.0309569, 1.0342, 5.96907, -0.0309569, -1.0342, -3.16752, -0.0309569, 5.17689, -4.93369, -0.0309569, -3.53115, 4.93369, -0.0309569, 3.53115, 3.77671, -0.0309569, -4.74952, -4.93369, -0.0309569, 3.53115, 5.90768, -0.0309569, 1.33879, -5.90767, -0.0309569, -1.33879, -3.16752, -0.0309569, -5.17689, 1.82637, -0.0309569, -5.78607, -1.0342, -0.0309569, 5.96907, 5.35988, -0.0309569, -2.86175, 3.16752, -0.0309569, 5.17689, -5.60308, -0.0309569, 2.31396, -4.14151, -0.0309569, -4.4461, -4.14151, -0.0309569, 4.4461, 4.14151, -0.0309569, 4.44492, 0.609185, -0.0309569, -6.03046, 4.7507, -0.0309569, -3.77553, 5.42009, -0.0309569, 2.74015, -5.35988, -0.0309569, -2.86175, -2.00936, -0.0309569, -5.72586, -2.00936, -0.0309569, 5.72586, 0.609185, -0.0309569, 6.03046, -6.03046, -0.0309569, -0.608004, 6.03046, -0.0309569, 0.608004, 2.74015, -0.0309569, -5.42127, 2.00937, -0.0309569, 5.72586, 5.78607, -0.0309569, -1.82637, -5.72468, -0.0309569, -2.00937, -0.609185, -0.0309569, 6.03046, -6.03046, -0.0309569, 0.608004, 6.03046, -0.0309569, -0.608004, 5.72468, -0.0309569, 2.00937, -5.42009, -0.0309569, 2.74015, 4.38589, -0.0309569, -4.20172, -5.78607, -0.0309569, 1.82637, -2.74133, -0.0309569, -5.42009, 2.86175, -0.0309569, 5.35988, -2.86293, -0.0309569, 5.3587, -4.4461, -0.0309569, -4.14151, -4.4461, -0.0309569, 4.14151, 4.4461, -0.0309569, 4.14033, 3.16752, -0.0309569, -5.17689, 3.53233, -0.0309569, 4.93369, -3.77671, -0.0309569, 4.7507, -3.77671, -0.0309569, -4.7507, 1.03538, -0.0309569, -5.96907, 5.60308, -0.0309569, -2.31396, 5.17689, -0.0309569, -3.16634, 5.17689, -0.0309569, 3.16634, -1.58317, -0.0309569, -5.84747, -1.58317, -0.0309569, 5.84747, -5.17689, -0.0309569, 3.16634, 4.14151, -0.0309569, -4.44492, 2.00937, -0.0309569, -5.72586, 3.53233, -0.0309569, -4.93369, 4.7507, -0.0309569, 3.77553, -5.78607, -0.0309569, -1.82637 )
+
+[node name="Main" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="ARVROrigin" type="ARVROrigin" parent="."]
+
+[node name="ARVRCamera" type="ARVRCamera" parent="ARVROrigin"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.32891, 0 )
+
+[node name="LeftTouchController" type="ARVRController" parent="ARVROrigin"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1, -0.4 )
+visible = false
+script = ExtResource( 6 )
+
+[node name="touch_controller" parent="ARVROrigin/LeftTouchController" instance=ExtResource( 4 )]
+transform = Transform( -1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0 )
+
+[node name="LeftRayCast" type="RayCast" parent="ARVROrigin/LeftTouchController" groups=["gast_ray_caster"]]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00425386, 0, -0.0690089 )
+enabled = true
+cast_to = Vector3( 0, 0, -5 )
+script = ExtResource( 3 )
+
+[node name="RayReticle" parent="ARVROrigin/LeftTouchController/LeftRayCast" instance=ExtResource( 2 )]
+
+[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/LeftTouchController/LeftRayCast"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
+mesh = SubResource( 13 )
+skeleton = NodePath("../..")
+material/0 = null
+
+[node name="RightTouchController" type="ARVRController" parent="ARVROrigin"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1, -0.4 )
+visible = false
+controller_id = 2
+script = ExtResource( 6 )
+
+[node name="touch_contoller" parent="ARVROrigin/RightTouchController" instance=ExtResource( 5 )]
+transform = Transform( -1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0 )
+
+[node name="RightRayCast" type="RayCast" parent="ARVROrigin/RightTouchController" groups=["gast_ray_caster"]]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00614285, 0, -0.069 )
+enabled = true
+cast_to = Vector3( 0, 0, -5 )
+script = ExtResource( 3 )
+
+[node name="RayReticle" parent="ARVROrigin/RightTouchController/RightRayCast" instance=ExtResource( 2 )]
+
+[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/RightTouchController/RightRayCast"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
+mesh = SubResource( 14 )
+skeleton = NodePath("../..")
+material/0 = null
+
+[node name="GastActivityContainer" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -3 )
+
+[node name="Floor" type="MeshInstance" parent="."]
+mesh = SubResource( 7 )
+material/0 = SubResource( 10 )
+
+[node name="StaticBody" type="StaticBody" parent="Floor"]
+
+[node name="CollisionShape" type="CollisionShape" parent="Floor/StaticBody"]
+shape = SubResource( 15 )

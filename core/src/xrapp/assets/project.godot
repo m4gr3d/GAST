@@ -15,7 +15,7 @@ _global_script_class_icons={
 [application]
 
 config/name="XRApp Framework Environment"
-run/main_scene="res://main.tscn"
+run/main_scene="res://scenes/main.tscn"
 config/use_hidden_project_data_directory=false
 
 [display]
