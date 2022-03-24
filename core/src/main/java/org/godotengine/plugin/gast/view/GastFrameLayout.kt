@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.AttrRes
-import androidx.annotation.StyleRes
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
@@ -58,8 +57,7 @@ class GastFrameLayout(
 
         fun fromGodotDimensionsToPixels(context: Context, godotDimensions: Float): Float {
             val dimensionInDp = godotDimensions / DP_RATIO
-            val dimensionInPixels = dimensionInDp * context.resources.displayMetrics.density
-            return dimensionInPixels
+            return dimensionInDp * context.resources.displayMetrics.density
         }
     }
 
@@ -115,6 +113,7 @@ class GastFrameLayout(
 
     override fun draw(canvas: Canvas) {
         updateTextureSizeIfNeeded()
+        updateGastNodeProperties()
         val surfaceCanvas = gastNode?.lockSurfaceCanvas() ?: canvas
         super.draw(surfaceCanvas)
         gastNode?.unlockSurfaceCanvas()
@@ -137,6 +136,26 @@ class GastFrameLayout(
         gastManager?.runOnRenderThread {
             gastNode?.updateVisibility(false, visibility == View.VISIBLE)
         }
+    }
+
+    /**
+     * Update the spatial properties (scale, translation, rotation) of the backing gast node.
+     */
+    private fun updateGastNodeProperties() {
+        val node = gastNode?: return
+
+        gastManager?.runOnRenderThread {
+            // Update the node's translation
+            node.updateLocalTranslation(x, y, z)
+
+            // Update the node's scale
+            node.updateLocalScale(scaleX, scaleY, 1f)
+
+            // Update the node's rotation
+            node.updateLocalRotation(rotationX, rotationY, 0f)
+        }
+
+
     }
 }
 
