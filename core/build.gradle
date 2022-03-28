@@ -38,6 +38,8 @@ android {
         xrapp {
             versionCode versions.xrappVersionCode
             versionName versions.xrappVersionName
+
+            manifestPlaceholders = [gastXRAppVersion: versionName]
         }
     }
 
