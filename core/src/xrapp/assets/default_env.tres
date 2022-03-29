@@ -11,3 +11,4 @@ texture_size = 1
 [resource]
 background_mode = 2
 background_sky = SubResource( 1 )
+background_sky_orientation = Basis( 1, 0, 0, 0, 1.001, 0, 0, 0, 1 )
