@@ -1,13 +1,17 @@
 extends Spatial
 
+# These resources are only available at runtime.
 var openxr_config = load("res://addons/godot-openxr/config/OpenXRConfig.gdns").new()
 var gast_loader = load("res://godot/plugin/v1/gast/GastLoader.gdns")
+
 var gast = null
 
 var interface : ARVRInterface
 export (NodePath) var viewport = null
 
 onready var floor_node = $Floor
+onready var left_hand_nodes = $ARVROrigin/LeftHandNodes
+onready var right_hand_nodes = $ARVROrigin/RightHandNodes
 
 func _ready():
 	if (_is_xr_enabled()):
@@ -49,28 +53,38 @@ func _initialise_openxr_interface() -> bool:
 		# Change our viewport so it is tied to our ARVR interface and renders to our HMD
 		vp.arvr = true
 
-		# Our interface will tell us whether we should keep our render buffer in linear color space
-		vp.keep_3d_linear = openxr_config.keep_3d_linear()
-
-		# increase our physics engine update speed
-		var refresh_rate = openxr_config.get_refresh_rate()
-		if refresh_rate == 0:
-			# Only Facebook Reality Labs supports this at this time
-			print("No refresh rate given by XR runtime")
-
-			# Use something sufficiently high
-			Engine.iterations_per_second = 144
-		else:
-			print("HMD refresh rate is set to " + str(refresh_rate))
-
-			# Match our physics to our HMD
-			Engine.iterations_per_second = refresh_rate
+		_initialize_openxr_configuration()
+		_configure_hands()
 
 		emit_signal("initialised")
 		return true
 	else:
 		emit_signal("failed_initialisation")
 		return false
+
+func _initialize_openxr_configuration():
+	var vp : Viewport = _get_xr_viewport()
+	
+	# Our interface will tell us whether we should keep our render buffer in linear color space
+	vp.keep_3d_linear = openxr_config.keep_3d_linear()
+
+	# increase our physics engine update speed
+	var refresh_rate = openxr_config.get_refresh_rate()
+	if refresh_rate == 0:
+		# Only Facebook Reality Labs supports this at this time
+		print("No refresh rate given by XR runtime")
+
+		# Use something sufficiently high
+		Engine.iterations_per_second = 144
+	else:
+		print("HMD refresh rate is set to " + str(refresh_rate))
+
+		# Match our physics to our HMD
+		Engine.iterations_per_second = refresh_rate
+
+func _configure_hands():
+	left_hand_nodes.set_hand(0)
+	right_hand_nodes.set_hand(1)
 
 func _get_xr_viewport() -> Viewport:
 	if viewport:
