@@ -10,7 +10,7 @@ import android.widget.FrameLayout.LayoutParams
 import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotHost
 import org.godotengine.godot.plugin.GodotPlugin
@@ -29,7 +29,7 @@ import kotlin.system.exitProcess
  *
  * Host and provide Gast related functionality for the driving app.
  */
-abstract class GastActivity : FragmentActivity(), GodotHost {
+abstract class GastActivity : AppCompatActivity(), GodotHost {
 
     companion object {
         private val TAG = GastActivity::class.java.simpleName
@@ -222,13 +222,19 @@ abstract class GastActivity : FragmentActivity(), GodotHost {
 
     protected open fun isXREnabled() = false
 
-    protected fun startPassthrough() {
+    /**
+     * Enable passthrough
+     */
+    fun startPassthrough() {
         if (enableXR) {
             appPlugin.startPassthrough(godotFragment)
         }
     }
 
-    protected fun stopPassthrough() {
+    /**
+     * Disable passthrough
+     */
+    fun stopPassthrough() {
         if (enableXR) {
             appPlugin.stopPassthrough(godotFragment)
         }

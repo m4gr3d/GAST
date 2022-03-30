@@ -17,7 +17,7 @@ ext {
         xrappVersionCode   : 200,
         xrappVersionName   : '0.2.0',
         godotVersion       : '3.4.4.stable',
-        godotOpenXRVersion : '1.3.0.beta4',
+        godotOpenXRVersion : '1.3.0.beta5',
     ]
 
     PUBLISH_ARTIFACT_ID = 'gast'

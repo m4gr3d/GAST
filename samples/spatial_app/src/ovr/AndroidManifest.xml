@@ -14,7 +14,6 @@
             android:launchMode="singleTask"
             android:resizeableActivity="false"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:exported="true">
 
             <intent-filter>
