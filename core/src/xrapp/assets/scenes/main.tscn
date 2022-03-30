@@ -64,15 +64,15 @@ script = ExtResource( 6 )
 [node name="touch_controller" parent="ARVROrigin/LeftTouchController" instance=ExtResource( 4 )]
 transform = Transform( -1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0 )
 
-[node name="LeftRayCast" type="RayCast" parent="ARVROrigin/LeftTouchController" groups=["gast_ray_caster"]]
+[node name="TouchLeftRayCast" type="RayCast" parent="ARVROrigin/LeftTouchController" groups=["gast_ray_caster"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00425386, 0, -0.0690089 )
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" parent="ARVROrigin/LeftTouchController/LeftRayCast" instance=ExtResource( 2 )]
+[node name="RayReticle" parent="ARVROrigin/LeftTouchController/TouchLeftRayCast" instance=ExtResource( 2 )]
 
-[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/LeftTouchController/LeftRayCast"]
+[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/LeftTouchController/TouchLeftRayCast"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 13 )
 skeleton = NodePath("../..")
@@ -86,15 +86,15 @@ script = ExtResource( 6 )
 [node name="touch_contoller" parent="ARVROrigin/RightTouchController" instance=ExtResource( 5 )]
 transform = Transform( -1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0 )
 
-[node name="RightRayCast" type="RayCast" parent="ARVROrigin/RightTouchController" groups=["gast_ray_caster"]]
+[node name="TouchRightRayCast" type="RayCast" parent="ARVROrigin/RightTouchController" groups=["gast_ray_caster"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00614285, 0, -0.069 )
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" parent="ARVROrigin/RightTouchController/RightRayCast" instance=ExtResource( 2 )]
+[node name="RayReticle" parent="ARVROrigin/RightTouchController/TouchRightRayCast" instance=ExtResource( 2 )]
 
-[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/RightTouchController/RightRayCast"]
+[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/RightTouchController/TouchRightRayCast"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 14 )
 skeleton = NodePath("../..")
@@ -105,15 +105,15 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1, -0.4 )
 controller_id = 3
 script = ExtResource( 6 )
 
-[node name="LeftRayCast" type="RayCast" parent="ARVROrigin/LeftHand" groups=["gast_ray_caster"]]
+[node name="HandLeftRayCast" type="RayCast" parent="ARVROrigin/LeftHand" groups=["gast_ray_caster"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00425386, 0, -0.0690089 )
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" parent="ARVROrigin/LeftHand/LeftRayCast" instance=ExtResource( 2 )]
+[node name="RayReticle" parent="ARVROrigin/LeftHand/HandLeftRayCast" instance=ExtResource( 2 )]
 
-[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/LeftHand/LeftRayCast"]
+[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/LeftHand/HandLeftRayCast"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 13 )
 skeleton = NodePath("../..")
@@ -127,15 +127,15 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1, -0.4 )
 controller_id = 4
 script = ExtResource( 6 )
 
-[node name="RightRayCast" type="RayCast" parent="ARVROrigin/RightHand" groups=["gast_ray_caster"]]
+[node name="HandRightRayCast" type="RayCast" parent="ARVROrigin/RightHand" groups=["gast_ray_caster"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00614285, 0, -0.069 )
 enabled = true
 cast_to = Vector3( 0, 0, -5 )
 script = ExtResource( 3 )
 
-[node name="RayReticle" parent="ARVROrigin/RightHand/RightRayCast" instance=ExtResource( 2 )]
+[node name="RayReticle" parent="ARVROrigin/RightHand/HandRightRayCast" instance=ExtResource( 2 )]
 
-[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/RightHand/RightRayCast"]
+[node name="RayPointer" type="MeshInstance" parent="ARVROrigin/RightHand/HandRightRayCast"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 14 )
 skeleton = NodePath("../..")
