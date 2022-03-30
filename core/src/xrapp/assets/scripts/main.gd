@@ -7,6 +7,8 @@ var gast = null
 var interface : ARVRInterface
 export (NodePath) var viewport = null
 
+onready var floor_node = $Floor
+
 func _ready():
 	if (_is_xr_enabled()):
 		_initialise_openxr_interface()
@@ -81,6 +83,9 @@ func _start_passthrough():
 	# make sure our viewports background is transparent
 	_get_xr_viewport().transparent_bg = true
 
+	# Hide the floor
+	floor_node.visible = false
+	
 	# enable our passthrough
 	openxr_config.start_passthrough()
 
@@ -90,38 +95,15 @@ func _stop_passthrough():
 
 	# Disable passthrough
 	openxr_config.stop_passthrough()
+	
+	# Show the floor
+	floor_node.visible = true
 
 func _connect_plugin_signals():
 	var appPlugin = Engine.get_singleton("GastAppPlugin")
 	if (appPlugin):
 		appPlugin.connect("start_passthrough", self, "_start_passthrough")
 		appPlugin.connect("stop_passthrough", self, "_stop_passthrough")
-	
-	ARVRServer.connect("openxr_session_begun", self, "_on_openxr_session_begun")
-	ARVRServer.connect("openxr_session_ending", self, "_on_openxr_session_ending")
-	ARVRServer.connect("openxr_focused_state", self, "_on_openxr_focused_state")
-	ARVRServer.connect("openxr_visible_state", self, "_on_openxr_visible_state")
-	ARVRServer.connect("openxr_pose_recentered", self, "_on_openxr_pose_recentered")
-
-func _on_openxr_session_begun():
-	print("OpenXR session begun")
-	emit_signal("session_begun")
-
-func _on_openxr_session_ending():
-	print("OpenXR session ending")
-	emit_signal("session_ending")
-
-func _on_openxr_focused_state():
-	print("OpenXR focused state")
-	emit_signal("focused_state")
-
-func _on_openxr_visible_state():
-	print("OpenXR visible state")
-	emit_signal("visible_state")
-
-func _on_openxr_pose_recentered():
-	print("OpenXR pose recentered")
-	emit_signal("pose_recentered")
 
 # many settings should only be applied once when running; this variable
 # gets reset on application start or when it wakes up from sleep
