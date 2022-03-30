@@ -1,19 +1,34 @@
-# Godot Android Streaming Texture (GAST) Plugin
+# Godot Android Streaming Texture (GAST)
 
-This is a collection of Godot Android plugins that leverage
+The GAST library leverages
 [Godot's support for OpenGL external textures](https://github.com/godotengine/godot/pull/36342)
 to enable rendering and interaction with Android views in a Godot project's scenegraph.
 
-**Note:** The plugins are only supported on the Godot **3.2.x** branch, starting with **version 3.2.2**.
-
 ## License
 
-This project is released under the MIT license.
+The library is released under the MIT license.
+
+## Godot XRApp Framework
+
+The Godot XRApp framework leverages the GAST library to turn regular Android apps into Quest VR
+apps.
+
+- [Godot XRApp Framework](core/src/xrapp/README.md)
+
+## GAST Plugins
+
+These are Godot Android plugins that leverage the GAST library to support access and
+use of Android views within a Godot project.
+
+**Note:** They are only supported starting with **Godot version 3.2.2**.
+
+- [GAST-Video](core/src/plugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
+- [GAST-WebView](core/src/plugins/java/org/godotengine/plugin/gast/plugins/webview/README.md)
 
 ## Contributions
 
 The project is in **alpha** state (base functionality is available but API is subject to change).
-Contributions are welcomed!
+Contributions are welcome!
 
 ### Setup
 
@@ -36,11 +51,6 @@ Clone the repository and **initialize the submodules** with `git submodule updat
 The project uses [Android Studio](https://developer.android.com/studio/intro) for development.
 Make sure you have [Android Studio version 4.0 or higher](https://developer.android.com/studio) and
 open the project within Android Studio.
-
-## GAST Plugins
-
-- [GAST-Video](core/src/plugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
-- [GAST-WebView](core/src/plugins/java/org/godotengine/plugin/gast/plugins/webview/README.md)
 
 ## Architecture
 
