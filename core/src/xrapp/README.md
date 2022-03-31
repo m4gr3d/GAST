@@ -5,6 +5,9 @@ The Godot XRApp framework provides the ability to turn regular Android apps into
 It unlocks a new and diverse set of VR apps that can be created by leveraging
 Android developers tools as well as existing Android UI code and libraries.
 
+![Screenshot showing XRUAMP's phone UI for browsing albums and songs](../../../docs/imgs/1-browse-albums-screenshot.png "Browse albums screenshot")
+![Screenshot showing XRUAMP's VR UI for browsing albums and songs](../../../docs/imgs/3-quest-browse-albums-screenshot.jpg "Browse albums VR screenshot")
+
 ## License
 
 The framework is released under the MIT license.
@@ -15,16 +18,16 @@ The Godot XRApp framework can be integrated within an existing code base in thre
 
 1. Add the framework dependencies
    - Within the app `build.gradle` file, add the following dependencies:
-   ```
+    ```
     implementation "io.github.m4gr3d:godot:3.4.4.stable"
     implementation "io.github.m4gr3d:godot-openxr:1.3.0.beta5"
     implementation "io.github.m4gr3d:gast-xrapp:0.2.0"
-   ```
+    ```
    - The framework is built atop [`AppCompatActivity`](https://developer.android.com/reference/androidx/appcompat/app/AppCompatActivity)
      , so include the appcompat dependency if you don't have it already
-     ```
-     implementation 'androidx.appcompat:appcompat:1.3.1'
-     ```
+    ```
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    ```
 
 1. Update the app's main activity
     - Have the app's main activity extend `org.godotengine.plugin.gast.xrapp.GastActivity`
@@ -97,4 +100,4 @@ The framework has built-in support for the Oculus Keyboard for input.
 
 ## [Roadmap](ROADMAP.md)
 
-
+## [Contributions](../../../README.md#contributions)
