@@ -45,7 +45,8 @@ The Godot XRApp framework can be integrated within an existing code base in thre
 
 That's all! Your app should now build and run on the Quest as a VR app.
 
-Feel free to take a look at the [samples](../../../samples/xrapp) directory for examples.
+Feel free to take a look at the [samples](../../../samples/xrapp) directory and the [XR
+Universal Android Music Player Sample](https://github.com/m4gr3d/xruamp) for examples.
 
 ### Current Limitations
 
@@ -67,8 +68,7 @@ Feel free to take a look at the [samples](../../../samples/xrapp) directory for 
 By switching `GastActivity#isXREnabled()`'s return value, you can use the same code base to
 generate a regular Android app and a Quest VR app.
 
-You can see an example of this approach in the [vruamp sample app](../../../samples/xrapp/vruamp)
-(derived from the [Universal Android Music Player sample app](https://github.com/android/uamp))
+You can see an example of this approach in the [XR Universal Android Music Player Sample](https://github.com/m4gr3d/xruamp)
 which uses [Android product
 flavors](https://developer.android.com/studio/build/build-variants#product-flavors) to customize
 the generated builds.
