@@ -62,6 +62,17 @@ Feel free to take a look at the [samples](../../../samples/xrapp) directory for 
 
 ## Additional Features
 
+### Use the same code for regular and VR builds
+
+By switching `GastActivity#isXREnabled()`'s return value, you can use the same code base to
+generate a regular Android app and a Quest VR app.
+
+You can see an example of this approach in the [vruamp sample app](../../../samples/xrapp/vruamp)
+(derived from the [Universal Android Music Player sample app](https://github.com/android/uamp))
+which uses [Android product
+flavors](https://developer.android.com/studio/build/build-variants#product-flavors) to customize
+the generated builds.
+
 ### Available passthrough environment
 
 The framework provides the ability to toggle
