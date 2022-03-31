@@ -1,23 +1,23 @@
 # Godot XRApp Framework Roadmap
 
-## Phase 0 - MVP feature and stability
-### Version 0.2.0
-- Hand tracking support
-- Fix input swap to wrong controller
+This is a tentative roadmap for the Godot XRApp framework.
 
-## Phase 1 - UI Interface
+## Phase 1 - UI Interface Customization
 ### Version 0.3.0
-- GastFrameLayout auto-setup - Adding depth when in VR
+- Complete GastFrameLayout functionality
+    - FrameLayout-derived implementation that unlocks the ability to provide z-depth positioning
+      and animation to UI elements in the layout
 
 ### Version 0.4.0
-- GastMediaView - Video playback support
+- Complete GastMediaView implementation
+    - Enables video playback support
 
 ### Version 0.5.0
-- GastFragment - Responsive layout when in VR
+- Complete GastFragment implementation
+    - Unlocks the use of [responsive layout](https://developer.android.com/guide/topics/large-screens/migrate-to-responsive-layouts) when in VR
 
-## Phase 2 - Environments
+## Phase 2 - Environments Customization
 
-## Phase 3 - SDK Extensions
-- Enhanced Passthrough
-- Avatar SDK
-- Anchor
+## Phase 3 - Leveraging VR Extensions
+- Enhanced Passthrough support
+- [Spatial Anchors](https://developer.oculus.com/experimental/spatial-anchors-overview/) support
