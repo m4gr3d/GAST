@@ -20,8 +20,8 @@ The Godot XRApp framework can be integrated within an existing code base in thre
     implementation "io.github.m4gr3d:godot-openxr:1.3.0.beta5"
     implementation "io.github.m4gr3d:gast-xrapp:0.2.0"
    ```
-   - The framework is built atop `AppCompatActivity`, so include the appcompat dependency if you
-     don't have it already
+   - The framework is built atop [`AppCompatActivity`](https://developer.android.com/reference/androidx/appcompat/app/AppCompatActivity)
+     , so include the appcompat dependency if you don't have it already
      ```
      implementation 'androidx.appcompat:appcompat:1.3.1'
      ```
@@ -36,8 +36,9 @@ The Godot XRApp framework can be integrated within an existing code base in thre
       ```
       <category android:name="com.oculus.intent.category.VR" />
       ```
-    - The framework is built atop `AppCompatActivity`, so specify an appcompat theme in the
-      `<application>` or main `<activity>` tag if you don't have one already
+    - The framework is built atop [`AppCompatActivity`](https://developer.android.com/reference/androidx/appcompat/app/AppCompatActivity)
+      , so specify an appcompat theme in the `<application>` or main `<activity>` tag if you
+      don't have one already. E.g:
       ```
       android:theme="@style/Theme.AppCompat.Light.NoActionBar"
       ```
@@ -48,13 +49,40 @@ Feel free to take a look at the [samples](../../../samples/xrapp) directory for 
 
 ### Current Limitations
 
+- No access to Google Play Services: The Quest platform doesn't have Google Play Services. If
+  your app uses one or multiple Google Play Services APIs, it won't be able to run on the
+  device.
+- No support for [SurfaceView](https://developer.android.com/reference/android/view/SurfaceView)
+  , [TextureView](https://developer.android.com/reference/android/view/TextureView) and their
+  derivatives.
+    - This means functionality like video playback are not available yet.
+    - Video playback support will be enabled in future releases.
+- For any other issues, please [open a github issue](https://github.com/m4gr3d/GAST/issues) with
+  the [`xrapp` label](https://github.com/m4gr3d/GAST/labels/xrapp).
+
 ## Additional Features
 
 ### Available passthrough environment
 
+The framework provides the ability to toggle
+[passthrough](https://support.oculus.com/articles/in-vr-experiences/oculus-features/what-is-passthrough/)
+on the Quest, enabling the user access to your app while interacting with their real-time
+surroundings:
+
+- Use `GastActivity#startPassthrough()` to start passthrough
+- Use `GastActivity#stopPassthrough()` to disable passthrough
+
+You can see an example of that functionality in the [hello_vr_world](../../../samples/xrapp/hello_vr_world)
+sample.
+
 ### Automatic support for hand tracking
 
+The framework has built-in support for hand tracking, enabling access to your app without the
+needs for controllers.
+
 ### Oculus Keyboard support
+
+The framework has built-in support for the Oculus Keyboard for input.
 
 ## [Roadmap](ROADMAP.md)
 
