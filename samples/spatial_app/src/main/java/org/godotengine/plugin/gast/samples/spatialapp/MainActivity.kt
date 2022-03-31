@@ -8,4 +8,6 @@ open class MainActivity : GastActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
+
+    override fun isXREnabled() = BuildConfig.FLAVOR == "ovr"
 }
