@@ -16,8 +16,8 @@ This is a tentative roadmap for the Godot XRApp framework.
 - Complete GastFragment implementation
     - Unlocks the use of [responsive layout](https://developer.android.com/guide/topics/large-screens/migrate-to-responsive-layouts) when in VR
 
-## Phase 2 - Environments Customization
-
-## Phase 3 - Leveraging VR Extensions
+## Phase 2 - Leveraging VR Extensions
 - Enhanced Passthrough support
 - [Spatial Anchors](https://developer.oculus.com/experimental/spatial-anchors-overview/) support
+
+## Phase 3 - Environments Customization
