@@ -11,7 +11,7 @@ import kotlin.math.min
 /**
  * Utility class used to handle common input related logic.
  */
-internal class GastViewInputHandler(private val gastView: GastFrameLayout) : GastInputListener {
+internal class GastViewInputHandler(private val gastView: GastView) : GastInputListener {
 
     companion object {
         /**
@@ -137,13 +137,13 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
                     MotionEvent.ACTION_HOVER_EXIT,
                     HOVER_INPUT_SOURCE
                 )
-                gastView.dispatchGenericMotionEvent(motionEvent)
+                gastView.view.dispatchGenericMotionEvent(motionEvent)
                 hoverEnteredSet.remove(pointerId)
                 motionEvent.recycle()
             }
         } else {
-            val xCoord = xPercent * gastView.width
-            val yCoord = yPercent * gastView.height
+            val xCoord = xPercent * gastView.view.width
+            val yCoord = yPercent * gastView.view.height
             if (onDownSet.contains(pointerId)) {
                 // Send a ACTION_MOVE event.
                 val motionEvent = obtainMotionEvent(
@@ -154,7 +154,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
                     xCoord,
                     yCoord
                 )
-                gastView.dispatchTouchEvent(motionEvent)
+                gastView.view.dispatchTouchEvent(motionEvent)
                 motionEvent.recycle()
             } else {
                 // Send a hover event.
@@ -169,7 +169,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
                         xCoord,
                         yCoord
                     )
-                gastView.dispatchGenericMotionEvent(motionEvent)
+                gastView.view.dispatchGenericMotionEvent(motionEvent)
                 hoverEnteredSet.add(pointerId)
                 motionEvent.recycle()
             }
@@ -187,8 +187,8 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         }
 
         val eventTime = SystemClock.uptimeMillis()
-        val xCoord = xPercent * gastView.width
-        val yCoord = yPercent * gastView.height
+        val xCoord = xPercent * gastView.view.width
+        val yCoord = yPercent * gastView.view.height
 
         if (hoverEnteredSet.contains(pointerId)) {
             // Complete the hover motion event.
@@ -200,7 +200,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
                 xCoord,
                 yCoord
             )
-            gastView.dispatchGenericMotionEvent(motionEvent)
+            gastView.view.dispatchGenericMotionEvent(motionEvent)
             hoverEnteredSet.remove(pointerId)
             motionEvent.recycle()
         }
@@ -214,7 +214,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
             xCoord,
             yCoord
         )
-        gastView.dispatchTouchEvent(motionEvent)
+        gastView.view.dispatchTouchEvent(motionEvent)
         onDownSet.add(pointerId)
         motionEvent.recycle()
     }
@@ -234,8 +234,8 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         }
 
         val eventTime = SystemClock.uptimeMillis()
-        val xCoord = xPercent * gastView.width
-        val yCoord = yPercent * gastView.height
+        val xCoord = xPercent * gastView.view.width
+        val yCoord = yPercent * gastView.view.height
 
         // Send a ACTION_UP motion event to complete the gesture.
         val motionEvent = obtainMotionEvent(
@@ -246,7 +246,7 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
             xCoord,
             yCoord
         )
-        gastView.dispatchTouchEvent(motionEvent)
+        gastView.view.dispatchTouchEvent(motionEvent)
         onDownSet.remove(pointerId)
         motionEvent.recycle()
     }
@@ -264,15 +264,15 @@ internal class GastViewInputHandler(private val gastView: GastFrameLayout) : Gas
         }
 
         val eventTime = SystemClock.uptimeMillis()
-        val xCoord = xPercent * gastView.width
-        val yCoord = yPercent * gastView.height
+        val xCoord = xPercent * gastView.view.width
+        val yCoord = yPercent * gastView.view.height
 
         val scrollByX = getScrollByDelta(horizontalDelta)
         val scrollByY = getScrollByDelta(verticalDelta)
 
         val motionEvent =
             obtainScrollEvent(pointerId, eventTime, xCoord, yCoord, scrollByX, scrollByY)
-        gastView.dispatchGenericMotionEvent(motionEvent)
+        gastView.view.dispatchGenericMotionEvent(motionEvent)
         motionEvent.recycle()
     }
 
