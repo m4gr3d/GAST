@@ -1,7 +1,6 @@
 package org.godotengine.plugin.gast.view
 
 import android.content.Context
-import android.view.View
 import android.view.ViewTreeObserver
 import androidx.annotation.CallSuper
 import org.godotengine.plugin.gast.GastManager
@@ -42,35 +41,44 @@ internal interface GastView : GastRenderListener {
 
     private val onPreDrawListener: ViewTreeObserver.OnPreDrawListener
         get() = ViewTreeObserver.OnPreDrawListener {
-            if (view.isDirty) {
-                view.invalidate()
+            if (viewState.view.isDirty) {
+                viewState.view.invalidate()
             }
             return@OnPreDrawListener true
         }
 
-    val view: View
-    var gastNode: GastNode?
-    var gastManager: GastManager?
+    val viewState: GastViewState
 
     @CallSuper
-    fun initialize(gastManager: GastManager, gastNode: GastNode) {
-        this.gastManager = gastManager
-        this.gastNode = gastNode
+    fun initialize(gastManager: GastManager, gastNode: GastNode, isRoot: Boolean = true) {
+        viewState.gastManager = gastManager
+        viewState.gastNode = gastNode
+        viewState.isRoot = isRoot
         gastNode.bindSurface()
 
         gastManager.registerGastInputListener(inputHandler)
         gastManager.registerGastRenderListener(this)
-        view.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
+        viewState.view.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
 
-        view.invalidate()
+        viewState.view.invalidate()
     }
 
     @CallSuper
     fun shutdown() {
-        view.viewTreeObserver.removeOnPreDrawListener(onPreDrawListener)
-        this.gastManager?.unregisterGastRenderListener(this)
-        this.gastManager?.unregisterGastInputListener(inputHandler)
-        this.gastNode = null
+        viewState.view.viewTreeObserver.removeOnPreDrawListener(onPreDrawListener)
+        viewState.gastManager?.unregisterGastRenderListener(this)
+        viewState.gastManager?.unregisterGastInputListener(inputHandler)
+        viewState.gastNode = null
+    }
+
+    @CallSuper
+    fun onGastViewAttachedToWindow() {
+
+    }
+
+    @CallSuper
+    fun onGastViewDetachedFromWindow() {
+
     }
 
     @CallSuper
@@ -78,40 +86,64 @@ internal interface GastView : GastRenderListener {
         updateGastNodeProperties()
     }
 
-    /**
-     * Update the spatial properties (scale, translation, rotation) of the backing gast node.
-     */
-    private fun updateGastNodeProperties() {
-        // Update the node's translation
-        gastNode?.updateLocalTranslation(
-            fromPixelsToGodotDimensions(view.context, view.translationX),
-            fromPixelsToGodotDimensions(view.context, view.translationY),
-            fromPixelsToGodotDimensions(view.context, view.z))
-
-        // Update the node's scale
-        gastNode?.updateLocalScale(view.scaleX, view.scaleY, 1f)
-
-        // Update the node's rotation
-        gastNode?.updateLocalRotation(view.rotationX, view.rotationY, 0f)
-    }
-
     @CallSuper
     fun onGastViewSizeChanged(width: Float, height: Float) {
-        gastManager?.runOnRenderThread {
-            if (gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
-                val projectionMesh : RectangularProjectionMesh =
-                    gastNode?.getProjectionMesh() as RectangularProjectionMesh
+        viewState.gastManager?.runOnRenderThread {
+            if (viewState.gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
+                val projectionMesh: RectangularProjectionMesh =
+                    viewState.gastNode?.getProjectionMesh() as RectangularProjectionMesh
                 projectionMesh.setMeshSize(
-                    fromPixelsToGodotDimensions(view.context, width),
-                    fromPixelsToGodotDimensions(view.context, height))
+                    fromPixelsToGodotDimensions(viewState.view.context, width),
+                    fromPixelsToGodotDimensions(viewState.view.context, height)
+                )
             }
         } ?: return
     }
 
     @CallSuper
     fun onGastViewVisibilityChanged(visible: Boolean) {
-        gastManager?.runOnRenderThread {
-            gastNode?.updateVisibility(false, visible)
+        viewState.gastManager?.runOnRenderThread {
+            viewState.gastNode?.updateVisibility(false, visible)
         }
+    }
+
+    /**
+     * Update the spatial properties (scale, translation, rotation) of the backing gast node.
+     */
+    private fun updateGastNodeProperties() {
+        // Update the node's translation
+        viewState.gastNode?.updateLocalTranslation(
+            fromPixelsToGodotDimensions(viewState.view.context, getViewTranslationX()),
+            fromPixelsToGodotDimensions(viewState.view.context, getViewTranslationY()),
+            fromPixelsToGodotDimensions(viewState.view.context, viewState.view.z)
+        )
+
+        // Update the node's scale
+        viewState.gastNode?.updateLocalScale(viewState.view.scaleX, viewState.view.scaleY, 1f)
+
+        // Update the node's rotation
+        viewState.gastNode?.updateLocalRotation(
+            viewState.view.rotationX,
+            viewState.view.rotationY,
+            0f
+        )
+    }
+
+    private fun getViewTranslationX(): Float {
+        // TODO: Update to incorporate non GastView parent x translation
+        return if (viewState.isRoot) viewState.view.translationX else viewState.view.x
+    }
+
+    private fun getViewTranslationY(): Float {
+        // TODO: Update to incorporate non GastView parent y translation
+        return if (viewState.isRoot) viewState.view.translationY else viewState.view.y
+    }
+
+    private fun getGastViewParent(): GastView? {
+        var viewParent = viewState.view.parent
+        while (viewParent != null && viewParent !is GastView) {
+            viewParent = viewParent.parent
+        }
+        return viewParent as GastView?
     }
 }

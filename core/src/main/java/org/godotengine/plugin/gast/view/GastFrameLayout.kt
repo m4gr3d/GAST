@@ -24,9 +24,7 @@ class GastFrameLayout(
     private var textureWidth = MIN_TEXTURE_DIMENSION
     private var textureHeight = MIN_TEXTURE_DIMENSION
 
-    override val view: View = this
-    override var gastNode: GastNode? = null
-    override var gastManager: GastManager? = null
+    override val viewState: GastViewState = GastViewState(this)
 
     constructor(
         context: Context,
@@ -35,9 +33,10 @@ class GastFrameLayout(
 
     constructor(context: Context) : this(context, null)
 
-    override fun initialize(gastManager: GastManager, gastNode: GastNode) {
+    @JvmOverloads
+    override fun initialize(gastManager: GastManager, gastNode: GastNode, isRoot: Boolean) {
         Log.d(TAG, "Initializing GastFrameLayout...")
-        super.initialize(gastManager, gastNode)
+        super.initialize(gastManager, gastNode, isRoot)
         updateTextureSizeIfNeeded()
     }
 
@@ -50,15 +49,15 @@ class GastFrameLayout(
 
     override fun draw(canvas: Canvas) {
         updateTextureSizeIfNeeded()
-        val surfaceCanvas = gastNode?.lockSurfaceCanvas() ?: canvas
+        val surfaceCanvas = viewState.gastNode?.lockSurfaceCanvas() ?: canvas
         super.draw(surfaceCanvas)
-        gastNode?.unlockSurfaceCanvas()
+        viewState.gastNode?.unlockSurfaceCanvas()
     }
 
     override fun dispatchDraw(canvas: Canvas) {
-        val surfaceCanvas = gastNode?.lockSurfaceCanvas() ?: canvas
+        val surfaceCanvas = viewState.gastNode?.lockSurfaceCanvas() ?: canvas
         super.dispatchDraw(surfaceCanvas)
-        gastNode?.unlockSurfaceCanvas()
+        viewState.gastNode?.unlockSurfaceCanvas()
     }
 
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
@@ -79,10 +78,10 @@ class GastFrameLayout(
         if ((textureWidth != widthInPixels || textureHeight != heightInPixels)
             && widthInPixels >= MIN_TEXTURE_DIMENSION
             && heightInPixels >= MIN_TEXTURE_DIMENSION
-            && gastNode != null
-            && gastManager != null
+            && viewState.gastNode != null
+            && viewState.gastManager != null
         ) {
-            gastNode?.setSurfaceTextureSize(widthInPixels, heightInPixels) ?: return
+            viewState.gastNode?.setSurfaceTextureSize(widthInPixels, heightInPixels) ?: return
             onGastViewSizeChanged(width.toFloat(), height.toFloat())
 
             Log.d(TAG, "Updating texture size to X - $widthInPixels, Y - $heightInPixels")
