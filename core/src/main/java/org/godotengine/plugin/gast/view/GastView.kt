@@ -1,6 +1,7 @@
 package org.godotengine.plugin.gast.view
 
 import android.content.Context
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.annotation.CallSuper
 import org.godotengine.plugin.gast.GastManager
@@ -37,7 +38,7 @@ internal interface GastView : GastRenderListener {
     }
 
     private val inputHandler: GastViewInputHandler
-        get() = GastViewInputHandler(this)
+        get() = GastViewInputHandler(viewState)
 
     private val onPreDrawListener: ViewTreeObserver.OnPreDrawListener
         get() = ViewTreeObserver.OnPreDrawListener {
@@ -60,25 +61,71 @@ internal interface GastView : GastRenderListener {
         gastManager.registerGastRenderListener(this)
         viewState.view.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
 
+        // Propagate to the children
+        if (viewState.view is ViewGroup) {
+            val viewGroup = viewState.view as ViewGroup
+            for (index in 0 until viewGroup.childCount) {
+                val child = viewGroup.getChildAt(index)
+                if (child is GastView) {
+                    child.initializeFromParent(this)
+                }
+            }
+        }
+
         viewState.view.invalidate()
+        viewState.initialized = true
+    }
+
+    private fun initializeFromParent(parent: GastView) {
+        val gastManager = parent.viewState.gastManager?: return
+        val parentGastNode = parent.viewState.gastNode ?: return
+        val gastNode = GastNode(gastManager, parentGastNode.nodePath)
+        initialize(gastManager, gastNode, false)
     }
 
     @CallSuper
     fun shutdown() {
+        // Propagate to the children
+        if (viewState.view is ViewGroup) {
+            val viewGroup = viewState.view as ViewGroup
+            for (index in 0 until viewGroup.childCount) {
+                val child = viewGroup.getChildAt(index)
+                if (child is GastView) {
+                    child.shutdown()
+                }
+            }
+        }
+
         viewState.view.viewTreeObserver.removeOnPreDrawListener(onPreDrawListener)
+
         viewState.gastManager?.unregisterGastRenderListener(this)
         viewState.gastManager?.unregisterGastInputListener(inputHandler)
+        viewState.gastManager = null
+
+        viewState.gastNode?.release()
         viewState.gastNode = null
+
+        viewState.initialized = false
     }
 
     @CallSuper
     fun onGastViewAttachedToWindow() {
+        if (viewState.initialized) {
+            return
+        }
 
+        // Get the GastView parent for this view
+        val parent = getGastViewParent() ?: return
+        initializeFromParent(parent)
     }
 
     @CallSuper
     fun onGastViewDetachedFromWindow() {
+        if (!viewState.initialized) {
+            return
+        }
 
+        shutdown()
     }
 
     @CallSuper
@@ -131,12 +178,12 @@ internal interface GastView : GastRenderListener {
 
     private fun getViewTranslationX(): Float {
         // TODO: Update to incorporate non GastView parent x translation
-        return if (viewState.isRoot) viewState.view.translationX else viewState.view.x
+        return if (true) viewState.view.translationX else viewState.view.x
     }
 
     private fun getViewTranslationY(): Float {
         // TODO: Update to incorporate non GastView parent y translation
-        return if (viewState.isRoot) viewState.view.translationY else viewState.view.y
+        return if (true) viewState.view.translationY else viewState.view.y
     }
 
     private fun getGastViewParent(): GastView? {

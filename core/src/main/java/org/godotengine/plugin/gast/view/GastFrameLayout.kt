@@ -68,7 +68,17 @@ class GastFrameLayout(
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {
         super.onVisibilityChanged(changedView, visibility)
-        super.onGastViewVisibilityChanged(visibility == View.VISIBLE)
+        onGastViewVisibilityChanged(visibility == View.VISIBLE)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        onGastViewAttachedToWindow()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        onGastViewDetachedFromWindow()
     }
 
     private fun updateTextureSizeIfNeeded() {

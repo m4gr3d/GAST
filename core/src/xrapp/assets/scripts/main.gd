@@ -24,7 +24,7 @@ func _ready():
 func _is_xr_enabled():
 	var appPlugin = Engine.get_singleton("GastAppPlugin")
 	if (appPlugin):
-		return appPlugin.isXREnabled()
+		return appPlugin.isXREnabled() and !appPlugin.enable2DDebugMode
 	else:
 		print("App plugin is not available")
 	return true

@@ -19,6 +19,16 @@ class GastSurfaceView(
 
     fun getHolder(): SurfaceHolder = this
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        onGastViewAttachedToWindow()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        onGastViewDetachedFromWindow()
+    }
+
     override fun addCallback(callback: SurfaceHolder.Callback?) {
         TODO("Not yet implemented")
     }

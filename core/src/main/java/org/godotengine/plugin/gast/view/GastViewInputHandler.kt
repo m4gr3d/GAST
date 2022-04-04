@@ -11,7 +11,7 @@ import kotlin.math.min
 /**
  * Utility class used to handle common input related logic.
  */
-internal class GastViewInputHandler(private val gastView: GastView) : GastInputListener {
+internal class GastViewInputHandler(private val viewState: GastViewState) : GastInputListener {
 
     companion object {
         /**
@@ -122,7 +122,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
         xPercent: Float,
         yPercent: Float
     ) {
-        if (nodePath.isBlank() || nodePath != gastView.gastNode?.nodePath) {
+        if (nodePath.isBlank() || nodePath != viewState.gastNode?.nodePath) {
             return
         }
 
@@ -137,13 +137,13 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
                     MotionEvent.ACTION_HOVER_EXIT,
                     HOVER_INPUT_SOURCE
                 )
-                gastView.view.dispatchGenericMotionEvent(motionEvent)
+                viewState.view.dispatchGenericMotionEvent(motionEvent)
                 hoverEnteredSet.remove(pointerId)
                 motionEvent.recycle()
             }
         } else {
-            val xCoord = xPercent * gastView.view.width
-            val yCoord = yPercent * gastView.view.height
+            val xCoord = xPercent * viewState.view.width
+            val yCoord = yPercent * viewState.view.height
             if (onDownSet.contains(pointerId)) {
                 // Send a ACTION_MOVE event.
                 val motionEvent = obtainMotionEvent(
@@ -154,7 +154,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
                     xCoord,
                     yCoord
                 )
-                gastView.view.dispatchTouchEvent(motionEvent)
+                viewState.view.dispatchTouchEvent(motionEvent)
                 motionEvent.recycle()
             } else {
                 // Send a hover event.
@@ -169,7 +169,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
                         xCoord,
                         yCoord
                     )
-                gastView.view.dispatchGenericMotionEvent(motionEvent)
+                viewState.view.dispatchGenericMotionEvent(motionEvent)
                 hoverEnteredSet.add(pointerId)
                 motionEvent.recycle()
             }
@@ -182,13 +182,13 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
         xPercent: Float,
         yPercent: Float
     ) {
-        if (nodePath.isBlank() || nodePath != gastView.gastNode?.nodePath) {
+        if (nodePath.isBlank() || nodePath != viewState.gastNode?.nodePath) {
             return
         }
 
         val eventTime = SystemClock.uptimeMillis()
-        val xCoord = xPercent * gastView.view.width
-        val yCoord = yPercent * gastView.view.height
+        val xCoord = xPercent * viewState.view.width
+        val yCoord = yPercent * viewState.view.height
 
         if (hoverEnteredSet.contains(pointerId)) {
             // Complete the hover motion event.
@@ -200,7 +200,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
                 xCoord,
                 yCoord
             )
-            gastView.view.dispatchGenericMotionEvent(motionEvent)
+            viewState.view.dispatchGenericMotionEvent(motionEvent)
             hoverEnteredSet.remove(pointerId)
             motionEvent.recycle()
         }
@@ -214,7 +214,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
             xCoord,
             yCoord
         )
-        gastView.view.dispatchTouchEvent(motionEvent)
+        viewState.view.dispatchTouchEvent(motionEvent)
         onDownSet.add(pointerId)
         motionEvent.recycle()
     }
@@ -225,7 +225,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
         xPercent: Float,
         yPercent: Float
     ) {
-        if (nodePath.isBlank() || nodePath != gastView.gastNode?.nodePath) {
+        if (nodePath.isBlank() || nodePath != viewState.gastNode?.nodePath) {
             return
         }
 
@@ -234,8 +234,8 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
         }
 
         val eventTime = SystemClock.uptimeMillis()
-        val xCoord = xPercent * gastView.view.width
-        val yCoord = yPercent * gastView.view.height
+        val xCoord = xPercent * viewState.view.width
+        val yCoord = yPercent * viewState.view.height
 
         // Send a ACTION_UP motion event to complete the gesture.
         val motionEvent = obtainMotionEvent(
@@ -246,7 +246,7 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
             xCoord,
             yCoord
         )
-        gastView.view.dispatchTouchEvent(motionEvent)
+        viewState.view.dispatchTouchEvent(motionEvent)
         onDownSet.remove(pointerId)
         motionEvent.recycle()
     }
@@ -259,20 +259,20 @@ internal class GastViewInputHandler(private val gastView: GastView) : GastInputL
         horizontalDelta: Float,
         verticalDelta: Float
     ) {
-        if (nodePath.isBlank() || nodePath != gastView.gastNode?.nodePath) {
+        if (nodePath.isBlank() || nodePath != viewState.gastNode?.nodePath) {
             return
         }
 
         val eventTime = SystemClock.uptimeMillis()
-        val xCoord = xPercent * gastView.view.width
-        val yCoord = yPercent * gastView.view.height
+        val xCoord = xPercent * viewState.view.width
+        val yCoord = yPercent * viewState.view.height
 
         val scrollByX = getScrollByDelta(horizontalDelta)
         val scrollByY = getScrollByDelta(verticalDelta)
 
         val motionEvent =
             obtainScrollEvent(pointerId, eventTime, xCoord, yCoord, scrollByX, scrollByY)
-        gastView.view.dispatchGenericMotionEvent(motionEvent)
+        viewState.view.dispatchGenericMotionEvent(motionEvent)
         motionEvent.recycle()
     }
 

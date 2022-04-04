@@ -10,6 +10,10 @@ This is a tentative roadmap for the Godot XRApp framework.
       and animation to UI elements in the layout
 
 ### Version 0.4.0
+- Complete `GastSurfaceView` implementation
+    - Provides access to a `Surface` instance (e.g: video rendering)
+
+### Version 0.5.0
 - Complete `GastFragment` implementation
     - Unlocks the use of [responsive layout](https://developer.android.com/guide/topics/large-screens/migrate-to-responsive-layouts) when in VR
 

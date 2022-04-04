@@ -28,15 +28,21 @@ class GastAppPlugin(private val enableXR: Boolean) : GodotPluginInfoProvider {
     @UsedByGodot
     private fun isXREnabled() = enableXR
 
+    @UsedByGodot
+    internal fun enable2DDebugMode(): Boolean {
+        // TODO: Detect automatically based on the device we're running on.
+        return false
+    }
+
     internal fun startPassthrough(godot: Godot?) {
-        if (godot == null || !enableXR) {
+        if (godot == null || !enableXR || enable2DDebugMode()) {
             return
         }
         GodotPlugin.emitSignal(godot, pluginName, START_PASSTHROUGH_SIGNAL)
     }
 
     internal fun stopPassthrough(godot: Godot?) {
-        if (godot == null || !enableXR) {
+        if (godot == null || !enableXR || enable2DDebugMode()) {
             return
         }
         GodotPlugin.emitSignal(godot, pluginName, STOP_PASSTHROUGH_SIGNAL)

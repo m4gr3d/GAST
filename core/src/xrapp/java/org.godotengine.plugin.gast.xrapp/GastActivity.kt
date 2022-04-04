@@ -243,7 +243,7 @@ abstract class GastActivity :
      * Override the engine starting parameters to indicate we want VR mode.
      */
     override fun getCommandLine(): List<String> {
-        return if (enableXR)
+        return if (enableXR && !appPlugin.enable2DDebugMode())
             Collections.singletonList(XRMode.OVR.cmdLineArg)
         else
             Collections.emptyList()
