@@ -6,12 +6,13 @@ import android.view.ViewTreeObserver
 import androidx.annotation.CallSuper
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
+import org.godotengine.plugin.gast.GastRenderListener
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 
 /**
  * Represent a Android view rendered by a [GastNode].
  */
-internal interface GastView {
+internal interface GastView : GastRenderListener {
 
     companion object {
         private const val DP_RATIO = 4f / 1000f
@@ -58,6 +59,7 @@ internal interface GastView {
         gastNode.bindSurface()
 
         gastManager.registerGastInputListener(inputHandler)
+        gastManager.registerGastRenderListener(this)
         view.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
 
         view.invalidate()
@@ -66,27 +68,31 @@ internal interface GastView {
     @CallSuper
     fun shutdown() {
         view.viewTreeObserver.removeOnPreDrawListener(onPreDrawListener)
+        this.gastManager?.unregisterGastRenderListener(this)
         this.gastManager?.unregisterGastInputListener(inputHandler)
         this.gastNode = null
+    }
+
+    @CallSuper
+    override fun onRenderDrawFrame() {
+        updateGastNodeProperties()
     }
 
     /**
      * Update the spatial properties (scale, translation, rotation) of the backing gast node.
      */
-    @CallSuper
-    fun updateGastNodeProperties() {
-        val node = gastNode?: return
+    private fun updateGastNodeProperties() {
+        // Update the node's translation
+        gastNode?.updateLocalTranslation(
+            fromPixelsToGodotDimensions(view.context, view.translationX),
+            fromPixelsToGodotDimensions(view.context, view.translationY),
+            fromPixelsToGodotDimensions(view.context, view.z))
 
-        gastManager?.runOnRenderThread {
-            // Update the node's translation
-            node.updateLocalTranslation(view.x, view.y, view.z)
+        // Update the node's scale
+        gastNode?.updateLocalScale(view.scaleX, view.scaleY, 1f)
 
-            // Update the node's scale
-            node.updateLocalScale(view.scaleX, view.scaleY, 1f)
-
-            // Update the node's rotation
-            node.updateLocalRotation(view.rotationX, view.rotationY, 0f)
-        }
+        // Update the node's rotation
+        gastNode?.updateLocalRotation(view.rotationX, view.rotationY, 0f)
     }
 
     @CallSuper

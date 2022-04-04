@@ -50,7 +50,6 @@ class GastFrameLayout(
 
     override fun draw(canvas: Canvas) {
         updateTextureSizeIfNeeded()
-        updateGastNodeProperties()
         val surfaceCanvas = gastNode?.lockSurfaceCanvas() ?: canvas
         super.draw(surfaceCanvas)
         gastNode?.unlockSurfaceCanvas()

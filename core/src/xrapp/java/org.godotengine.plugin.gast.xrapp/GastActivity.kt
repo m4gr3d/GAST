@@ -23,7 +23,7 @@ import org.godotengine.plugin.gast.input.action.GastActionListener
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
 import org.godotengine.plugin.vr.openxr.OpenXRPlugin
-import java.util.*
+import java.util.Collections
 import kotlin.system.exitProcess
 
 /**
@@ -139,16 +139,19 @@ abstract class GastActivity :
         }
 
         // Setup the layout params for the container view
-        val viewLayoutParams = view.layoutParams
-        val containerLayoutParams =
-            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.CENTER)
-        if (viewLayoutParams == null || viewLayoutParams.width == LayoutParams.MATCH_PARENT) {
-            containerLayoutParams.width =
+        val viewLayoutParams = view.layoutParams ?: LayoutParams(
+            LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT,
+            Gravity.CENTER
+        )
+
+        if (viewLayoutParams.width == LayoutParams.MATCH_PARENT) {
+            viewLayoutParams.width =
                 resources.getDimensionPixelSize(R.dimen.default_container_width)
         }
 
-        if (viewLayoutParams == null || viewLayoutParams.height == LayoutParams.MATCH_PARENT) {
-            containerLayoutParams.height =
+        if (viewLayoutParams.height == LayoutParams.MATCH_PARENT) {
+            viewLayoutParams.height =
                 resources.getDimensionPixelSize(R.dimen.default_container_height)
         }
 
@@ -168,7 +171,7 @@ abstract class GastActivity :
                 addView(view)
             }
         }
-        containerView?.addView(gastFrameLayout, 0, containerLayoutParams)
+        containerView?.addView(gastFrameLayout, 0, viewLayoutParams)
     }
 
     @CallSuper
