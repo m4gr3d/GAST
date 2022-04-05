@@ -9,9 +9,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Utility class used to handle common input related logic.
+ * Manages [GastView]'s input related logic.
  */
-internal class GastViewInputHandler(private val viewState: GastViewState) : GastInputListener {
+internal class GastViewInputManager(private val viewState: GastViewState) : GastInputListener {
 
     companion object {
         /**
@@ -45,6 +45,14 @@ internal class GastViewInputHandler(private val viewState: GastViewState) : Gast
 
     private fun getScrollByDelta(delta: Float) =
         max(-SCROLL_SPEED_LIMIT, min(SCROLL_SPEED_LIMIT, SCROLL_SENSITIVITY * delta))
+
+    internal fun onInitialize() {
+        viewState.gastManager?.registerGastInputListener(this)
+    }
+
+    internal fun onShutdown() {
+        viewState.gastManager?.unregisterGastInputListener(this)
+    }
 
     private fun obtainMotionEvent(
         pointerId: String,

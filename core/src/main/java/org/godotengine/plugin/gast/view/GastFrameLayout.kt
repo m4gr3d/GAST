@@ -10,6 +10,15 @@ import androidx.annotation.AttrRes
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 
+/**
+ * Derived implementation of [FrameLayout] that allows its subtree z-depth positioning in 3D space.
+ *
+ * [GastFrameLayout] can be nested within themselves and other view group allowing for UI that
+ * breaks out of the 2D app window and can be interacted and animated in 3D space.
+ *
+ * [GastFrameLayout] uses the [View.getZ] property as their z-component in 3D space relative to
+ * their parent.
+ */
 class GastFrameLayout(
     context: Context,
     attrs: AttributeSet?,
@@ -34,9 +43,9 @@ class GastFrameLayout(
     constructor(context: Context) : this(context, null)
 
     @JvmOverloads
-    override fun initialize(gastManager: GastManager, gastNode: GastNode, isRoot: Boolean) {
+    override fun initialize(gastManager: GastManager, gastNode: GastNode) {
         Log.d(TAG, "Initializing GastFrameLayout...")
-        super.initialize(gastManager, gastNode, isRoot)
+        super.initialize(gastManager, gastNode)
         updateTextureSizeIfNeeded()
     }
 

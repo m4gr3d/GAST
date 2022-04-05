@@ -192,7 +192,7 @@ abstract class GastActivity :
         }
 
         runOnUiThread {
-            gastFrameLayout?.initialize(getGastManager(), gastNode, true)
+            gastFrameLayout?.initialize(getGastManager(), gastNode)
         }
     }
 

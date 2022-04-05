@@ -1,5 +1,6 @@
 package org.godotengine.plugin.gast.xrapp
 
+import android.os.Build
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginInfoProvider
@@ -30,8 +31,7 @@ class GastAppPlugin(private val enableXR: Boolean) : GodotPluginInfoProvider {
 
     @UsedByGodot
     internal fun enable2DDebugMode(): Boolean {
-        // TODO: Detect automatically based on the device we're running on.
-        return false
+        return Build.BRAND != "Oculus"
     }
 
     internal fun startPassthrough(godot: Godot?) {
