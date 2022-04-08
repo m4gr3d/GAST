@@ -3,9 +3,6 @@
 This is a tentative roadmap for the Godot XRApp framework.
 
 ## Phase 1 - UI Interface Customization
-### Version 0.2.1
-- Add back button support
-- Add menu button support
 
 ### Version 0.3.0
 - Complete `GastFrameLayout` functionality
@@ -13,12 +10,12 @@ This is a tentative roadmap for the Godot XRApp framework.
       and animation to UI elements in the layout
 
 ### Version 0.4.0
-- Complete `GastSurfaceView` implementation
-    - E.g: Enables video playback support
-
-### Version 0.5.0
 - Complete `GastFragment` implementation
     - Unlocks the use of [responsive layout](https://developer.android.com/guide/topics/large-screens/migrate-to-responsive-layouts) when in VR
+
+### Version 0.5.0
+- Complete `GastSurfaceView` implementation
+    - E.g: Enables video playback support
 
 ### Version 0.6.0
 - Complete `GastImageView` implementation

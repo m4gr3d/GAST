@@ -16,6 +16,8 @@
         <meta-data
             android:name="org.godotengine.plugin.gast.xrapp.version"
             android:value="${gastXRAppVersion}" />
+
+        <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0"/>
     </application>
 
 </manifest>

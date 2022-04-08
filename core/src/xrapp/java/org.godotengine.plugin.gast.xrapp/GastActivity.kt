@@ -19,6 +19,7 @@ import org.godotengine.godot.xr.XRMode
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
+import org.godotengine.plugin.gast.input.action.GastActionListener
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
 import org.godotengine.plugin.vr.openxr.OpenXRPlugin
@@ -30,16 +31,23 @@ import kotlin.system.exitProcess
  *
  * Host and provide Gast related functionality for the driving app.
  */
-abstract class GastActivity : AppCompatActivity(), GodotHost, OpenXRPlugin.EventListener {
+abstract class GastActivity :
+    AppCompatActivity(),
+    GodotHost,
+    OpenXRPlugin.EventListener,
+    GastActionListener {
 
     companion object {
         private val TAG = GastActivity::class.java.simpleName
+
+        private const val BACK_BUTTON_ACTION = "back_button_action"
+        private const val MENU_BUTTON_ACTION = "menu_button_action"
     }
 
     private val enableXR = isXREnabled()
     private val appPlugin = GastAppPlugin(enableXR)
 
-    private var godotFragment : Godot? = null
+    private var godotFragment: Godot? = null
     private var gastFrameLayout: GastFrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,11 +71,15 @@ abstract class GastActivity : AppCompatActivity(), GodotHost, OpenXRPlugin.Event
             }
 
             getOpenXRPlugin().registerEventListener(this)
+            getGastManager().registerGastActionListener(this)
         }
     }
 
     override fun onDestroy() {
-        getOpenXRPlugin().unregisterEventListener(this)
+        if (enableXR) {
+            getGastManager().unregisterGastActionListener(this)
+            getOpenXRPlugin().unregisterEventListener(this)
+        }
 
         super.onDestroy()
         onGodotForceQuit(godotFragment)
@@ -237,6 +249,12 @@ abstract class GastActivity : AppCompatActivity(), GodotHost, OpenXRPlugin.Event
     protected open fun isXREnabled() = false
 
     /**
+     * Enables back button presses via the B/Y buttons for controllers or middle finger pinch for
+     * tracked hands.
+     */
+    protected open fun isBackButtonEnabled() = false
+
+    /**
      * Enable passthrough
      */
     fun startPassthrough() {
@@ -255,10 +273,12 @@ abstract class GastActivity : AppCompatActivity(), GodotHost, OpenXRPlugin.Event
     }
 
     @CallSuper
-    override fun onFocusGained() {}
+    override fun onFocusGained() {
+    }
 
     @CallSuper
-    override fun onFocusLost() {}
+    override fun onFocusLost() {
+    }
 
     @CallSuper
     override fun onHeadsetMounted() {
@@ -269,9 +289,30 @@ abstract class GastActivity : AppCompatActivity(), GodotHost, OpenXRPlugin.Event
     }
 
     @CallSuper
-    override fun onSessionBegun() {}
+    override fun onSessionBegun() {
+    }
 
     @CallSuper
-    override fun onSessionEnding() {}
+    override fun onSessionEnding() {
+    }
+
+    override fun getInputActionsToMonitor() = setOf(BACK_BUTTON_ACTION, MENU_BUTTON_ACTION)
+
+    override fun onMainInputAction(
+        action: String,
+        pressState: GastActionListener.InputPressState,
+        strength: Float
+    ) {
+        if (action == BACK_BUTTON_ACTION
+            && pressState == GastActionListener.InputPressState.JUST_RELEASED
+            && isBackButtonEnabled()
+        ) {
+            onBackPressed()
+        } else if (action == MENU_BUTTON_ACTION
+            && pressState == GastActionListener.InputPressState.JUST_RELEASED
+        ) {
+            openOptionsMenu()
+        }
+    }
 
 }
