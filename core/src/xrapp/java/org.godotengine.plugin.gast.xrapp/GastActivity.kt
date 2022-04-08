@@ -21,6 +21,7 @@ import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
+import org.godotengine.plugin.vr.openxr.OpenXRPlugin
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -29,7 +30,7 @@ import kotlin.system.exitProcess
  *
  * Host and provide Gast related functionality for the driving app.
  */
-abstract class GastActivity : AppCompatActivity(), GodotHost {
+abstract class GastActivity : AppCompatActivity(), GodotHost, OpenXRPlugin.EventListener {
 
     companion object {
         private val TAG = GastActivity::class.java.simpleName
@@ -60,10 +61,14 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
                     .setPrimaryNavigationFragment(godotFragment)
                     .commitNowAllowingStateLoss()
             }
+
+            getOpenXRPlugin().registerEventListener(this)
         }
     }
 
     override fun onDestroy() {
+        getOpenXRPlugin().unregisterEventListener(this)
+
         super.onDestroy()
         onGodotForceQuit(godotFragment)
     }
@@ -210,6 +215,15 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
         return gastPlugin
     }
 
+    private fun getOpenXRPlugin(): OpenXRPlugin {
+        val openxrPlugin = GodotPluginRegistry.getPluginRegistry().getPlugin("OpenXR")
+        if (openxrPlugin !is OpenXRPlugin) {
+            throw IllegalStateException("Unable to retrieve the OpenXR plugin.")
+        }
+
+        return openxrPlugin
+    }
+
     /**
      * Override the engine starting parameters to indicate we want VR mode.
      */
@@ -239,5 +253,25 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
             appPlugin.stopPassthrough(godotFragment)
         }
     }
+
+    @CallSuper
+    override fun onFocusGained() {}
+
+    @CallSuper
+    override fun onFocusLost() {}
+
+    @CallSuper
+    override fun onHeadsetMounted() {
+    }
+
+    @CallSuper
+    override fun onHeadsetUnmounted() {
+    }
+
+    @CallSuper
+    override fun onSessionBegun() {}
+
+    @CallSuper
+    override fun onSessionEnding() {}
 
 }
