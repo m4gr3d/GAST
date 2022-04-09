@@ -19,8 +19,10 @@ import org.godotengine.godot.xr.XRMode
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
+import org.godotengine.plugin.gast.input.action.GastActionListener
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
+import org.godotengine.plugin.vr.openxr.OpenXRPlugin
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -29,16 +31,23 @@ import kotlin.system.exitProcess
  *
  * Host and provide Gast related functionality for the driving app.
  */
-abstract class GastActivity : AppCompatActivity(), GodotHost {
+abstract class GastActivity :
+    AppCompatActivity(),
+    GodotHost,
+    OpenXRPlugin.EventListener,
+    GastActionListener {
 
     companion object {
         private val TAG = GastActivity::class.java.simpleName
+
+        private const val BACK_BUTTON_ACTION = "back_button_action"
+        private const val MENU_BUTTON_ACTION = "menu_button_action"
     }
 
     private val enableXR = isXREnabled()
     private val appPlugin = GastAppPlugin(enableXR)
 
-    private var godotFragment : Godot? = null
+    private var godotFragment: Godot? = null
     private var gastFrameLayout: GastFrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,10 +69,18 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
                     .setPrimaryNavigationFragment(godotFragment)
                     .commitNowAllowingStateLoss()
             }
+
+            getOpenXRPlugin().registerEventListener(this)
+            getGastManager().registerGastActionListener(this)
         }
     }
 
     override fun onDestroy() {
+        if (enableXR) {
+            getGastManager().unregisterGastActionListener(this)
+            getOpenXRPlugin().unregisterEventListener(this)
+        }
+
         super.onDestroy()
         onGodotForceQuit(godotFragment)
     }
@@ -210,6 +227,15 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
         return gastPlugin
     }
 
+    private fun getOpenXRPlugin(): OpenXRPlugin {
+        val openxrPlugin = GodotPluginRegistry.getPluginRegistry().getPlugin("OpenXR")
+        if (openxrPlugin !is OpenXRPlugin) {
+            throw IllegalStateException("Unable to retrieve the OpenXR plugin.")
+        }
+
+        return openxrPlugin
+    }
+
     /**
      * Override the engine starting parameters to indicate we want VR mode.
      */
@@ -221,6 +247,12 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
     }
 
     protected open fun isXREnabled() = false
+
+    /**
+     * Enables back button presses via the B/Y buttons for controllers or middle finger pinch for
+     * tracked hands.
+     */
+    protected open fun isBackButtonEnabled() = false
 
     /**
      * Enable passthrough
@@ -237,6 +269,49 @@ abstract class GastActivity : AppCompatActivity(), GodotHost {
     fun stopPassthrough() {
         if (enableXR) {
             appPlugin.stopPassthrough(godotFragment)
+        }
+    }
+
+    @CallSuper
+    override fun onFocusGained() {
+    }
+
+    @CallSuper
+    override fun onFocusLost() {
+    }
+
+    @CallSuper
+    override fun onHeadsetMounted() {
+    }
+
+    @CallSuper
+    override fun onHeadsetUnmounted() {
+    }
+
+    @CallSuper
+    override fun onSessionBegun() {
+    }
+
+    @CallSuper
+    override fun onSessionEnding() {
+    }
+
+    override fun getInputActionsToMonitor() = setOf(BACK_BUTTON_ACTION, MENU_BUTTON_ACTION)
+
+    override fun onMainInputAction(
+        action: String,
+        pressState: GastActionListener.InputPressState,
+        strength: Float
+    ) {
+        if (action == BACK_BUTTON_ACTION
+            && pressState == GastActionListener.InputPressState.JUST_RELEASED
+            && isBackButtonEnabled()
+        ) {
+            onBackPressed()
+        } else if (action == MENU_BUTTON_ACTION
+            && pressState == GastActionListener.InputPressState.JUST_RELEASED
+        ) {
+            openOptionsMenu()
         }
     }
 
