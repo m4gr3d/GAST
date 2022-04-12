@@ -31,7 +31,11 @@ enum FingerButtons {
 	RING_PINCH = 15
 }
 
+export var hide_for_no_tracking_confidence = false
+
 var current_joystick_id = -1
+# This resource is only available at runtime.
+var openxr_config = load("res://addons/godot-openxr/config/OpenXRConfig.gdns").new()
 
 onready var back_button_action = "back_button_action"
 onready var menu_button_action = "menu_button_action"
@@ -64,18 +68,26 @@ func _ready():
 		InputMap.add_action(down_scroll_action, 0.0)
 
 func _process(delta):
+	var should_be_visible = true
 	if get_is_active():
-		if !visible:
-			visible = true
 		if current_joystick_id == -1:
 			current_joystick_id = get_joystick_id()
 			_load_input_map(current_joystick_id)
+
+		if hide_for_no_tracking_confidence:
+			# Get the tracking confidence
+			if openxr_config:
+				var tracking_confidence = openxr_config.get_tracking_confidence(controller_id)
+				if tracking_confidence == 0:
+					should_be_visible = false
 	else:
-		if visible:
-			visible = false
+		should_be_visible = false
 		if current_joystick_id != -1:
 			_unload_input_map(current_joystick_id)
 			current_joystick_id = -1
+
+	if visible != should_be_visible:
+		visible = should_be_visible
 
 func _get_ray_cast_name():
 	if controller_id == LEFT_TOUCH_CONTROLLER_ID:
