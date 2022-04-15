@@ -1,6 +1,8 @@
 package org.godotengine.plugin.gast.xrapp
 
 import android.os.Build
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.GodotPluginInfoProvider
@@ -10,7 +12,13 @@ import org.godotengine.godot.plugin.UsedByGodot
 /**
  * Godot plugin used to interact with the render (gdscript) logic on behalf of the driving app.
  */
-class GastAppPlugin(private val enableXR: Boolean) : GodotPluginInfoProvider {
+class GastAppPlugin(private val enableXR: Boolean) : ViewModel(), GodotPluginInfoProvider {
+
+    class GastAppPluginFactory(private val enableXR: Boolean) : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            return GastAppPlugin(enableXR) as T
+        }
+    }
 
     companion object {
         val START_PASSTHROUGH_SIGNAL = SignalInfo("start_passthrough")

@@ -82,6 +82,12 @@ dependencies {
     pluginsImplementation("com.google.android.exoplayer:exoplayer:2.15.1")
 
     // Dependencies for the 'xrapp' flavor
-    xrappImplementation 'androidx.appcompat:appcompat:1.3.1'
     xrappImplementation "io.github.m4gr3d:godot-openxr:${versions.godotOpenXRVersion}"
+
+    // ViewModel
+    xrappImplementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+
+    xrappImplementation 'androidx.appcompat:appcompat:1.3.1'
+    xrappImplementation "androidx.activity:activity-ktx:1.3.1"
+    xrappImplementation "androidx.fragment:fragment-ktx:1.3.1"
 }

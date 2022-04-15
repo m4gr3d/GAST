@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout.LayoutParams
+import androidx.activity.viewModels
 import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
@@ -45,7 +46,7 @@ abstract class GastActivity :
     }
 
     private val enableXR = isXREnabled()
-    private val appPlugin = GastAppPlugin(enableXR)
+    private val appPlugin: GastAppPlugin by viewModels { GastAppPlugin.GastAppPluginFactory(enableXR) }
 
     private var godotFragment: Godot? = null
     private var gastFrameLayout: GastFrameLayout? = null
