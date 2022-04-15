@@ -1,23 +1,25 @@
 package org.godotengine.plugin.gast.view
 
 import android.content.Context
-import android.graphics.Rect
-import android.graphics.RectF
-import android.os.Build
-import android.util.Log
+import android.view.View
 import android.view.ViewTreeObserver
-import androidx.annotation.RequiresApi
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.GastRenderListener
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
+import kotlin.math.max
 
 /**
  * Manages [GastView]'s render related logic.
  */
-internal class GastViewRenderManager(private val viewState: GastViewState): GastRenderListener {
+internal class GastViewRenderManager(private val viewState: GastViewState) : GastRenderListener {
 
     companion object {
         private const val DP_RATIO = 4f / 1000f
+        private const val MIN_CHILD_ELEVATION = 1f // pixels
+
+        private const val TRANSLATION_X_INDEX = 0
+        private const val TRANSLATION_Y_INDEX = 1
+        private const val TRANSLATION_Z_INDEX = 2
 
         fun fromPixelsToGodotDimensions(context: Context, dimensionInPixels: Float): Float {
             val metrics = context.resources.displayMetrics
@@ -40,41 +42,40 @@ internal class GastViewRenderManager(private val viewState: GastViewState): Gast
 
         /**
          * Convert from the Android coordinate system to the Godot coordinate system
-         *
-         * Android coordinate system: (0, 0) -> (left, top)
-         * Godot coordinate system: (0, 0) -> (width / 2, height / 2)
          */
-        fun fromAndroidCoordinatesToGodotCoordinates(inAndroidCoordsRect: RectF,
-                                                     outGodotCoordsRect: RectF = RectF()
-        ): RectF {
-            // x coord
-            outGodotCoordsRect.left = inAndroidCoordsRect.centerX()
-            // y coord
-            outGodotCoordsRect.top = inAndroidCoordsRect.centerY()
-            // width
-            outGodotCoordsRect.right = inAndroidCoordsRect.right
-            // height
-            outGodotCoordsRect.bottom = inAndroidCoordsRect.bottom
+        fun fromAndroidXToGodotX(
+            locationXInParent: Int,
+            viewWidth: Int,
+            parentWidth: Int
+        ): Float {
+            return locationXInParent + (viewWidth / 2f) - (parentWidth / 2f)
+        }
 
-            return outGodotCoordsRect
+        fun fromAndroidYToGodotY(
+            locationYInParent: Int,
+            viewHeight: Int,
+            parentHeight: Int
+        ): Float {
+            return (parentHeight / 2f) - (locationYInParent + (viewHeight / 2f))
         }
 
         /**
          * Convert from the Godot coordinate system to the Android coordinate system
          */
-        fun fromGodotCoordinatesToAndroidCoordinates(inGodotCoordsRect: RectF,
-                                                     outAndroidCoordsRect: RectF = RectF()
-        ): RectF {
-            // x coord
-            outAndroidCoordsRect.left = (2 * inGodotCoordsRect.left) - inGodotCoordsRect.right
-            // y coord
-            outAndroidCoordsRect.top = (2 * inGodotCoordsRect.top) - inGodotCoordsRect.bottom
-            // width
-            outAndroidCoordsRect.right = inGodotCoordsRect.right
-            // height
-            outAndroidCoordsRect.bottom = inGodotCoordsRect.bottom
+        fun fromGodotXToAndroidX(
+            locationXInParent: Int,
+            viewWidth: Int,
+            parentWidth: Int
+        ): Float {
+            return (parentWidth / 2f) + locationXInParent - (viewWidth / 2f)
+        }
 
-            return outAndroidCoordsRect
+        fun fromGodotYToAndroidY(
+            locationYInParent: Int,
+            viewHeight: Int,
+            parentHeight: Int
+        ): Float {
+            return (parentHeight / 2f) - locationYInParent - (viewHeight / 2f)
         }
     }
 
@@ -84,6 +85,8 @@ internal class GastViewRenderManager(private val viewState: GastViewState): Gast
         }
         return@OnPreDrawListener true
     }
+
+    private val locationInParent = FloatArray(3)
 
     internal fun onInitialize() {
         viewState.gastManager?.registerGastRenderListener(this)
@@ -98,51 +101,28 @@ internal class GastViewRenderManager(private val viewState: GastViewState): Gast
         viewState.gastManager?.unregisterGastRenderListener(this)
     }
 
-    private var renderCount = 0
-
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onRenderDrawFrame() {
-        if (renderCount == 0) {
-            updateGastNodeProperties()
-        }
-        renderCount = (renderCount + 1) % 300
+        computeLocationInParent()
+        updateGastNodeProperties()
     }
 
     /**
      * Update the spatial properties (scale, translation, rotation) of the backing gast node.
      */
-    @RequiresApi(Build.VERSION_CODES.Q)
     private fun updateGastNodeProperties() {
-        // Update the node's translation
-        val rect = Rect()
-        var result = viewState.view.getGlobalVisibleRect(rect)
-        if (result) {
-            Log.d("FHK", "Global visible rect: $rect")
-        } else {
-            Log.d("FHK", "Unable to get the global visible rect")
-        }
-
-        result = viewState.view.getLocalVisibleRect(rect)
-        if (result) {
-            Log.d("FHK", "Local visible rect: $rect")
-        } else {
-            Log.d("FHK", "Unable to get the local visible rect")
-        }
-
-        val location = IntArray(2)
-        viewState.view.getLocationInSurface(location)
-        Log.d("FHK", "Location in surface: ${location.contentToString()}")
-
-        viewState.view.getLocationInWindow(location)
-        Log.d("FHK", "Location in window: ${location.contentToString()}")
-
-        viewState.view.getLocationOnScreen(location)
-        Log.d("FHK", "Location on screen: ${location.contentToString()}")
-
         viewState.gastNode?.updateLocalTranslation(
-            fromPixelsToGodotDimensions(viewState.view.context, getViewTranslationX()),
-            fromPixelsToGodotDimensions(viewState.view.context, getViewTranslationY()),
-            fromPixelsToGodotDimensions(viewState.view.context, viewState.view.z)
+            fromPixelsToGodotDimensions(
+                viewState.view.context,
+                locationInParent[TRANSLATION_X_INDEX]
+            ),
+            fromPixelsToGodotDimensions(
+                viewState.view.context,
+                locationInParent[TRANSLATION_Y_INDEX]
+            ),
+            fromPixelsToGodotDimensions(
+                viewState.view.context,
+                locationInParent[TRANSLATION_Z_INDEX]
+            )
         )
 
         // Update the node's scale
@@ -154,6 +134,9 @@ internal class GastViewRenderManager(private val viewState: GastViewState): Gast
             viewState.view.rotationY,
             0f
         )
+
+        // Update the node's alpha value
+        viewState.gastNode?.updateAlpha(viewState.view.alpha)
     }
 
     internal fun onViewSizeChanged(width: Float, height: Float) {
@@ -175,13 +158,38 @@ internal class GastViewRenderManager(private val viewState: GastViewState): Gast
         }
     }
 
-    private fun getViewTranslationX(): Float {
-        // TODO: Update to incorporate non GastView parent x translation
-        return if (true) viewState.view.translationX else viewState.view.x
+    private fun computeLocationInParent() {
+        if (isRoot()) {
+            locationInParent[TRANSLATION_X_INDEX] = viewState.view.translationX
+            locationInParent[TRANSLATION_Y_INDEX] = viewState.view.translationY
+        } else {
+            val parent = viewState.parent ?: return
+
+            var locationX = viewState.view.left
+            var locationY = viewState.view.top
+
+            var viewParent = viewState.view.parent
+            while (viewParent is View && viewParent != parent) {
+                val view = viewParent as View
+
+                locationX += view.left
+                locationY += view.top
+                viewParent = view.parent
+            }
+
+            locationInParent[TRANSLATION_X_INDEX] = fromAndroidXToGodotX(
+                locationX,
+                viewState.view.width,
+                parent.viewState.view.width
+            )
+            locationInParent[TRANSLATION_Y_INDEX] = fromAndroidYToGodotY(
+                locationY,
+                viewState.view.height,
+                parent.viewState.view.height
+            )
+        }
+        locationInParent[TRANSLATION_Z_INDEX] = max(viewState.view.z, MIN_CHILD_ELEVATION)
     }
 
-    private fun getViewTranslationY(): Float {
-        // TODO: Update to incorporate non GastView parent y translation
-        return if (true) viewState.view.translationY else viewState.view.y
-    }
+    private fun isRoot() = viewState.parent == null
 }
