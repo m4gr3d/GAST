@@ -10,6 +10,7 @@ import org.godotengine.plugin.gast.GastNode
 class GastViewState(val view: View) {
     internal val inputManager = GastViewInputManager(this)
     internal val renderManager = GastViewRenderManager(this)
+    internal val children: MutableSet<GastView> = HashSet()
 
     internal var parent: GastView? = null
     internal var gastNode: GastNode? = null

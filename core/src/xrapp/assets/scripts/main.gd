@@ -22,7 +22,7 @@ func _ready():
 	gast.initialize()
 
 func _is_xr_enabled():
-	var appPlugin = Engine.get_singleton("GastAppPlugin")
+	var appPlugin = Engine.get_singleton("GastAppModel")
 	if (appPlugin):
 		return appPlugin.isXREnabled() and !appPlugin.enable2DDebugMode
 	else:
@@ -114,7 +114,7 @@ func _stop_passthrough():
 	floor_node.visible = true
 
 func _connect_plugin_signals():
-	var appPlugin = Engine.get_singleton("GastAppPlugin")
+	var appPlugin = Engine.get_singleton("GastAppModel")
 	if (appPlugin):
 		appPlugin.connect("start_passthrough", self, "_start_passthrough")
 		appPlugin.connect("stop_passthrough", self, "_stop_passthrough")

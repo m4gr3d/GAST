@@ -1,7 +1,6 @@
 package org.godotengine.plugin.gast.view
 
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
@@ -33,14 +32,8 @@ internal interface GastView {
         gastNode.bindSurface()
 
         // Propagate to the children
-        if (viewState.view is ViewGroup) {
-            val viewGroup = viewState.view as ViewGroup
-            for (index in 0 until viewGroup.childCount) {
-                val child = viewGroup.getChildAt(index)
-                if (child is GastView) {
-                    child.initializeFromParent(this)
-                }
-            }
+        for (child in viewState.children) {
+            child.initializeFromParent(this)
         }
 
         viewState.inputManager.onInitialize()
@@ -50,6 +43,8 @@ internal interface GastView {
     }
 
     private fun initializeFromParent(parent: GastView) {
+        parent.viewState.children.add(this)
+
         val gastManager = parent.viewState.gastManager?: return
         val parentGastNode = parent.viewState.gastNode ?: return
 
@@ -61,18 +56,14 @@ internal interface GastView {
     @CallSuper
     fun shutdown() {
         // Propagate to the children
-        if (viewState.view is ViewGroup) {
-            val viewGroup = viewState.view as ViewGroup
-            for (index in 0 until viewGroup.childCount) {
-                val child = viewGroup.getChildAt(index)
-                if (child is GastView) {
-                    child.shutdown()
-                }
-            }
+        for (child in viewState.children) {
+            child.shutdown()
         }
 
         viewState.renderManager.onShutdown()
         viewState.inputManager.onShutdown()
+
+        viewState.parent?.viewState?.children?.remove(this)
 
         viewState.gastNode?.release()
         viewState.gastNode = null

@@ -15,14 +15,12 @@ import androidx.appcompat.app.AppCompatActivity
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotHost
 import org.godotengine.godot.plugin.GodotPlugin
-import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.xr.XRMode
-import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
 import org.godotengine.plugin.gast.input.action.GastActionListener
-import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
+import org.godotengine.plugin.gast.view.GastView
 import org.godotengine.plugin.vr.openxr.OpenXRPlugin
 import java.util.Collections
 import kotlin.system.exitProcess
@@ -45,16 +43,16 @@ abstract class GastActivity :
         private const val MENU_BUTTON_ACTION = "menu_button_action"
     }
 
-    private val enableXR = isXREnabled()
-    private val appPlugin: GastAppPlugin by viewModels { GastAppPlugin.GastAppPluginFactory(enableXR) }
+    private val appModel: GastAppModel by viewModels()
 
-    private var godotFragment: Godot? = null
-    private var gastFrameLayout: GastFrameLayout? = null
+    internal var godotFragment: Godot? = null
+    private var gastView: GastView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appModel.enableXR = isXREnabled()
 
-        if (enableXR) {
+        if (appModel.enableXR) {
             super.setContentView(R.layout.godot_app_layout)
             val currentFragment =
                 supportFragmentManager.findFragmentById(R.id.godot_fragment_container)
@@ -71,15 +69,15 @@ abstract class GastActivity :
                     .commitNowAllowingStateLoss()
             }
 
-            getOpenXRPlugin().registerEventListener(this)
-            getGastManager().registerGastActionListener(this)
+            appModel.getOpenXRPlugin().registerEventListener(this)
+            appModel.getGastManager().registerGastActionListener(this)
         }
     }
 
     override fun onDestroy() {
-        if (enableXR) {
-            getGastManager().unregisterGastActionListener(this)
-            getOpenXRPlugin().unregisterEventListener(this)
+        if (appModel.enableXR) {
+            appModel.getGastManager().unregisterGastActionListener(this)
+            appModel.getOpenXRPlugin().unregisterEventListener(this)
         }
 
         super.onDestroy()
@@ -87,7 +85,7 @@ abstract class GastActivity :
     }
 
     override fun onGodotForceQuit(instance: Godot?) {
-        if (!enableXR) {
+        if (!appModel.enableXR) {
             return
         }
 
@@ -97,7 +95,7 @@ abstract class GastActivity :
     }
 
     private fun getGastContainerView(): ViewGroup? {
-        if (!enableXR) {
+        if (!appModel.enableXR) {
             return null
         }
 
@@ -107,21 +105,21 @@ abstract class GastActivity :
 
         // Add this point, Godot::onCreate(...) should have already been called giving us access
         // the registered plugins.
-        val gastPlugin = getGastManager()
+        val gastPlugin = appModel.getGastManager()
         return gastPlugin.rootView
     }
 
     override fun <T : View?> findViewById(@IdRes id: Int): T {
-        if (!enableXR) {
+        if (!appModel.enableXR) {
             return super.findViewById(id)
         }
 
-        val container = gastFrameLayout ?: return super.findViewById(id)
-        return container.findViewById(id) ?: super.findViewById(id)
+        val container = gastView ?: return super.findViewById(id)
+        return container.viewState.view.findViewById(id) ?: super.findViewById(id)
     }
 
     override fun setContentView(@LayoutRes layoutResID: Int) {
-        if (!enableXR || godotFragment == null) {
+        if (!appModel.enableXR || godotFragment == null) {
             super.setContentView(layoutResID)
             return
         }
@@ -130,7 +128,7 @@ abstract class GastActivity :
     }
 
     override fun setContentView(view: View) {
-        if (!enableXR || godotFragment == null) {
+        if (!appModel.enableXR || godotFragment == null) {
             super.setContentView(view)
             return
         }
@@ -158,13 +156,13 @@ abstract class GastActivity :
 
         val containerView = getGastContainerView()
 
-        if (gastFrameLayout != null) {
-            containerView?.removeView(gastFrameLayout)
+        if (gastView != null) {
+            containerView?.removeView(gastView!!.viewState.view)
         }
 
         // Any view we want to render in VR needs to be added as a child to the containerView in
         // order to be hooked to the view lifecycle events.
-        gastFrameLayout = if (view is GastFrameLayout) {
+        gastView = if (view is GastView) {
             view
         } else {
             // Wrap the content view in a GastFrameLayout view.
@@ -172,13 +170,13 @@ abstract class GastActivity :
                 addView(view)
             }
         }
-        containerView?.addView(gastFrameLayout, 0, viewLayoutParams)
+        containerView?.addView(gastView!!.viewState.view, 0, viewLayoutParams)
     }
 
     @CallSuper
     override fun onGodotSetupCompleted() {
         super.onGodotSetupCompleted()
-        GodotPlugin.registerPluginWithGodotNative(appPlugin, appPlugin)
+        GodotPlugin.registerPluginWithGodotNative(appModel, appModel)
     }
 
     @CallSuper
@@ -186,14 +184,9 @@ abstract class GastActivity :
         // Complete setup and initializing of the GastFrameLayout
         super.onGodotMainLoopStarted()
 
-        val gastNode = GastNode(getGastManager(), "GastActivityContainer")
-        val projectionMesh = gastNode.getProjectionMesh()
-        if (projectionMesh is RectangularProjectionMesh) {
-            projectionMesh.setCurved(false)
-        }
-
+        val gastNode = GastNode(appModel.getGastManager(), "GastActivityContainer")
         runOnUiThread {
-            gastFrameLayout?.initialize(getGastManager(), gastNode)
+            gastView?.initialize(appModel.getGastManager(), gastNode)
         }
     }
 
@@ -222,29 +215,11 @@ abstract class GastActivity :
         godotFragment?.onBackPressed() ?: super.onBackPressed()
     }
 
-    private fun getGastManager(): GastManager {
-        val gastPlugin = GodotPluginRegistry.getPluginRegistry().getPlugin("gast-core")
-        if (gastPlugin !is GastManager) {
-            throw IllegalStateException("Unable to retrieve the Gast plugin.")
-        }
-
-        return gastPlugin
-    }
-
-    private fun getOpenXRPlugin(): OpenXRPlugin {
-        val openxrPlugin = GodotPluginRegistry.getPluginRegistry().getPlugin("OpenXR")
-        if (openxrPlugin !is OpenXRPlugin) {
-            throw IllegalStateException("Unable to retrieve the OpenXR plugin.")
-        }
-
-        return openxrPlugin
-    }
-
     /**
      * Override the engine starting parameters to indicate we want VR mode.
      */
     override fun getCommandLine(): List<String> {
-        return if (enableXR && !appPlugin.enable2DDebugMode())
+        return if (appModel.enableXR && !appModel.enable2DDebugMode())
             Collections.singletonList(XRMode.OVR.cmdLineArg)
         else
             Collections.emptyList()
@@ -262,18 +237,14 @@ abstract class GastActivity :
      * Enable passthrough
      */
     fun startPassthrough() {
-        if (enableXR) {
-            appPlugin.startPassthrough(godotFragment)
-        }
+        appModel.startPassthrough(godotFragment)
     }
 
     /**
      * Disable passthrough
      */
     fun stopPassthrough() {
-        if (enableXR) {
-            appPlugin.stopPassthrough(godotFragment)
-        }
+        appModel.stopPassthrough(godotFragment)
     }
 
     @CallSuper

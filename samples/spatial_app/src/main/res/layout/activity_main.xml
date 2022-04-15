@@ -47,6 +47,12 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </org.godotengine.plugin.gast.view.GastFrameLayout>
+    </org.godotengine.plugin.gast.view.GastFrameLayout>-->
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:id="@+id/gast_fragment_holder" />
 
 </org.godotengine.plugin.gast.view.GastFrameLayout>
