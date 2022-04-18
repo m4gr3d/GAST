@@ -24,9 +24,7 @@ internal interface XrView {
 
     @CallSuper
     fun initialize(gastManager: GastManager, gastNode: GastNode) {
-        viewState.gastManager = gastManager
-        viewState.gastNode = gastNode
-        viewState.parent = null
+        viewState.initialize(gastManager, gastNode)
 
         // Generate the surface backing this view
         gastNode.bindSurface()
@@ -38,8 +36,6 @@ internal interface XrView {
 
         viewState.inputManager.onInitialize()
         viewState.renderManager.onInitialize()
-
-        viewState.initialized = true
     }
 
     private fun initializeFromParent(parent: XrView) {
@@ -65,12 +61,7 @@ internal interface XrView {
 
         viewState.parent?.viewState?.children?.remove(this)
 
-        viewState.gastNode?.release()
-        viewState.gastNode = null
-
-        viewState.gastManager = null
-        viewState.parent = null
-        viewState.initialized = false
+        viewState.shutdown()
     }
 
     @CallSuper
@@ -101,5 +92,9 @@ internal interface XrView {
     @CallSuper
     fun onXrViewVisibilityChanged(visible: Boolean) {
         viewState.renderManager.onVisibilityChanged(visible)
+    }
+
+    fun setGazeTracking(enable: Boolean) {
+        viewState.gazeTracking = enable
     }
 }
