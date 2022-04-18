@@ -22,7 +22,8 @@ android {
         versionName "1.0"
         multiDexEnabled true
 
-        missingDimensionStrategy 'features', 'plugins'
+        missingDimensionStrategy 'features', 'xrapp'
+        missingDimensionStrategy 'mode', 'plugins'
     }
 
     sourceSets {

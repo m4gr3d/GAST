@@ -25,21 +25,37 @@ android {
         }
     }
 
-    flavorDimensions "features"
+    flavorDimensions "features", "mode"
     productFlavors {
         core {
+            dimension "features"
             versionCode versions.coreVersionCode
             versionName versions.coreVersionName
         }
-        plugins {
-            versionCode versions.pluginsVersionCode
-            versionName versions.pluginsVersionName
-        }
+
         xrapp {
+            dimension "features"
             versionCode versions.xrappVersionCode
             versionName versions.xrappVersionName
 
-            manifestPlaceholders = [gastXRAppVersion: versionName]
+            manifestPlaceholders = [gastXrAppVersion: versionName]
+        }
+
+        lib {
+            dimension "mode"
+        }
+
+        plugins {
+            dimension "mode"
+            versionCode versions.pluginsVersionCode
+            versionName versions.pluginsVersionName
+        }
+    }
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        if (names.contains("core") && names.contains("plugins")) {
+            setIgnore(true)
         }
     }
 
@@ -87,7 +103,7 @@ dependencies {
     // ViewModel
     xrappImplementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
 
-    xrappImplementation 'androidx.appcompat:appcompat:1.3.1'
+    xrappImplementation "androidx.appcompat:appcompat:1.3.1"
     xrappImplementation "androidx.activity:activity-ktx:1.3.1"
     xrappImplementation "androidx.fragment:fragment-ktx:1.3.1"
 }

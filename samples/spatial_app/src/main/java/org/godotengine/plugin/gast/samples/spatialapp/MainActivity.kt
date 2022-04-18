@@ -1,9 +1,9 @@
 package org.godotengine.plugin.gast.samples.spatialapp
 
 import android.os.Bundle
-import org.godotengine.plugin.gast.xrapp.GastActivity
+import org.godotengine.plugin.gast.xrapp.XrActivity
 
-open class MainActivity : GastActivity() {
+open class MainActivity : XrActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -15,5 +15,5 @@ open class MainActivity : GastActivity() {
             .commitAllowingStateLoss()
     }
 
-    override fun isXREnabled() = BuildConfig.FLAVOR == "ovr"
+    override fun isXrEnabled() = BuildConfig.FLAVOR == "ovr"
 }

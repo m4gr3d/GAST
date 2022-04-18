@@ -17,6 +17,7 @@ android {
         multiDexEnabled true
 
         missingDimensionStrategy 'features', 'xrapp'
+        missingDimensionStrategy 'mode', 'lib'
     }
 
     flavorDimensions "xrMode"

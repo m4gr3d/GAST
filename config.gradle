@@ -12,8 +12,8 @@ ext {
         multidex_version   : "2.0.1",
         coreVersionCode    : 3100, // Also update 'core/src/main/AndroidManifest.xml#versionCode' value
         coreVersionName    : '0.31.0', // Also update 'core/src/main/AndroidManifest.xml#versionName' value
-        pluginsVersionCode : 600,
-        pluginsVersionName : '0.6.0',
+        pluginsVersionCode : 700,
+        pluginsVersionName : '0.7.0',
         xrappVersionCode   : 300,
         xrappVersionName   : '0.3.0',
         godotVersion       : '3.4.4.stable',

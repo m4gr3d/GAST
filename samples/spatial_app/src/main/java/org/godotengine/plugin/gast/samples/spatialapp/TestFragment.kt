@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import org.godotengine.plugin.gast.xrapp.GastFragment
+import org.godotengine.plugin.gast.xrapp.XrFragment
 
-class TestFragment: GastFragment() {
+class TestFragment: XrFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

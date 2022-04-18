@@ -30,7 +30,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
 
-    // Godot XRApp framework dependencies
+    // Godot XrApp framework dependencies
     implementation "io.github.m4gr3d:godot:3.4.4.stable"
     implementation "io.github.m4gr3d:godot-openxr:1.3.0.beta5"
     implementation "io.github.m4gr3d:gast-xrapp:0.2.0"

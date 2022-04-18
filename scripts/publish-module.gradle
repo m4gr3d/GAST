@@ -7,8 +7,8 @@ version = versions.versionName
 afterEvaluate {
     publishing {
         publications {
-            coreRelease(MavenPublication) {
-                from components.coreRelease
+            coreLibRelease(MavenPublication) {
+                from components.coreLibRelease
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
@@ -46,8 +46,8 @@ afterEvaluate {
                 }
             }
 
-            xrappRelease(MavenPublication) {
-                from components.xrappRelease
+            xrappLibRelease(MavenPublication) {
+                from components.xrappLibRelease
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
@@ -58,7 +58,7 @@ afterEvaluate {
                 // Mostly self-explanatory metadata
                 pom {
                     name = XRAPP_PUBLISH_ARTIFACT_ID
-                    description = 'GAST XRApp Library'
+                    description = 'GAST XrApp Library'
                     url = 'https://github.com/m4gr3d/GAST#readme'
                     licenses {
                         license {
