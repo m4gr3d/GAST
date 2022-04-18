@@ -19,6 +19,7 @@ import org.godotengine.godot.xr.XRMode
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
 import org.godotengine.plugin.gast.input.action.GastActionListener
+import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
 import org.godotengine.plugin.gast.view.GastFrameLayout
 import org.godotengine.plugin.gast.view.GastView
 import org.godotengine.plugin.vr.openxr.OpenXRPlugin
@@ -184,9 +185,11 @@ abstract class GastActivity :
         // Complete setup and initializing of the GastFrameLayout
         super.onGodotMainLoopStarted()
 
-        val gastNode = GastNode(appModel.getGastManager(), "GastActivityContainer")
+        val gastManager = appModel.getGastManager()
+        gastManager.defaultDepthDrawMode = ProjectionMesh.DepthDrawMode.ALWAYS
+        val gastNode = GastNode(gastManager, "GastActivityContainer")
         runOnUiThread {
-            gastView?.initialize(appModel.getGastManager(), gastNode)
+            gastView?.initialize(gastManager, gastNode)
         }
     }
 

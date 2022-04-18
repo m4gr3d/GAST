@@ -11,6 +11,7 @@
 #include <gen/Shader.hpp>
 #include <gen/ShaderMaterial.hpp>
 #include <gen/Shape.hpp>
+#include <gen/SpatialMaterial.hpp>
 #include <vector>
 
 #include "projection_mesh_utils.h"
@@ -84,6 +85,15 @@ public:
 
     bool is_render_on_top() const {
         return this->render_on_top;
+    }
+
+    void set_depth_draw_mode(SpatialMaterial::DepthDrawMode mode) {
+        if (this->depth_draw_mode == mode) {
+            return;
+        }
+
+        this->depth_draw_mode = mode;
+        update_shader_code();
     }
 
     bool is_collidable() const {
@@ -211,6 +221,7 @@ private:
     std::vector<ProjectionMeshData*> projection_mesh_data_list{};
     StereoMode stereo_mode;
 
+    SpatialMaterial::DepthDrawMode depth_draw_mode = SpatialMaterial::DEPTH_DRAW_OPAQUE_ONLY;
     bool render_on_top;
     bool gaze_tracking;
     bool uv_origin_is_bottom_left;

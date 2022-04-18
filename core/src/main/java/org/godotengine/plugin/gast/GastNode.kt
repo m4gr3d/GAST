@@ -58,6 +58,8 @@ class GastNode @JvmOverloads constructor(
         }
 
         gastManager.registerGastRenderListener(this)
+
+        getProjectionMesh().setDepthDrawMode(gastManager.defaultDepthDrawMode)
     }
 
     fun getProjectionMesh() : ProjectionMesh {
@@ -335,17 +337,13 @@ class GastNode @JvmOverloads constructor(
 
     fun isRenderOnTop(): Boolean {
         checkIfReleased()
-        return isRenderOnTop(nodePointer)
+        return getProjectionMesh().isRenderOnTop()
     }
-
-    private external fun isRenderOnTop(nodePointer: Long): Boolean
 
     fun setRenderOnTop(enable: Boolean) {
         checkIfReleased()
-        setRenderOnTop(nodePointer, enable)
+        getProjectionMesh().setRenderOnTop(enable)
     }
-
-    private external fun setRenderOnTop(nodePointer: Long, enable: Boolean)
 
     /**
      * Returns this node's collision layers.

@@ -20,6 +20,7 @@ import org.godotengine.plugin.gast.input.ReleaseEventData
 import org.godotengine.plugin.gast.input.ScrollEventData
 import org.godotengine.plugin.gast.input.action.GastActionListener
 import org.godotengine.plugin.gast.input.action.InputActionDispatcher
+import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
 import java.util.ArrayDeque
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
@@ -47,6 +48,11 @@ class GastManager(godot: Godot) : GodotPlugin(godot) {
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
     private val initialized = AtomicBoolean(false)
+
+    /**
+     * Default depth draw mode to use when creating a new [GastNode] object.
+     */
+    internal var defaultDepthDrawMode = ProjectionMesh.DepthDrawMode.OPAQUE
 
     /**
      * Root parent for all GAST views.
