@@ -23,7 +23,7 @@ class EditTextFragment : XrFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val messageWrapperView = view.findViewById<XrFrameLayout>(R.id.message_wrapper_view)
-        messageWrapperView?.setGazeTracking(true)
+        val editTextWrapperView = view.findViewById<XrFrameLayout>(R.id.edittext_wrapper_view)
+        editTextWrapperView?.setGazeTracking(true)
     }
 }

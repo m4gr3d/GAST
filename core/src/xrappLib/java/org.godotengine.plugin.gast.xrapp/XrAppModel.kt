@@ -8,6 +8,7 @@ import org.godotengine.godot.plugin.GodotPluginInfoProvider
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.plugin.SignalInfo
 import org.godotengine.godot.plugin.UsedByGodot
+import org.godotengine.plugin.gast.BuildConfig
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
 import org.godotengine.plugin.gast.xrapp.view.XrView
@@ -35,12 +36,10 @@ class XrAppModel() : ViewModel(), GodotPluginInfoProvider {
     override fun getPluginSignals() = SIGNAL_INFOS
 
     @UsedByGodot
-    private fun isXrEnabled() = enableXr
+    fun isXrEnabled() = enableXr
 
     @UsedByGodot
-    internal fun enable2DDebugMode(): Boolean {
-        return Build.BRAND != "Oculus"
-    }
+    fun enable2DDebugMode() = BuildConfig.DEBUG && !"Oculus".equals(Build.BRAND, true)
 
     internal fun startPassthrough(godot: Godot?) {
         if (godot == null || !enableXr || enable2DDebugMode()) {

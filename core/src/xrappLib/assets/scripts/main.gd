@@ -24,7 +24,7 @@ func _ready():
 func _is_xr_enabled():
 	var appPlugin = Engine.get_singleton("XrAppModel")
 	if (appPlugin):
-		return appPlugin.isXrEnabled() and !appPlugin.enable2DDebugMode
+		return appPlugin.isXrEnabled() and !appPlugin.enable2DDebugMode()
 	else:
 		print("App plugin is not available")
 	return true

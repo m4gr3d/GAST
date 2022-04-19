@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/edittext_wrapper_view"
+    android:id="@+id/message_wrapper_view"
     android:layout_width="360dp"
     android:layout_height="50dp"
     android:layout_gravity="center"
@@ -9,36 +9,36 @@
     android:gravity="center">
 
     <org.godotengine.plugin.gast.xrapp.view.XrFrameLayout
-        android:id="@+id/message_wrapper_view"
+        android:id="@+id/edittext_wrapper_view"
         android:layout_width="360dp"
         android:layout_height="50dp"
         android:layout_gravity="center"
-        android:elevation="10dp"
+        android:elevation="20dp"
         android:background="@android:color/holo_green_dark"
         android:gravity="center">
 
-        <TextView
-            android:id="@+id/message"
+        <EditText
+            android:id="@+id/content"
             android:textStyle="bold"
             android:layout_height="match_parent"
             android:layout_width="match_parent"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Enter input:"
+            android:inputType="text"
+            android:hint="Hello Keyboard"
             android:textColor="@android:color/black"
             android:textSize="18sp"/>
 
     </org.godotengine.plugin.gast.xrapp.view.XrFrameLayout>
 
-    <EditText
-        android:id="@+id/content"
+    <TextView
+        android:id="@+id/message"
         android:textStyle="bold"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:layout_gravity="center"
         android:gravity="center"
-        android:inputType="text"
-        android:text="Hello Keyboard"
+        android:text="Enter input:"
         android:textColor="@android:color/black"
         android:textSize="18sp"/>
 
