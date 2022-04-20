@@ -1,4 +1,4 @@
-package org.godotengine.plugin.gast.xrapp.view
+package org.godotengine.plugin.gast.xr.view
 
 import android.content.Context
 import android.view.View

@@ -20,8 +20,8 @@ import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
 import org.godotengine.plugin.gast.input.action.GastActionListener
 import org.godotengine.plugin.gast.projectionmesh.ProjectionMesh
-import org.godotengine.plugin.gast.xrapp.view.XrFrameLayout
-import org.godotengine.plugin.gast.xrapp.view.XrView
+import org.godotengine.plugin.gast.xr.view.XrFrameLayout
+import org.godotengine.plugin.gast.xr.view.XrView
 import org.godotengine.plugin.vr.openxr.OpenXRPlugin
 import java.util.Collections
 import kotlin.system.exitProcess

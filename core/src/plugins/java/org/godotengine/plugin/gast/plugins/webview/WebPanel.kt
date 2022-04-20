@@ -9,8 +9,8 @@ import android.webkit.WebViewClient
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
-import org.godotengine.plugin.gast.xrapp.view.XrFrameLayout
-import org.godotengine.plugin.gast.xrapp.view.XrViewRenderManager
+import org.godotengine.plugin.gast.xr.view.XrFrameLayout
+import org.godotengine.plugin.gast.xr.view.XrViewRenderManager
 
 internal class WebPanel(
     private val activity: Activity,

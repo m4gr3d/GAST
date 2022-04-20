@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<org.godotengine.plugin.gast.xrapp.view.XrFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.godotengine.plugin.gast.xr.view.XrFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,7 +7,7 @@
     android:background="#bbffffff"
     tools:context=".MainActivity">
 
-    <org.godotengine.plugin.gast.xrapp.view.XrFrameLayout
+    <org.godotengine.plugin.gast.xr.view.XrFrameLayout
         android:layout_width="200dp"
         android:layout_gravity="center"
         android:background="@android:color/holo_green_light"
@@ -26,9 +26,9 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </org.godotengine.plugin.gast.xrapp.view.XrFrameLayout>
+    </org.godotengine.plugin.gast.xr.view.XrFrameLayout>
 
-    <org.godotengine.plugin.gast.xrapp.view.XrFrameLayout
+    <org.godotengine.plugin.gast.xr.view.XrFrameLayout
         android:layout_width="200dp"
         android:layout_gravity="top|center"
         android:background="@android:color/holo_blue_light"
@@ -47,7 +47,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </org.godotengine.plugin.gast.xrapp.view.XrFrameLayout>-->
+    </org.godotengine.plugin.gast.xr.view.XrFrameLayout>-->
 
     <FrameLayout
         android:layout_width="wrap_content"
@@ -55,4 +55,4 @@
         android:layout_gravity="bottom|center"
         android:id="@+id/gast_fragment_holder" />
 
-</org.godotengine.plugin.gast.xrapp.view.XrFrameLayout>
+</org.godotengine.plugin.gast.xr.view.XrFrameLayout>

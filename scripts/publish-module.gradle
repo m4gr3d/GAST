@@ -7,8 +7,8 @@ version = versions.versionName
 afterEvaluate {
     publishing {
         publications {
-            coreLibRelease(MavenPublication) {
-                from components.coreLibRelease
+            /*coreRelease(MavenPublication) {
+                from components.coreRelease
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
@@ -44,10 +44,10 @@ afterEvaluate {
                         url = 'https://github.com/m4gr3d/GAST/tree/master'
                     }
                 }
-            }
+            }*/
 
-            xrappLibRelease(MavenPublication) {
-                from components.xrappLibRelease
+            xrappRelease(MavenPublication) {
+                from components.xrappRelease
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later

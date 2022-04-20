@@ -11,7 +11,7 @@ import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.plugin.gast.BuildConfig
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.projectionmesh.RectangularProjectionMesh
-import org.godotengine.plugin.gast.xrapp.view.XrView
+import org.godotengine.plugin.gast.xr.view.XrView
 import org.godotengine.plugin.vr.openxr.OpenXRPlugin
 
 /**

@@ -15,7 +15,7 @@
         <!-- Records the version of the Gast XrApp framework -->
         <meta-data
             android:name="org.godotengine.plugin.gast.xrapp.version"
-            android:value="${gastXrAppVersion}" />
+            android:value="${xrAppVersion}" />
 
         <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0"/>
     </application>

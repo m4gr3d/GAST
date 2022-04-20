@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import org.godotengine.plugin.gast.xrapp.XrFragment
-import org.godotengine.plugin.gast.xrapp.view.XrFrameLayout
+import org.godotengine.plugin.gast.xr.view.XrFrameLayout
 
 /**
  * Initialize and render an EditText view in a VR environment.

@@ -25,37 +25,23 @@ android {
         }
     }
 
-    flavorDimensions "features", "mode"
+    flavorDimensions "features"
     productFlavors {
         core {
-            dimension "features"
             versionCode versions.coreVersionCode
             versionName versions.coreVersionName
         }
+        plugins {
+            versionCode versions.pluginsVersionCode
+            versionName versions.pluginsVersionName
 
+            manifestPlaceholders = [pluginsVersion: versionName]
+        }
         xrapp {
-            dimension "features"
             versionCode versions.xrappVersionCode
             versionName versions.xrappVersionName
 
-            manifestPlaceholders = [gastXrAppVersion: versionName]
-        }
-
-        lib {
-            dimension "mode"
-        }
-
-        plugins {
-            dimension "mode"
-            versionCode versions.pluginsVersionCode
-            versionName versions.pluginsVersionName
-        }
-    }
-
-    variantFilter { variant ->
-        def names = variant.flavors*.name
-        if (names.contains("core") && names.contains("plugins")) {
-            setIgnore(true)
+            manifestPlaceholders = [xrAppVersion: versionName]
         }
     }
 

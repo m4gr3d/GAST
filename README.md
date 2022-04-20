@@ -13,7 +13,7 @@ The library is released under the MIT license.
 The Godot XrApp framework leverages the GAST library to turn regular Android apps into Quest VR
 apps.
 
-- [Godot XrApp Framework](core/src/xrappLib/README.md)
+- [Godot XrApp Framework](core/src/xrapp/README.md)
 
 ## GAST Plugins
 
@@ -22,8 +22,8 @@ access and use of Android views within a Godot project.
 
 **Note:** They are only supported starting with **Godot version 3.2.2**.
 
-- [GAST-Video](core/src/xrappPlugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
-- [GAST-WebView](core/src/xrappPlugins/java/org/godotengine/plugin/gast/plugins/webview/README.md)
+- [GAST-Video](core/src/plugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
+- [GAST-WebView](core/src/plugins/java/org/godotengine/plugin/gast/plugins/webview/README.md)
 
 ## Contributions
 
@@ -87,8 +87,8 @@ to render the GastNode.
 Once a GastNode is created, the client gains the ability to retrieve a [Surface](https://developer.android.com/reference/android/view/Surface)
 instance via the [GastNode#bindSurface()](core/src/main/java/org/godotengine/plugin/gast/GastNode.kt#L81) API.
 The Surface instance can be used as an output destination onto which Android Views, images or videos
-can be rendered. This is the process used by the [GAST-Video](core/src/xrappPlugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
-and [GAST-WebView](core/src/xrappPlugins/java/org/godotengine/plugin/gast/plugins/webview/README.md) plugins.
+can be rendered. This is the process used by the [GAST-Video](core/src/plugins/java/org/godotengine/plugin/gast/plugins/video/README.md)
+and [GAST-WebView](core/src/plugins/java/org/godotengine/plugin/gast/plugins/webview/README.md) plugins.
 
 #### Input Handling
 
