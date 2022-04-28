@@ -1,5 +1,6 @@
 package org.godotengine.plugin.gast.xr.view
 
+import android.util.Log
 import android.view.View
 import androidx.annotation.CallSuper
 import org.godotengine.plugin.gast.GastManager
@@ -11,6 +12,8 @@ import org.godotengine.plugin.gast.GastNode
 internal interface XrView {
 
     companion object {
+        private val TAG = XrView::class.java.simpleName
+
         private fun fetchXrViewParent(view: View): XrView? {
             var viewParent = view.parent
             while (viewParent != null && viewParent !is XrView) {
@@ -24,6 +27,7 @@ internal interface XrView {
 
     @CallSuper
     fun initialize(gastManager: GastManager, gastNode: GastNode) {
+        Log.d(TAG, "Initializing XrView $this...")
         viewState.initialize(gastManager, gastNode)
 
         // Generate the surface backing this view
@@ -51,6 +55,8 @@ internal interface XrView {
 
     @CallSuper
     fun shutdown() {
+        Log.d(TAG, "Shutting down XrView $this...")
+
         // Propagate to the children
         for (child in viewState.children) {
             child.shutdown()
@@ -86,6 +92,7 @@ internal interface XrView {
 
     @CallSuper
     fun onXrViewSizeChanged(width: Float, height: Float) {
+        Log.d(TAG, "On size changed: $width, $height")
         viewState.renderManager.onViewSizeChanged(width, height)
     }
 

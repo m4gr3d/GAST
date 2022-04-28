@@ -4,25 +4,20 @@ import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
-import android.widget.FrameLayout
 import androidx.annotation.AttrRes
+import androidx.appcompat.widget.AppCompatImageView
 
 /**
- * Derived implementation of [FrameLayout] that allows its subtree z-depth positioning in 3D space.
- *
- * [XrFrameLayout] can be nested within themselves and other view group allowing for UI that
- * breaks out of the 2D app window and can be interacted and animated in 3D space.
- *
- * [XrFrameLayout] uses the [View.getZ] property as their z-component in 3D space relative to
- * their parent.
+ * Derived implemented of [AppCompatImageView] that allows rendering and display of 3D models
+ * when in xr mode.
  */
-class XrFrameLayout(
+class XrModelView(
     context: Context,
     attrs: AttributeSet?,
     @AttrRes defStyleAttr: Int
-) : FrameLayout(context, attrs, defStyleAttr), XrView {
+) : AppCompatImageView(context, attrs, defStyleAttr), XrView {
 
-    override val viewState: XrViewState = XrViewState(this)
+    override val viewState = XrViewState(this)
 
     constructor(
         context: Context,
@@ -63,4 +58,3 @@ class XrFrameLayout(
         onXrViewDetachedFromWindow()
     }
 }
-

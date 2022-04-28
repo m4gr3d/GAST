@@ -1,6 +1,8 @@
 package org.godotengine.plugin.gast.xr.view
 
 import android.content.Context
+import android.graphics.Canvas
+import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import org.godotengine.plugin.gast.GastNode
@@ -14,12 +16,16 @@ import kotlin.math.max
 internal class XrViewRenderManager(private val viewState: XrViewState) : GastRenderListener {
 
     companion object {
+        private val TAG = XrViewRenderManager::class.java.simpleName
+
         private const val DP_RATIO = 4f / 1000f
         private const val MIN_CHILD_ELEVATION = 1f // pixels
 
         private const val TRANSLATION_X_INDEX = 0
         private const val TRANSLATION_Y_INDEX = 1
         private const val TRANSLATION_Z_INDEX = 2
+
+        private const val MIN_TEXTURE_DIMENSION = 1
 
         fun fromPixelsToGodotDimensions(context: Context, dimensionInPixels: Float): Float {
             val metrics = context.resources.displayMetrics
@@ -88,22 +94,57 @@ internal class XrViewRenderManager(private val viewState: XrViewState) : GastRen
 
     private val locationInParent = FloatArray(3)
 
+    private var textureWidth = MIN_TEXTURE_DIMENSION
+    private var textureHeight = MIN_TEXTURE_DIMENSION
+
     internal fun onInitialize() {
         viewState.gastManager?.registerGastRenderListener(this)
         viewState.view.viewTreeObserver.addOnPreDrawListener(onPreDrawListener)
 
         viewState.view.invalidate()
+        updateTextureSizeIfNeeded()
     }
 
     internal fun onShutdown() {
         viewState.view.viewTreeObserver.removeOnPreDrawListener(onPreDrawListener)
 
         viewState.gastManager?.unregisterGastRenderListener(this)
+
+        textureHeight = MIN_TEXTURE_DIMENSION
+        textureWidth = MIN_TEXTURE_DIMENSION
+    }
+
+    internal fun drawHelper(originalCanvas: Canvas, drawTask: (Canvas) -> Unit) {
+        val surfaceCanvas = viewState.gastNode?.lockSurfaceCanvas() ?: originalCanvas
+        drawTask(surfaceCanvas)
+        viewState.gastNode?.unlockSurfaceCanvas()
     }
 
     override fun onRenderDrawFrame() {
+        updateTextureSizeIfNeeded()
         computeLocationInParent()
         updateGastNodeProperties()
+    }
+
+    private fun updateTextureSizeIfNeeded() {
+        // Update the texture size
+        val widthInPixels = viewState.view.width
+        val heightInPixels = viewState.view.height
+        if ((textureWidth != widthInPixels || textureHeight != heightInPixels)
+            && widthInPixels >= MIN_TEXTURE_DIMENSION
+            && heightInPixels >= MIN_TEXTURE_DIMENSION
+            && viewState.gastNode != null
+            && viewState.gastManager != null
+        ) {
+            viewState.gastNode?.setSurfaceTextureSize(widthInPixels, heightInPixels) ?: return
+
+            Log.d(TAG, "Updating texture size to X - $widthInPixels, Y - $heightInPixels")
+            textureWidth = widthInPixels
+            textureHeight = heightInPixels
+            viewState.view.invalidate()
+
+            onViewSizeChanged(viewState.view.width.toFloat(), viewState.view.height.toFloat())
+        }
     }
 
     /**
@@ -140,6 +181,7 @@ internal class XrViewRenderManager(private val viewState: XrViewState) : GastRen
     }
 
     internal fun onViewSizeChanged(width: Float, height: Float) {
+        updateTextureSizeIfNeeded()
         viewState.gastManager?.runOnRenderThread {
             if (viewState.gastNode?.getProjectionMeshType() == GastNode.ProjectionMeshType.RECTANGULAR) {
                 val projectionMesh: RectangularProjectionMesh =

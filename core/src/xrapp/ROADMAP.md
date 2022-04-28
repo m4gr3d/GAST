@@ -18,8 +18,8 @@ This is a tentative roadmap for the Godot XrApp framework.
     - Unlocks the use of [responsive layout](https://developer.android.com/guide/topics/large-screens/migrate-to-responsive-layouts) when in VR
 
 ### Version 0.6.0
-- Complete `XrImageView` implementation
-    - `ImageView`-derived implementation with the ability to specify and load a gltf 3d-model
+- Complete `XrModelView` implementation
+    - `ImageView`-derived implementation with the ability to se pecify and load a gltf 3d-model
       when in VR.
         - Fallback to the 2D image source when no 3d-model is specified or when in pancake mode.
 
