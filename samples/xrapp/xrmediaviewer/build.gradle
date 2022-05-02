@@ -12,6 +12,9 @@ android {
         targetSdk 32
         versionCode 1
         versionName "1.0"
+
+        // TODO: Remove when switching to the maven dependency
+        missingDimensionStrategy 'features', 'xrapp'
     }
 
     compileOptions {
@@ -27,10 +30,15 @@ dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation "androidx.activity:activity-ktx:1.3.1"
+    implementation "androidx.fragment:fragment-ktx:1.3.1"
+    implementation "androidx.slidingpanelayout:slidingpanelayout:1.2.0"
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
 
     // Godot XrApp framework dependencies
+    // TODO: Replace with the maven dependency when the dev version is stabilized.
+    implementation project(path: ':core')
     implementation "io.github.m4gr3d:godot:${versions.godotVersion}"
     implementation "io.github.m4gr3d:godot-openxr:${versions.godotOpenXRVersion}"
 }

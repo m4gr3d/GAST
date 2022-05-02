@@ -16,7 +16,7 @@ ext {
         pluginsVersionName : '0.7.0',
         xrappVersionCode   : 300,
         xrappVersionName   : '0.3.0',
-        godotVersion       : '3.4.4.stable',
+        godotVersion       : '3.5.1.stable',
         godotOpenXRVersion : '1.3.0.beta7',
     ]
 

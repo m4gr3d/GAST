@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Spatial App (pancake)</string>
+    <string name="app_name">Spatial App</string>
+    <string name="pancake_app_name">Spatial App (pancake)</string>
+    <string name="vr_app_name">Spatial App (ovr)</string>
 </resources>
