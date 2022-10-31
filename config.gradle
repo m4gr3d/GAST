@@ -1,21 +1,21 @@
 ext {
     versions = [
         gradlePluginVersion: '7.0.3',
-        compileSdk         : 30,
+        compileSdk         : 32,
         minSdk             : 21, // Also update 'core/src/main/AndroidManifest.xml#minSdkVersion' value
-        targetSdk          : 30, // Also update 'core/src/main/AndroidManifest.xml#targetSdkVersion' value
-        buildTools         : '30.0.3',
-        kotlinVersion      : '1.6.10',
-        ndkVersion         : "21.4.7075529",
-        javaVersion        : JavaVersion.VERSION_1_8,
-        kotlinJvmTarget    : '1.8',
+        targetSdk          : 32, // Also update 'core/src/main/AndroidManifest.xml#targetSdkVersion' value
+        buildTools         : '32.0.0',
+        kotlinVersion      : '1.6.21',
+        ndkVersion         : "23.2.8568313",
+        javaVersion        : JavaVersion.VERSION_11,
+        kotlinJvmTarget    : JavaVersion.VERSION_11,
         multidex_version   : "2.0.1",
-        coreVersionCode    : 3100, // Also update 'core/src/main/AndroidManifest.xml#versionCode' value
-        coreVersionName    : '0.31.0', // Also update 'core/src/main/AndroidManifest.xml#versionName' value
+        coreVersionCode    : 3200, // Also update 'core/src/main/AndroidManifest.xml#versionCode' value
+        coreVersionName    : '0.32.0', // Also update 'core/src/main/AndroidManifest.xml#versionName' value
         pluginsVersionCode : 700,
         pluginsVersionName : '0.7.0',
-        xrappVersionCode   : 300,
-        xrappVersionName   : '0.3.0',
+        xrappVersionCode   : 400,
+        xrappVersionName   : '0.4.0',
         godotVersion       : '3.5.1.stable',
         godotOpenXRVersion : '1.3.0.beta7',
     ]

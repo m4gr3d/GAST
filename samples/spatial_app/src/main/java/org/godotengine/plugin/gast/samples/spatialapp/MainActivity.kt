@@ -13,9 +13,11 @@ abstract class MainActivity : XrActivity() {
         setContentView(R.layout.activity_main)
 
         val testFragment = TestFragment()
+        val videoFragment = VideoFragment()
         supportFragmentManager
             .beginTransaction()
             .add(R.id.gast_fragment_holder, testFragment)
+            .add(R.id.gast_video_fragment_holder, videoFragment)
             .commitAllowingStateLoss()
     }
 }
