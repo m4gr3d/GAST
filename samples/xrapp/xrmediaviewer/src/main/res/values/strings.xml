@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">XR Media Viewer</string>
+    <string name="app_name">Hybrid Media Viewer</string>
+    <string name="pancake_app_name">2D Media Viewer</string>
+    <string name="vr_app_name">XR Media Viewer</string>
+    <string name="media_next_control_description">Video player next button</string>
+    <string name="media_prev_control_description">Video player previous button</string>
+    <string name="media_play_pause_control_description">Video player play/pause button</string>
 </resources>

@@ -3,27 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     tools:context=".MainActivity">
 
-    <androidx.slidingpanelayout.widget.SlidingPaneLayout
-        android:id="@+id/sliding_pane_layout"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:id="@+id/video_player_holder"/>
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/list_pane"
-            android:name="org.godotengine.plugin.gast.samples.xrapp.xrmediaviewer.photos.PhotosListFragment"
-            android:layout_width="280dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="start" />
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/detail_pane"
-            android:name="org.godotengine.plugin.gast.samples.xrapp.xrmediaviewer.photos.PhotoViewerFragment"
-            android:layout_width="400dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-    </androidx.slidingpanelayout.widget.SlidingPaneLayout>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:id="@+id/video_controls_holder"/>
 
 </org.godotengine.plugin.gast.xr.view.XrFrameLayout>
