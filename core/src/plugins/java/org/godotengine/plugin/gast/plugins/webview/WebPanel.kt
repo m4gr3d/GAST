@@ -9,7 +9,8 @@ import android.webkit.WebViewClient
 import org.godotengine.plugin.gast.GastManager
 import org.godotengine.plugin.gast.GastNode
 import org.godotengine.plugin.gast.R
-import org.godotengine.plugin.gast.view.GastFrameLayout
+import org.godotengine.plugin.gast.xr.view.XrFrameLayout
+import org.godotengine.plugin.gast.xr.view.XrViewRenderManager
 
 internal class WebPanel(
     private val activity: Activity,
@@ -18,7 +19,7 @@ internal class WebPanel(
     private val gastNode: GastNode
 ) {
 
-    private lateinit var panelView: GastFrameLayout
+    private lateinit var panelView: XrFrameLayout
     private lateinit var webView: WebView
 
     init {
@@ -27,7 +28,7 @@ internal class WebPanel(
 
     private fun initializeViews() {
         activity.runOnUiThread {
-            panelView = activity.layoutInflater.inflate(R.layout.web_panel, containerView, false) as GastFrameLayout
+            panelView = activity.layoutInflater.inflate(R.layout.web_panel, containerView, false) as XrFrameLayout
             containerView.addView(panelView)
             panelView.initialize(gastManager, gastNode)
 
@@ -75,8 +76,8 @@ internal class WebPanel(
 
     fun setSize(width: Float, height: Float) {
         activity.runOnUiThread {
-            val updatedWebViewWidth = GastFrameLayout.fromGodotDimensionsToPixels(activity, width)
-            val updatedWebViewHeight = GastFrameLayout.fromGodotDimensionsToPixels(activity, height)
+            val updatedWebViewWidth = XrViewRenderManager.fromGodotDimensionsToPixels(activity, width)
+            val updatedWebViewHeight = XrViewRenderManager.fromGodotDimensionsToPixels(activity, height)
 
             panelView.layoutParams.width = updatedWebViewWidth.toInt()
             panelView.layoutParams.height = updatedWebViewHeight.toInt()

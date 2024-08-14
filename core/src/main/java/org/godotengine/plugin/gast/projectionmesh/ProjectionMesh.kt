@@ -2,6 +2,48 @@ package org.godotengine.plugin.gast.projectionmesh
 
 sealed class ProjectionMesh(protected val meshPointer : Long, protected val nodePointer : Long) {
 
+    // Mirrors enum DepthDrawMode in libs/godot-cpp/include/gen/SpatialMaterial.hpp
+    internal enum class DepthDrawMode(internal val index: Int) {
+        /**
+         * Only draw depth for opaque geometry (not transparent).
+         */
+        OPAQUE(0),
+
+        /**
+         * Always draw depth (opaque and transparent).
+         */
+        ALWAYS(1),
+
+        /**
+         * Never draw depth.
+         */
+        NEVER(2),
+
+        /**
+         * Do opaque depth pre-pass for transparent geometry.
+         */
+        ALPHA_PREPASS(3);
+
+        companion object {
+            fun fromIndex(index: Int): DepthDrawMode {
+                for (mode in DepthDrawMode.values()) {
+                    if (mode.index == index) {
+                        return mode
+                    }
+                }
+
+                // Return the default
+                return OPAQUE
+            }
+        }
+    }
+
+    internal fun setDepthDrawMode(mode: DepthDrawMode) {
+        nativeSetDepthDrawMode(meshPointer, mode.index)
+    }
+
+    private external fun nativeSetDepthDrawMode(meshPoint: Long, modeIndex: Int)
+
     fun isGazeTracking(): Boolean {
         return isGazeTracking(meshPointer)
     }

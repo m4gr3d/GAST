@@ -2,7 +2,7 @@
 
 name="gast-plugins"
 binary_type="local"
-binary="gast-plugins.0.6.0.release.aar"
+binary="gast-plugins.0.7.0.release.aar"
 
 [dependencies]
 

@@ -104,6 +104,7 @@ material/0 = null
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1, -0.4 )
 controller_id = 3
 script = ExtResource( 6 )
+hide_for_no_tracking_confidence = true
 
 [node name="HandLeftRayCast" type="RayCast" parent="ARVROrigin/LeftHand" groups=["gast_ray_caster"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00425386, 0, -0.0690089 )
@@ -126,6 +127,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 1, -0.4 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 1, -0.4 )
 controller_id = 4
 script = ExtResource( 6 )
+hide_for_no_tracking_confidence = true
 
 [node name="HandRightRayCast" type="RayCast" parent="ARVROrigin/RightHand" groups=["gast_ray_caster"]]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00614285, 0, -0.069 )

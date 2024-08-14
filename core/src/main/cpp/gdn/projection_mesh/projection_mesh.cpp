@@ -26,7 +26,8 @@ ProjectionMesh::ProjectionMesh(ProjectionMesh::ProjectionMeshType projection_mes
         has_transparency(kDefaultHasTransparency),
         stereo_mode(StereoMode::kMono),
         collidable(kDefaultCollidable),
-        uv_origin_is_bottom_left(kDefaultUvOriginIsBottomLeft) {}
+        uv_origin_is_bottom_left(kDefaultUvOriginIsBottomLeft),
+        depth_draw_mode(SpatialMaterial::DEPTH_DRAW_OPAQUE_ONLY) {}
 
 ProjectionMesh::ProjectionMesh() : ProjectionMesh(ProjectionMeshType::RECTANGULAR) {}
 
@@ -89,7 +90,7 @@ bool ProjectionMesh::should_use_alpha_shader_code()  {
 }
 
 inline String ProjectionMesh::generate_shader_code() {
-    String shader_code = get_base_shader_code(should_use_alpha_shader_code());
+    String shader_code = get_base_shader_code(should_use_alpha_shader_code(), depth_draw_mode);
     if (is_render_on_top()) {
         shader_code += kDisableDepthTestRenderMode;
     }
@@ -230,6 +231,7 @@ void ProjectionMesh::update_properties(ProjectionMesh *projection_mesh) {
     set_alpha(projection_mesh->alpha);
     set_has_transparency(projection_mesh->has_transparency);
     set_collidable(projection_mesh->is_collidable());
+    set_depth_draw_mode(projection_mesh->depth_draw_mode);
 }
 
 void ProjectionMesh::update_render_priority() const {

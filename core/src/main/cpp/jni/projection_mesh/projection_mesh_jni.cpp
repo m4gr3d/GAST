@@ -54,6 +54,13 @@ JNI_METHOD(setRenderOnTop)(JNIEnv *, jobject, jlong mesh_pointer, jboolean rende
 }
 
 JNIEXPORT void JNICALL
+JNI_METHOD(nativeSetDepthDrawMode)(JNIEnv *, jobject, jlong mesh_pointer, jint depth_draw_mode) {
+    ProjectionMesh *mesh = from_pointer(mesh_pointer);
+    ERR_FAIL_NULL(mesh);
+    mesh->set_depth_draw_mode(static_cast<SpatialMaterial::DepthDrawMode>(depth_draw_mode));
+}
+
+JNIEXPORT void JNICALL
 JNI_METHOD(updateAlpha)(JNIEnv *, jobject, jlong mesh_pointer, jfloat alpha) {
     ProjectionMesh *mesh = from_pointer(mesh_pointer);
     ERR_FAIL_NULL(mesh);

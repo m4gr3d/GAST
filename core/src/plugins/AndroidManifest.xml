@@ -4,6 +4,11 @@
 
     <application>
 
+        <!-- Records the version of the Gast plugins -->
+        <meta-data
+            android:name="org.godotengine.plugin.gast.plugins.version"
+            android:value="${pluginsVersion}" />
+
         <meta-data
             android:name="org.godotengine.plugin.v1.gast-video"
             android:value="org.godotengine.plugin.gast.plugins.video.GastVideoPlugin" />

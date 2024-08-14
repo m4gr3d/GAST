@@ -3,9 +3,9 @@ package org.godotengine.plugin.gast
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.os.Build
-import android.text.TextUtils
 import android.view.Surface
 import androidx.annotation.RequiresApi
 import org.godotengine.plugin.gast.projectionmesh.CustomProjectionMesh
@@ -58,6 +58,8 @@ class GastNode @JvmOverloads constructor(
         }
 
         gastManager.registerGastRenderListener(this)
+
+        getProjectionMesh().setDepthDrawMode(gastManager.defaultDepthDrawMode)
     }
 
     fun getProjectionMesh() : ProjectionMesh {
@@ -189,7 +191,8 @@ class GastNode @JvmOverloads constructor(
      * [bindSurface] must have been invoked at least once prior to invoking this method.
      * @throws IllegalStateException if a [Surface] is not bound to this [GastNode] node.
      */
-    fun lockSurfaceCanvas(): Canvas? {
+    @JvmOverloads
+    fun lockSurfaceCanvas(dirty: Rect? = null): Canvas? {
         val boundSurface =
             surface ?: throw IllegalStateException("No Surface object bound to this node.")
 
@@ -202,7 +205,7 @@ class GastNode @JvmOverloads constructor(
                 throw IllegalStateException("Invalid surface canvas state.")
             }
 
-            surfaceCanvas = boundSurface.lockCanvas(null)
+            surfaceCanvas = boundSurface.lockCanvas(dirty)
             surfaceCanvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         }
         surfaceCanvasRefCount++
@@ -334,17 +337,13 @@ class GastNode @JvmOverloads constructor(
 
     fun isRenderOnTop(): Boolean {
         checkIfReleased()
-        return isRenderOnTop(nodePointer)
+        return getProjectionMesh().isRenderOnTop()
     }
-
-    private external fun isRenderOnTop(nodePointer: Long): Boolean
 
     fun setRenderOnTop(enable: Boolean) {
         checkIfReleased()
-        setRenderOnTop(nodePointer, enable)
+        getProjectionMesh().setRenderOnTop(enable)
     }
-
-    private external fun setRenderOnTop(nodePointer: Long, enable: Boolean)
 
     /**
      * Returns this node's collision layers.

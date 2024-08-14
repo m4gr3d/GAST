@@ -9,19 +9,12 @@ buildscript {
         google()
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
     }
     dependencies {
         classpath "com.android.tools.build:gradle:${versions.gradlePluginVersion}"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion"
-        classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-
+        classpath "io.github.gradle-nexus:publish-plugin:$versions.nexusPublishVersion"
     }
 }
 

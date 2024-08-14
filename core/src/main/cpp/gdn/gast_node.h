@@ -83,14 +83,6 @@ public:
         return projection_mesh->get_projection_mesh_type();
     }
 
-    inline void set_render_on_top(bool enable) {
-        projection_mesh->set_render_on_top(enable);
-    }
-
-    inline bool is_render_on_top() {
-        return projection_mesh->is_render_on_top();
-    }
-
     inline void set_gaze_tracking(bool gaze_tracking) {
         projection_mesh->set_gaze_tracking(gaze_tracking);
     }

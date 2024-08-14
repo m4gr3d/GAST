@@ -22,9 +22,9 @@ func _ready():
 	gast.initialize()
 
 func _is_xr_enabled():
-	var appPlugin = Engine.get_singleton("GastAppPlugin")
+	var appPlugin = Engine.get_singleton("XrAppModel")
 	if (appPlugin):
-		return appPlugin.isXREnabled()
+		return appPlugin.isXrEnabled() and !appPlugin.enable2DDebugMode()
 	else:
 		print("App plugin is not available")
 	return true
@@ -64,7 +64,7 @@ func _initialise_openxr_interface() -> bool:
 
 func _initialize_openxr_configuration():
 	var vp : Viewport = _get_xr_viewport()
-	
+
 	# Our interface will tell us whether we should keep our render buffer in linear color space
 	vp.keep_3d_linear = openxr_config.keep_3d_linear()
 
@@ -99,7 +99,7 @@ func _start_passthrough():
 
 	# Hide the floor
 	floor_node.visible = false
-	
+
 	# enable our passthrough
 	openxr_config.start_passthrough()
 
@@ -109,12 +109,12 @@ func _stop_passthrough():
 
 	# Disable passthrough
 	openxr_config.stop_passthrough()
-	
+
 	# Show the floor
 	floor_node.visible = true
 
 func _connect_plugin_signals():
-	var appPlugin = Engine.get_singleton("GastAppPlugin")
+	var appPlugin = Engine.get_singleton("XrAppModel")
 	if (appPlugin):
 		appPlugin.connect("start_passthrough", self, "_start_passthrough")
 		appPlugin.connect("stop_passthrough", self, "_stop_passthrough")

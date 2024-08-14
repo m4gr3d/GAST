@@ -8,17 +8,17 @@ to enable rendering and interaction with Android views in a Godot project's scen
 
 The library is released under the MIT license.
 
-## Godot XRApp Framework
+## Godot XrApp Framework
 
-The Godot XRApp framework leverages the GAST library to turn regular Android apps into Quest VR
+The Godot XrApp framework leverages the GAST library to turn regular Android apps into Quest VR
 apps.
 
-- [Godot XRApp Framework](core/src/xrapp/README.md)
+- [Godot XrApp Framework](core/src/xrapp/README.md)
 
 ## GAST Plugins
 
-These are Godot Android plugins that leverage the GAST library to support access and
-use of Android views within a Godot project.
+These are Godot Android plugins that leverage the GAST library and the XrApp framework to support
+access and use of Android views within a Godot project.
 
 **Note:** They are only supported starting with **Godot version 3.2.2**.
 

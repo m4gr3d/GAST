@@ -6,6 +6,7 @@
 #include "core/Math.hpp"
 #include "gen/ArrayMesh.hpp"
 #include "gen/Mesh.hpp"
+#include "gen/SpatialMaterial.hpp"
 
 namespace gast {
 
@@ -16,7 +17,7 @@ const float kGradientHeightRatioThreshold = 0.05;
 
 const char *kBaseShaderCode = R"GAST_SHADER(
 shader_type spatial;
-render_mode unshaded, depth_draw_opaque, specular_disabled, shadows_disabled, ambient_light_disabled;
+render_mode unshaded, $depth_draw_mode, specular_disabled, shadows_disabled, ambient_light_disabled;
 
 uniform samplerExternalOES gast_texture;
 uniform mat4 left_eye_sampling_transform;
@@ -192,8 +193,28 @@ get_sampling_transforms(StereoMode stereo_mode, bool uv_origin_is_bottom_left = 
 }
 }  // namespace
 
-static inline String get_base_shader_code(bool use_alpha) {
+static inline String get_depth_draw_mode_label(SpatialMaterial::DepthDrawMode depth_draw_mode) {
+    switch (depth_draw_mode) {
+        case SpatialMaterial::DEPTH_DRAW_OPAQUE_ONLY:
+        default:
+            return "depth_draw_opaque";
+
+        case SpatialMaterial::DEPTH_DRAW_ALWAYS:
+            return "depth_draw_always";
+
+        case SpatialMaterial::DEPTH_DRAW_DISABLED:
+            return "depth_draw_never";
+
+        case SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS:
+            return "depth_draw_alpha_prepass";
+    }
+}
+
+static inline String get_base_shader_code(
+        bool use_alpha,
+        SpatialMaterial::DepthDrawMode depth_draw_mode = SpatialMaterial::DEPTH_DRAW_OPAQUE_ONLY) {
     Dictionary dict;
+    dict["depth_draw_mode"] = get_depth_draw_mode_label(depth_draw_mode);
     dict["alpha_variable"] = use_alpha ? "ALPHA" : "target_alpha";
     dict["gradient_height_ratio_threshold"] = String::num_real(kGradientHeightRatioThreshold);
     return String(kBaseShaderCode).format(dict, "$_") ;

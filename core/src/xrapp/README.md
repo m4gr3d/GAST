@@ -1,6 +1,6 @@
-# Godot XRApp Framework
+# Godot XrApp Framework
 
-The Godot XRApp framework provides the ability to turn regular Android apps into Quest VR apps!
+The Godot XrApp framework provides the ability to turn regular Android apps into Quest VR apps!
 
 It unlocks a new and diverse set of VR apps that can be created by leveraging
 Android developers tools as well as existing Android UI code and libraries.
@@ -14,7 +14,7 @@ The framework is released under the MIT license.
 
 ## Usage
 
-The Godot XRApp framework can be integrated within an existing code base in three steps:
+The Godot XrApp framework can be integrated within an existing code base in three steps:
 
 1. Add the framework dependencies
    - Within the app `build.gradle` file, add the following dependencies:
@@ -23,15 +23,15 @@ The Godot XRApp framework can be integrated within an existing code base in thre
     implementation "io.github.m4gr3d:godot-openxr:1.3.0.beta5"
     implementation "io.github.m4gr3d:gast-xrapp:0.2.0"
     ```
-   - The framework is built atop [`AppCompatActivity`](https://developer.android.com/reference/androidx/appcompat/app/AppCompatActivity)
-     , so include the appcompat dependency if you don't have it already
+   - The framework leverages the [Android Jetpack](https://developer.android.com/jetpack) libraries,
+     so include the following dependencies if you don't have them already
     ```
     implementation 'androidx.appcompat:appcompat:1.3.1'
     ```
 
 1. Update the app's main activity
-    - Have the app's main activity extend `org.godotengine.plugin.gast.xrapp.GastActivity`
-    - Overrides the `isXREnabled()` method and return `true`
+    - Have the app's main activity extend `org.godotengine.plugin.gast.xrapp.XrActivity`
+    - Overrides the `isXrEnabled()` method and return `true`
         - As its name implies, this method can be used to enable / disable XR integration.
 
 1. Update the app's `AndroidManifest.xml` file to comply with the requirements for running on Quest
@@ -68,7 +68,7 @@ Universal Android Music Player Sample](https://github.com/m4gr3d/xruamp) for exa
 
 ### Use the same code for regular and VR builds
 
-By switching `GastActivity#isXREnabled()`'s return value, you can use the same code base to
+By switching `GastActivity#isXrEnabled()`'s return value, you can use the same code base to
 generate a regular Android app and a Quest VR app.
 
 You can see an example of this approach in the [XR Universal Android Music Player Sample](https://github.com/m4gr3d/xruamp)
