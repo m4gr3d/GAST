@@ -4,8 +4,6 @@
     android:versionCode="3200"
     android:versionName="0.32.0">
 
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="32" />
-
     <application>
 
         <meta-data

@@ -54,9 +54,9 @@ abstract class XrActivity :
         appModel.enableXr = isXrEnabled()
 
         if (appModel.enableXr) {
-            super.setContentView(R.layout.godot_app_layout)
+            super.setContentView(org.godotengine.godot.R.layout.godot_app_layout)
             val currentFragment =
-                supportFragmentManager.findFragmentById(R.id.godot_fragment_container)
+                supportFragmentManager.findFragmentById(org.godotengine.godot.R.id.godot_fragment_container)
             if (currentFragment is Godot) {
                 Log.v(TAG, "Reusing existing Godot fragment instance.")
                 godotFragment = currentFragment
@@ -65,7 +65,7 @@ abstract class XrActivity :
                 godotFragment = Godot()
                 supportFragmentManager
                     .beginTransaction()
-                    .replace(R.id.godot_fragment_container, godotFragment!!)
+                    .replace(org.godotengine.godot.R.id.godot_fragment_container, godotFragment!!)
                     .setPrimaryNavigationFragment(godotFragment)
                     .commitNowAllowingStateLoss()
             }
@@ -128,8 +128,8 @@ abstract class XrActivity :
         setContentView(layoutInflater.inflate(layoutResID, getGastContainerView(), false))
     }
 
-    override fun setContentView(view: View) {
-        if (!appModel.enableXr || godotFragment == null) {
+    override fun setContentView(view: View?) {
+        if (!appModel.enableXr || godotFragment == null || view == null) {
             super.setContentView(view)
             return
         }
@@ -193,7 +193,7 @@ abstract class XrActivity :
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         godotFragment?.onNewIntent(intent)
     }
@@ -207,7 +207,7 @@ abstract class XrActivity :
     @CallSuper
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<String?>,
+        permissions: Array<String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
